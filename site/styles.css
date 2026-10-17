@@ -2,7 +2,7 @@
 
 .booking-widget{width:100%;max-width:900px;margin:24px auto;min-height:600px;}
 
-.music-toggle{position:fixed;right:16px;bottom:16px;z-index:50;background:#b01b83;color:#fff;border:0;border-radius:999px;padding:10px 16px;font:600 14px 'DM Sans',sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.music-toggle{position:fixed;top:14px;right:16px;z-index:50;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:8px 14px;font:600 12px 'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(4px)}
 .music-toggle:focus-visible{outline:3px solid #fff;outline-offset:3px}
 
 .assistant-toggle{position:fixed;left:16px;bottom:16px;z-index:50;background:#210c20;color:#fff;border:1px solid #b01b83;border-radius:999px;padding:10px 16px;font:600 14px 'DM Sans',sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}
@@ -17,4 +17,4 @@
 .assistant-form{display:flex;gap:8px;padding:10px;border-top:1px solid #e6d3e0;background:#fff}
 .assistant-form input{flex:1;min-width:0;padding:10px;border:1px solid #c9a7bd;border-radius:10px;font-size:16px}
 .assistant-form button{background:#b01b83;color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer}
-@media (max-width:480px){.music-toggle{bottom:70px}}
+@media (max-width:480px){.music-toggle{top:auto;bottom:70px}}
