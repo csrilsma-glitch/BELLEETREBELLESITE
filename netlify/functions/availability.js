@@ -1,0 +1,2 @@
+const c=require('./lib/core'),b=require('./lib/booking');
+exports.handler=e=>c.wrap(e,async()=>{if(e.httpMethod!=='POST')return c.json(405,{error:'POST requis'});await c.rate(e,'availability',100);const d=c.body(e);let exclude=null;if(d.booking_id){await b.owned(d.booking_id,d.token);exclude=d.booking_id;}return c.json(200,{slots:await b.availability(d.date,d.service_ids,exclude),quote:await c.rpc('quote',{p_ids:c.ids(d.service_ids)})});});

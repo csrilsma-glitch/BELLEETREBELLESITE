@@ -4,7 +4,7 @@
 
 const { startTimesFor, bookOne } = require('./simplybook');
 
-const MODEL = 'claude-haiku-5-5';
+const MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5';
 const MAX_MESSAGES = 20;
 const MAX_CHARS = 1000;
 const MAX_TOOL_ROUNDS = 5;
@@ -143,7 +143,7 @@ async function sendMailToMelanie({ subject, summary, client_contact }) {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      from: process.env.MAIL_FROM || 'Belle & Rebelle <onboarding@resend.dev>',
+      from: process.env.MAIL_FROM || 'Belle & Rebelle <reservation@belleetrebelle-nailstudio.fr>',
       to: ['belleetrebelle.flers@outlook.com'],
       subject: '[Melba] ' + subject,
       text: summary + (client_contact ? '\n\nContact : ' + client_contact : ''),
@@ -153,7 +153,7 @@ async function sendMailToMelanie({ subject, summary, client_contact }) {
   return { ok: true, message: 'Message transmis à Mélanie.' };
 }
 
-async function runTool(name, input) {
+async function legacyRunTool(name, input) {
   if (name === 'notify_melanie') return sendMailToMelanie(input);
   if (name === 'check_availability') {
     const services = pickServices(input.service_ids);
@@ -196,6 +196,27 @@ async function runTool(name, input) {
   throw new Error('Outil inconnu');
 }
 
+// V15 : le prompt et la boucle Claude d'origine sont conservés.
+// La création native demande un clic explicite côté cliente, jamais une décision du modèle.
+async function nativeRunTool(name,input,context) {
+  const c=require('./lib/core'),b=require('./lib/booking');
+  if(name==='notify_melanie')return sendMailToMelanie(input);
+  if(name==='check_availability'){
+    const slots=await b.availability(input.date,input.service_ids);
+    const q=await c.rpc('quote',{p_ids:c.ids(input.service_ids)});
+    return {date:input.date,total_minutes:q.minutes,total_cents:q.cents,available_starts:slots.map(x=>new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit'}).format(new Date(x.starts)))};
+  }
+  if(name==='book_appointment'){
+    const slots=await b.availability(input.date,input.service_ids);
+    const slot=slots.find(x=>new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit'}).format(new Date(x.starts))===input.start);
+    if(!slot)return {ok:false,message:'Ce créneau n’est plus disponible.'};
+    const q=await c.rpc('quote',{p_ids:c.ids(input.service_ids)});
+    context.pending={service_ids:input.service_ids,starts:slot.starts,client_name:input.client_name,client_email:input.client_email,client_phone:input.client_phone,quote:q};
+    return {ok:false,requires_confirmation:true,message:'Une proposition est affichée sous le message. La cliente doit relire le récapitulatif et cliquer sur Confirmer. Aucun rendez-vous n’est encore créé.'};
+  }
+  throw new Error('Outil inconnu');
+}
+
 function cleanMessages(input) {
   if (!Array.isArray(input)) return null;
   const cleaned = input
@@ -207,6 +228,11 @@ function cleanMessages(input) {
 }
 
 async function callClaude(apiKey, messages) {
+  let liveCatalogue='';
+  if(process.env.NATIVE_BOOKING_ENABLED==='true'){
+    const current=await require('./lib/core').db('br15_services?active=eq.true&order=position.asc');
+    liveCatalogue='\nCatalogue serveur à jour, prioritaire pour les noms, prix et durées :\n'+current.map(s=>s.id+' : '+s.path+' — '+s.minutes+' min — '+(s.cents/100)+' €').join('\n');
+  }
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -214,7 +240,7 @@ async function callClaude(apiKey, messages) {
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ model: MODEL, max_tokens: 500, system: SYSTEM_PROMPT, tools: TOOLS, messages }),
+    body: JSON.stringify({ model: MODEL, max_tokens: 500, system: SYSTEM_PROMPT + liveCatalogue + (process.env.NATIVE_BOOKING_ENABLED === 'true' ? '\nMode natif V15 : le clic sur le bouton de confirmation affiché à la cliente crée le rendez-vous. Avant cela, il s’agit uniquement d’une proposition. Ne dis jamais que le rendez-vous est confirmé avant ce clic et son résultat serveur.' : ''), tools: TOOLS, messages }),
   });
   if (!res.ok) throw new Error('API Claude ' + res.status);
   return res.json();
@@ -223,6 +249,9 @@ async function callClaude(apiKey, messages) {
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Méthode non autorisée' });
 
+  const core=require('./lib/core');
+  try { core.origin(event); await core.rate(event,'melba',30); } catch(err) { return core.json(err.status||503,{error:err.status?err.message:'Assistante indisponible'}); }
+  const context={pending:null};
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return json(500, { error: 'Assistante non configurée' });
 
@@ -245,7 +274,7 @@ exports.handler = async (event) => {
       for (const block of data.content.filter(b => b.type === 'tool_use')) {
         let output;
         try {
-          output = await runTool(block.name, block.input);
+          output = process.env.NATIVE_BOOKING_ENABLED === 'true' ? await nativeRunTool(block.name, block.input,context) : await legacyRunTool(block.name, block.input);
         } catch (err) {
           console.error('Outil en erreur', block.name, err.message);
           output = { error: 'Service de réservation momentanément indisponible. Demandez à la cliente d\'appeler Mélanie.' };
@@ -257,9 +286,11 @@ exports.handler = async (event) => {
     }
 
     const reply = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
-    return json(200, { reply: reply || 'Je suis désolée, je n\'ai pas de réponse. Vous pouvez appeler Mélanie au 06 62 28 75 45.' });
+    return json(200, { pendingBooking:context.pending, reply: reply || 'Je suis désolée, je n\'ai pas de réponse. Vous pouvez appeler Mélanie au 06 62 28 75 45.' });
   } catch (err) {
     console.error('Erreur', err.message);
     return json(502, { error: 'Réponse indisponible, réessayez ou appelez Mélanie.' });
   }
 };
+
+exports._test={cleanMessages,nativeRunTool,SYSTEM_PROMPT,TOOLS};
