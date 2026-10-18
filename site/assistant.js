@@ -32,7 +32,21 @@
   toggle.addEventListener('click',()=>setOpen(panel.hidden));$('assistant-close').addEventListener('click',()=>setOpen(false));
   panel.addEventListener('keydown',e=>{if(e.key==='Escape')setOpen(false);});
   const quick=document.createElement('div');quick.className='assistant-quick';
-  ['Sans acompte ?','Plusieurs prestations','Un problème'].forEach(label=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>{message('user',label);answer(label);});quick.append(b);});
+  // Melba répond via le serveur (netlify/functions/chat.js) quand il est disponible ;
+  // sinon (version statique), on garde les réponses locales ci-dessous.
+  const history=[];
+  async function ask(text){
+    history.push({role:'user',content:text});
+    try{
+      const res=await fetch('/.netlify/functions/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history.slice(-20)})});
+      if(!res.ok)throw new Error('indisponible');
+      const data=await res.json();
+      if(!data.reply)throw new Error('vide');
+      history.push({role:'assistant',content:data.reply});
+      message('bot',data.reply);
+    }catch(err){history.pop();answer(text);}
+  }
+  ['Sans acompte ?','Plusieurs prestations','Un problème'].forEach(label=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>{message('user',label);ask(label);});quick.append(b);});
   panel.insertBefore(quick,form);
-  form.addEventListener('submit',e=>{e.preventDefault();const raw=input.value.trim();if(!raw)return;input.value='';message('user',raw);answer(raw);});
+  form.addEventListener('submit',e=>{e.preventDefault();const raw=input.value.trim();if(!raw)return;input.value='';message('user',raw);ask(raw);});
 })();

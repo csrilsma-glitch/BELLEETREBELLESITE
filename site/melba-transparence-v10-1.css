@@ -2,3 +2,9 @@
 .assistant-log{background:linear-gradient(#fff6fb14,#fff6fb1f),url('assets/melba-fond.png') center 35%/cover no-repeat}
 .assistant-msg{background:rgba(35,9,28,.24);border-color:#ffb4dc66;color:#fff8fc;text-shadow:0 1px 2px #160917,0 0 3px #160917;box-shadow:0 3px 15px #3a0a2914}
 .assistant-user{background:rgba(96,12,66,.4);border-color:#f7b8db88;color:#fff}
+
+/* Melba : visible au-dessus de la barre Netlify, avatar affiché */
+.assistant-toggle{bottom:76px!important;right:14px!important;left:auto!important;z-index:80!important}
+.assistant-panel{bottom:140px!important;right:14px!important;left:auto!important}
+.melba-avatar{display:block!important;width:56px!important;height:56px!important;border-radius:50%;object-fit:cover;border:2px solid #f7b8db;flex-shrink:0}
+.assistant-toggle .melba-avatar{width:48px!important;height:48px!important}
