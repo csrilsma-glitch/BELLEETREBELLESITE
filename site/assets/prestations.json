@@ -3,8 +3,8 @@
  "services": [
   {
    "id": "gel-gainage",
-   "name": "Gel sans rallongement (gainage)",
-   "path": "Prestation gel › Gel sans rallongement (gainage)",
+   "name": "Gel sans rallongement",
+   "path": "Onglerie › Prestations Gel › Gel sans rallongement",
    "dur": "1h30",
    "price": 52,
    "sb": 2
@@ -12,39 +12,39 @@
   {
    "id": "gel-chablon",
    "name": "Extension chablon",
-   "path": "Prestation gel › Extension chablon",
+   "path": "Onglerie › Prestations Gel › Extension chablon",
    "dur": "2h00",
    "price": 60,
    "sb": 3
   },
   {
    "id": "gel-premiere",
-   "name": "1ère pose sur ongles rongés",
-   "path": "Prestation gel › 1ère pose sur ongles rongés",
+   "name": "Première pose sur ongles rongés",
+   "path": "Onglerie › Prestations Gel › Première pose sur ongles rongés",
    "dur": "1h15",
    "price": 55,
    "sb": 4
   },
   {
    "id": "gel-remp-34",
-   "name": "Remplissage entre 3 et 4 semaines de repousse",
-   "path": "Prestation gel › Remplissage entre 3 et 4 semaines de repousse",
+   "name": "Remplissage en 3 et 4 semaines de repousses",
+   "path": "Onglerie › Prestations Gel › Remplissage en 3 et 4 semaines de repousses",
    "dur": "1h30",
    "price": 45,
    "sb": 5
   },
   {
    "id": "gel-remp-5",
-   "name": "Remplissage après 5 semaines de repousse",
-   "path": "Prestation gel › Remplissage après 5 semaines de repousse",
+   "name": "Remplissage après 5 semaines de repousses",
+   "path": "Onglerie › Prestations Gel › Remplissage après 5 semaines de repousses",
    "dur": "1h30",
    "price": 49,
    "sb": 6
   },
   {
    "id": "am-courte",
-   "name": "Courte ou médium",
-   "path": "Prestation capsule › Pose américaine › Courte ou médium",
+   "name": "Courte ou medium",
+   "path": "Onglerie › Prestations Capsules › Pose américaine › Courte ou medium",
    "dur": "1h30",
    "price": 48,
    "sb": 7
@@ -52,119 +52,119 @@
   {
    "id": "am-longue",
    "name": "Longue",
-   "path": "Prestation capsule › Pose américaine › Longue",
+   "path": "Onglerie › Prestations Capsules › Pose américaine › Longue",
    "dur": "1h30",
    "price": 58,
    "sb": 8
   },
   {
    "id": "popits-court",
-   "name": "Popits courts ou médium",
-   "path": "Prestation capsule › Rallongement popits et demi-popits › Popits courts ou médium",
+   "name": "Popits court ou medium",
+   "path": "Onglerie › Prestations Capsules › Rallongement popits et demi popits › Popits court ou medium",
    "dur": "2h00",
    "price": 55,
    "sb": 13
   },
   {
    "id": "popits-long",
-   "name": "Popits longs",
-   "path": "Prestation capsule › Rallongement popits et demi-popits › Popits longs",
+   "name": "Popits long",
+   "path": "Onglerie › Prestations Capsules › Rallongement popits et demi popits › Popits long",
    "dur": "2h30",
    "price": 63,
    "sb": 14
   },
   {
    "id": "demi-court",
-   "name": "Demi-popits courts ou médium",
-   "path": "Prestation capsule › Rallongement popits et demi-popits › Demi-popits courts ou médium",
+   "name": "Demi popits court ou medium",
+   "path": "Onglerie › Prestations Capsules › Rallongement popits et demi popits › Demi popits court ou medium",
    "dur": "2h00",
    "price": 59,
    "sb": 15
   },
   {
    "id": "demi-long",
-   "name": "Demi-popits longs",
-   "path": "Prestation capsule › Rallongement popits et demi-popits › Demi-popits longs",
+   "name": "Demi popits long",
+   "path": "Onglerie › Prestations Capsules › Rallongement popits et demi popits › Demi popits long",
    "dur": "2h30",
    "price": 66,
    "sb": 16
   },
   {
    "id": "popits-amande",
-   "name": "Popits amande russe",
-   "path": "Prestation capsule › Rallongement popits et demi-popits › Popits amande russe",
+   "name": "Popits amandes Russes",
+   "path": "Onglerie › Prestations Capsules › Rallongement popits et demi popits › Popits amandes Russes",
    "dur": "3h00",
    "price": 70,
    "sb": 17
   },
   {
    "id": "semi-main-1",
-   "name": "Semi-permanent renforcé mains, 1ère pose",
-   "path": "Semi-permanent › Semi-permanent renforcé mains, 1ère pose",
+   "name": "Semi permanent main première pose",
+   "path": "Onglerie › Semi-permanent › Semi permanent main première pose",
    "dur": "0h45",
    "price": 35,
    "sb": 9
   },
   {
    "id": "semi-main-entretien",
-   "name": "Entretien semi-permanent mains",
-   "path": "Semi-permanent › Entretien semi-permanent mains",
+   "name": "Entretien semi permanent mains",
+   "path": "Onglerie › Semi-permanent › Entretien semi permanent mains",
    "dur": "0h45",
    "price": 40,
    "sb": 10
   },
   {
    "id": "semi-pied-1",
-   "name": "Semi-permanent renforcé pieds, 1ère pose",
-   "path": "Semi-permanent › Semi-permanent renforcé pieds, 1ère pose",
+   "name": "Semi permanent pied première pose",
+   "path": "Onglerie › Semi-permanent › Semi permanent pied première pose",
    "dur": "0h45",
    "price": 32,
    "sb": 11
   },
   {
    "id": "semi-pied-entretien",
-   "name": "Entretien semi-permanent pieds",
-   "path": "Semi-permanent › Entretien semi-permanent pieds",
+   "name": "Entretien semi permanent pieds",
+   "path": "Onglerie › Semi-permanent › Entretien semi permanent pieds",
    "dur": "0h45",
    "price": 36,
    "sb": 12
   },
   {
    "id": "deco-simple-unite",
-   "name": "Déco très simple à l'unité",
-   "path": "Déco nail arts › Déco simple › Déco très simple à l'unité",
+   "name": "Déco très simple à l’unité",
+   "path": "Onglerie › Déco / Nail Arts › Déco simple › Déco très simple à l’unité",
    "dur": "0h15",
    "price": 2,
    "sb": 18
   },
   {
    "id": "deco-simple-mains",
-   "name": "Déco très simple, forfait mains complètes",
-   "path": "Déco nail arts › Déco simple › Déco très simple, forfait mains complètes",
+   "name": "Déco très simple forfait mains complètes",
+   "path": "Onglerie › Déco / Nail Arts › Déco simple › Déco très simple forfait mains complètes",
    "dur": "0h30",
    "price": 14,
    "sb": 19
   },
   {
    "id": "fc-2",
-   "name": "2 doigts",
-   "path": "Déco nail arts › Déco élaborée › French classique › 2 doigts",
+   "name": "Deux doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › French classique › Deux doigts",
    "dur": "0h05",
    "price": 4,
    "sb": 20
   },
   {
    "id": "fc-4",
-   "name": "4 doigts",
-   "path": "Déco nail arts › Déco élaborée › French classique › 4 doigts",
+   "name": "Quatre doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › French classique › Quatre doigts",
    "dur": "0h10",
    "price": 8,
    "sb": 21
   },
   {
    "id": "fc-6",
-   "name": "6 doigts",
-   "path": "Déco nail arts › Déco élaborée › French classique › 6 doigts",
+   "name": "Six doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › French classique › Six doigts",
    "dur": "0h20",
    "price": 12,
    "sb": 22
@@ -172,31 +172,31 @@
   {
    "id": "fc-mains",
    "name": "Mains complètes",
-   "path": "Déco nail arts › Déco élaborée › French classique › Mains complètes",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › French classique › Mains complètes",
    "dur": "0h30",
    "price": 14,
    "sb": 23
   },
   {
    "id": "fo-2",
-   "name": "2 doigts",
-   "path": "Déco nail arts › Déco élaborée › French originale › 2 doigts",
+   "name": "Deux doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › French originale › Deux doigts",
    "dur": "0h05",
    "price": 6,
    "sb": 24
   },
   {
    "id": "fo-4",
-   "name": "4 doigts",
-   "path": "Déco nail arts › Déco élaborée › French originale › 4 doigts",
+   "name": "Quatre doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › French originale › Quatre doigts",
    "dur": "0h10",
    "price": 12,
    "sb": 25
   },
   {
    "id": "fo-6",
-   "name": "6 doigts",
-   "path": "Déco nail arts › Déco élaborée › French originale › 6 doigts",
+   "name": "Six doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › French originale › Six doigts",
    "dur": "0h20",
    "price": 18,
    "sb": 26
@@ -204,31 +204,31 @@
   {
    "id": "fo-mains",
    "name": "Mains complètes",
-   "path": "Déco nail arts › Déco élaborée › French originale › Mains complètes",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › French originale › Mains complètes",
    "dur": "0h30",
    "price": 21,
    "sb": 27
   },
   {
    "id": "fr-2",
-   "name": "2 doigts",
-   "path": "Déco nail arts › Déco élaborée › French reverse › 2 doigts",
+   "name": "Deux doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › French reverse › Deux doigts",
    "dur": "0h20",
    "price": 10,
    "sb": 28
   },
   {
    "id": "fr-4",
-   "name": "4 doigts",
-   "path": "Déco nail arts › Déco élaborée › French reverse › 4 doigts",
+   "name": "Quatre doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › French reverse › Quatre doigts",
    "dur": "0h30",
    "price": 18,
    "sb": 29
   },
   {
    "id": "fr-6",
-   "name": "6 doigts",
-   "path": "Déco nail arts › Déco élaborée › French reverse › 6 doigts",
+   "name": "Six doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › French reverse › Six doigts",
    "dur": "0h40",
    "price": 26,
    "sb": 30
@@ -236,95 +236,95 @@
   {
    "id": "fr-mains",
    "name": "Mains complètes",
-   "path": "Déco nail arts › Déco élaborée › French reverse › Mains complètes",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › French reverse › Mains complètes",
    "dur": "1h00",
    "price": 30,
    "sb": 31
   },
   {
    "id": "dp-s2",
-   "name": "Simple, 2 doigts",
-   "path": "Déco nail arts › Déco élaborée › Déco personnalisées › Simple, 2 doigts",
+   "name": "Deux doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Décos personnalisées › Simple › Deux doigts",
    "dur": "0h05",
    "price": 6,
    "sb": 32
   },
   {
    "id": "dp-s4",
-   "name": "Simple, 4 doigts",
-   "path": "Déco nail arts › Déco élaborée › Déco personnalisées › Simple, 4 doigts",
+   "name": "Quatre doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Décos personnalisées › Simple › Quatre doigts",
    "dur": "0h10",
    "price": 12,
    "sb": 33
   },
   {
    "id": "dp-s6",
-   "name": "Simple, 6 doigts",
-   "path": "Déco nail arts › Déco élaborée › Déco personnalisées › Simple, 6 doigts",
+   "name": "Six doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Décos personnalisées › Simple › Six doigts",
    "dur": "0h15",
    "price": 18,
    "sb": 34
   },
   {
    "id": "dp-smains",
-   "name": "Simple, mains complètes",
-   "path": "Déco nail arts › Déco élaborée › Déco personnalisées › Simple, mains complètes",
+   "name": "Mains complètes",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Décos personnalisées › Simple › Mains complètes",
    "dur": "0h20",
    "price": 21,
    "sb": 35
   },
   {
    "id": "dp-c2",
-   "name": "Complexe, 2 doigts",
-   "path": "Déco nail arts › Déco élaborée › Déco personnalisées › Complexe, 2 doigts",
+   "name": "Deux doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Décos personnalisées › Complexe › Deux doigts",
    "dur": "0h10",
    "price": 8,
    "sb": 36
   },
   {
    "id": "dp-c4",
-   "name": "Complexe, 4 doigts",
-   "path": "Déco nail arts › Déco élaborée › Déco personnalisées › Complexe, 4 doigts",
+   "name": "Quatre doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Décos personnalisées › Complexe › Quatre doigts",
    "dur": "0h20",
    "price": 16,
    "sb": 37
   },
   {
    "id": "dp-c6",
-   "name": "Complexe, 6 doigts",
-   "path": "Déco nail arts › Déco élaborée › Déco personnalisées › Complexe, 6 doigts",
+   "name": "Six doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Décos personnalisées › Complexe › Six doigts",
    "dur": "0h40",
    "price": 24,
    "sb": 38
   },
   {
    "id": "dp-cmains",
-   "name": "Complexe, mains complètes",
-   "path": "Déco nail arts › Déco élaborée › Déco personnalisées › Complexe, mains complètes",
+   "name": "Mains complètes",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Décos personnalisées › Complexe › Mains complètes",
    "dur": "0h50",
    "price": 28,
    "sb": 39
   },
   {
    "id": "bb-2",
-   "name": "2 doigts",
-   "path": "Déco nail arts › Déco élaborée › Babyboomer / babycolor / cutiglitters › 2 doigts",
+   "name": "Deux doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Babyboomer / babycolor › Deux doigts",
    "dur": "0h10",
    "price": 7,
    "sb": 40
   },
   {
    "id": "bb-4",
-   "name": "4 doigts",
-   "path": "Déco nail arts › Déco élaborée › Babyboomer / babycolor / cutiglitters › 4 doigts",
+   "name": "Quatre doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Babyboomer / babycolor › Quatre doigts",
    "dur": "0h20",
    "price": 14,
    "sb": 41
   },
   {
    "id": "bb-6",
-   "name": "6 doigts",
-   "path": "Déco nail arts › Déco élaborée › Babyboomer / babycolor / cutiglitters › 6 doigts",
+   "name": "Six doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Babyboomer / babycolor › Six doigts",
    "dur": "0h30",
    "price": 21,
    "sb": 42
@@ -332,31 +332,31 @@
   {
    "id": "bb-mains",
    "name": "Mains complètes",
-   "path": "Déco nail arts › Déco élaborée › Babyboomer / babycolor / cutiglitters › Mains complètes",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Babyboomer / babycolor › Mains complètes",
    "dur": "0h40",
    "price": 25,
    "sb": 43
   },
   {
    "id": "inc-2",
-   "name": "2 doigts",
-   "path": "Déco nail arts › Déco élaborée › Incrustations complètes › 2 doigts",
+   "name": "Deux doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Incrustation complète › Deux doigts",
    "dur": "0h10",
    "price": 6,
    "sb": 44
   },
   {
    "id": "inc-4",
-   "name": "4 doigts",
-   "path": "Déco nail arts › Déco élaborée › Incrustations complètes › 4 doigts",
+   "name": "Quatre doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Incrustation complète › Quatre doigts",
    "dur": "0h20",
    "price": 12,
    "sb": 45
   },
   {
    "id": "inc-6",
-   "name": "6 doigts",
-   "path": "Déco nail arts › Déco élaborée › Incrustations complètes › 6 doigts",
+   "name": "Six doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Incrustation complète › Six doigts",
    "dur": "0h30",
    "price": 18,
    "sb": 46
@@ -364,31 +364,31 @@
   {
    "id": "inc-mains",
    "name": "Mains complètes",
-   "path": "Déco nail arts › Déco élaborée › Incrustations complètes › Mains complètes",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Incrustation complète › Mains complètes",
    "dur": "0h40",
    "price": 21,
    "sb": 47
   },
   {
    "id": "relief-2",
-   "name": "2 doigts",
-   "path": "Déco nail arts › Déco élaborée › Déco en relief › 2 doigts",
+   "name": "Deux doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Déco relief › Deux doigts",
    "dur": "0h10",
    "price": 8,
    "sb": 48
   },
   {
    "id": "relief-4",
-   "name": "4 doigts",
-   "path": "Déco nail arts › Déco élaborée › Déco en relief › 4 doigts",
+   "name": "Quatre doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Déco relief › Quatre doigts",
    "dur": "0h20",
    "price": 16,
    "sb": 49
   },
   {
    "id": "relief-6",
-   "name": "6 doigts",
-   "path": "Déco nail arts › Déco élaborée › Déco en relief › 6 doigts",
+   "name": "Six doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Déco relief › Six doigts",
    "dur": "0h30",
    "price": 24,
    "sb": 50
@@ -396,31 +396,31 @@
   {
    "id": "relief-mains",
    "name": "Mains complètes",
-   "path": "Déco nail arts › Déco élaborée › Déco en relief › Mains complètes",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Déco relief › Mains complètes",
    "dur": "0h40",
    "price": 28,
    "sb": 51
   },
   {
    "id": "stk-2",
-   "name": "2 doigts",
-   "path": "Déco nail arts › Déco élaborée › Stickers faits mains › 2 doigts",
+   "name": "Deux doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Stickers faits mains › Deux doigts",
    "dur": "0h05",
    "price": 14,
    "sb": 52
   },
   {
    "id": "stk-4",
-   "name": "4 doigts",
-   "path": "Déco nail arts › Déco élaborée › Stickers faits mains › 4 doigts",
+   "name": "Quatre doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Stickers faits mains › Quatre doigts",
    "dur": "0h10",
    "price": 22,
    "sb": 53
   },
   {
    "id": "stk-6",
-   "name": "6 doigts",
-   "path": "Déco nail arts › Déco élaborée › Stickers faits mains › 6 doigts",
+   "name": "Six doigts",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Stickers faits mains › Six doigts",
    "dur": "0h15",
    "price": 30,
    "sb": 54
@@ -428,23 +428,23 @@
   {
    "id": "stk-mains",
    "name": "Mains complètes",
-   "path": "Déco nail arts › Déco élaborée › Stickers faits mains › Mains complètes",
+   "path": "Onglerie › Déco / Nail Arts › Déco élaborée › Stickers faits mains › Mains complètes",
    "dur": "0h20",
    "price": 38,
    "sb": 55
   },
   {
    "id": "casse-1",
-   "name": "Réparation ongle cassé, 1ère semaine",
-   "path": "En cas de casse › Réparation ongle cassé, 1ère semaine",
+   "name": "Réparation ongle cassé la 1ère semaine",
+   "path": "Onglerie › En cas de casse › Réparation ongle cassé la 1ère semaine",
    "dur": "0h15",
    "price": 0,
    "sb": 56
   },
   {
    "id": "casse-2",
-   "name": "Réparation à partir de la 2e semaine, hors remplissage",
-   "path": "En cas de casse › Réparation à partir de la 2e semaine, hors remplissage",
+   "name": "Réparation à partir de la 2ème semaine hors remplissage",
+   "path": "Onglerie › En cas de casse › Réparation à partir de la 2ème semaine hors remplissage",
    "dur": "0h15",
    "price": 4,
    "sb": 57
@@ -452,7 +452,7 @@
   {
    "id": "casse-3",
    "name": "Réparation ongle cassé pendant le remplissage",
-   "path": "En cas de casse › Réparation ongle cassé pendant le remplissage",
+   "path": "Onglerie › En cas de casse › Réparation ongle cassé pendant le remplissage",
    "dur": "0h15",
    "price": 2,
    "sb": 58
@@ -460,7 +460,7 @@
   {
    "id": "dep-travail",
    "name": "Dépose complète de mon travail",
-   "path": "Les déposes › Dépose complète de mon travail",
+   "path": "Onglerie › Les déposes › Dépose complète de mon travail",
    "dur": "0h30",
    "price": 20,
    "sb": 59
@@ -468,23 +468,23 @@
   {
    "id": "dep-autre",
    "name": "Dépose complète autre professionnelle",
-   "path": "Les déposes › Dépose complète autre professionnelle",
+   "path": "Onglerie › Les déposes › Dépose complète autre professionnelle",
    "dur": "0h30",
    "price": 25,
    "sb": 60
   },
   {
    "id": "dep-autre-repose",
-   "name": "Dépose autre professionnelle avec repose",
-   "path": "Les déposes › Dépose autre professionnelle avec repose",
+   "name": "Dépose complète autre professionnelle avec repose",
+   "path": "Onglerie › Les déposes › Dépose complète autre professionnelle avec repose",
    "dur": "0h30",
    "price": 10,
    "sb": 61
   },
   {
    "id": "dep-semi",
-   "name": "Dépose vernis semi-permanent",
-   "path": "Les déposes › Dépose vernis semi-permanent",
+   "name": "Dépose semi permanent",
+   "path": "Onglerie › Les déposes › Dépose semi permanent",
    "dur": "0h20",
    "price": 12,
    "sb": 62
@@ -492,23 +492,23 @@
   {
    "id": "dep-rattrapage",
    "name": "Rattrapage autre professionnelle",
-   "path": "Les déposes › Rattrapage autre professionnelle",
+   "path": "Onglerie › Les déposes › Rattrapage autre professionnelle",
    "dur": "0h30",
    "price": 8,
    "sb": 63
   },
   {
    "id": "press-kit",
-   "name": "Kit complet + prise de mesure (1er rdv)",
-   "path": "Press on nails › Kit complet + prise de mesure (1er rdv)",
+   "name": "Kit complet + prise de mesure",
+   "path": "Press on nails › Kit complet + prise de mesure",
    "dur": "0h30",
    "price": 30,
    "sb": 64
   },
   {
    "id": "press-kit-seul",
-   "name": "Kit press on uniquement",
-   "path": "Press on nails › Kit press on uniquement",
+   "name": "Kit complet uniquement",
+   "path": "Press on nails › Kit complet uniquement",
    "dur": "0h30",
    "price": 25,
    "sb": 65
