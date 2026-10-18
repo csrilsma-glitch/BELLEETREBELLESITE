@@ -1,10 +1,30 @@
 /* Melba visible à travers les bulles, texte opaque et ombré. */
-.assistant-log{background:linear-gradient(#fff6fb14,#fff6fb1f),url('assets/melba-fond.png') center 35%/cover no-repeat}
-.assistant-msg{background:rgba(35,9,28,.24);border-color:#ffb4dc66;color:#fff8fc;text-shadow:0 1px 2px #160917,0 0 3px #160917;box-shadow:0 3px 15px #3a0a2914}
-.assistant-user{background:rgba(96,12,66,.4);border-color:#f7b8db88;color:#fff}
+.assistant-log{background:linear-gradient(#fff6fbd9,#fff6fbe6),url('assets/melba-fond.png') center 35%/cover no-repeat}
+.assistant-msg{background:rgba(255,255,255,.9);border-color:#e6b8d4;color:#000;text-shadow:none;box-shadow:0 3px 15px #3a0a2914}
+.assistant-user{background:rgba(255,220,240,.95);border-color:#e6b8d4;color:#000}
 
 /* Melba : visible au-dessus de la barre Netlify, avatar affiché */
-.assistant-toggle{bottom:76px!important;right:14px!important;left:auto!important;z-index:80!important}
-.assistant-panel{bottom:140px!important;right:14px!important;left:auto!important}
+.assistant-toggle{bottom:76px!important;left:14px!important;right:auto!important;z-index:80!important}
+.assistant-panel{bottom:140px!important;left:14px!important;right:auto!important}
 .melba-avatar{display:block!important;width:56px!important;height:56px!important;border-radius:50%;object-fit:cover;border:2px solid #f7b8db;flex-shrink:0}
 .assistant-toggle .melba-avatar{width:48px!important;height:48px!important}
+
+/* v14 : chat lisible (texte noir), fond de Melba plus discret, Melba en bas à gauche */
+.assistant-log{background:linear-gradient(#fff6fbf0,#fff6fbf7),url('assets/melba-fond.png') center 35%/cover no-repeat}
+.assistant-log,.assistant-log *,.assistant-quick button,.assistant-quick button *{color:#000!important;text-shadow:none!important}
+.assistant-form input{background:#fff;color:#000}
+.assistant-form input::placeholder{color:#555}
+
+/* v14 : page d'accueil de bienvenue (affichée une fois par visite) */
+.welcome{position:fixed;inset:0;z-index:300;display:grid;place-items:center;padding:20px;background:linear-gradient(rgba(18,5,16,.82),rgba(18,5,16,.92)),url('assets/hero-art.jpg') center/cover}
+.welcome[hidden]{display:none!important}
+.welcome-card{max-width:460px;width:100%;text-align:center;color:#fff8fc;border:1px solid #f7b8db88;border-radius:24px;padding:36px 28px;background:#210c20d9;box-shadow:0 20px 60px #000a}
+.welcome-kicker{font:600 12px 'DM Sans',sans-serif;letter-spacing:.2em;color:#ffaad3;margin:0 0 14px}
+.welcome-card h2{font-family:'October Crow',serif;font-weight:400;font-size:clamp(36px,7vw,52px);line-height:1.05;margin:0 0 16px;color:#fff8fc}
+.welcome-card h2 span{color:#ffaad3}
+.welcome-text{font:400 18px/1.5 'Cormorant Garamond',serif;margin:0 0 26px;color:#f7eaf1}
+.welcome-enter{font:600 13px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#b0296f,#6b1a4f);border:0;border-radius:999px;padding:15px 26px;min-height:48px;cursor:pointer;box-shadow:0 8px 24px #b0296f66}
+.welcome-enter:focus-visible{outline:3px solid #fff;outline-offset:3px}
+html.welcome-open,html.welcome-open body{overflow:hidden}
+/* v14 : la fenêtre de Melba s'ouvre au-dessus de sa bulle, sans la recouvrir */
+.assistant-panel{bottom:196px!important;max-height:calc(100dvh - 300px)!important;height:min(500px,calc(100dvh - 300px))!important}

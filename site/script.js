@@ -26,3 +26,23 @@
   window.addEventListener('pagehide',()=>write('br-music-position',String(audio.currentTime||0)));
   document.querySelectorAll('.video-showcase video').forEach(video=>video.addEventListener('play',()=>{document.querySelectorAll('.video-showcase video').forEach(other=>{if(other!==video)other.pause();});if(!audio.paused){audio.pause();write('br-music','off');}}));
 })();
+
+/* v14 : page d'accueil de bienvenue, une fois par visite. Le clic sur « Entrer » autorise la musique. */
+(() => {
+  if(!document.getElementById('accueil')) return;
+  let seen=null; try{seen=sessionStorage.getItem('br-welcome');}catch{}
+  if(seen) return;
+  const w=document.createElement('div');
+  w.className='welcome';w.id='welcome';w.setAttribute('role','dialog');w.setAttribute('aria-modal','true');w.setAttribute('aria-labelledby','welcome-title');
+  w.innerHTML='<div class="welcome-card"><p class="welcome-kicker">✦ PROTHÉSISTES ONGULAIRES · FLERS ✦</p><h2 id="welcome-title">Bienvenue sur le site de <span>Belle &amp; Rebelle</span></h2><p class="welcome-text">Prothésistes ongulaires à Flers, dans l\'Orne.</p><button type="button" class="welcome-enter" id="welcome-enter">Entrer dans l\'univers</button></div>';
+  document.body.appendChild(w);
+  document.documentElement.classList.add('welcome-open');
+  const enter=document.getElementById('welcome-enter');
+  enter.addEventListener('click',()=>{
+    try{sessionStorage.setItem('br-welcome','1');sessionStorage.setItem('br-music','on');}catch{}
+    w.remove();document.documentElement.classList.remove('welcome-open');
+    const a=document.getElementById('bg-music');
+    if(a&&a.paused) a.play().catch(()=>{});
+  });
+  enter.focus();
+})();
