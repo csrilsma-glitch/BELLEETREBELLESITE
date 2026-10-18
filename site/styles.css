@@ -2,7 +2,7 @@
 
 .booking-widget{width:100%;max-width:900px;margin:24px auto;min-height:600px;}
 
-.music-toggle{position:fixed;top:14px;right:16px;z-index:50;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:8px 14px;font:600 12px 'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(4px)}
+.music-toggle{position:static;margin-left:auto;margin-right:8px;background:transparent;color:#f7eaf1;border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:7px 12px;font:600 12px 'DM Sans',sans-serif;letter-spacing:.06em;white-space:nowrap;cursor:pointer}
 .music-toggle:focus-visible{outline:3px solid #fff;outline-offset:3px}
 
 .assistant-toggle{position:fixed;left:16px;bottom:16px;z-index:50;background:#210c20;color:#fff;border:1px solid #b01b83;border-radius:999px;padding:10px 16px;font:600 14px 'DM Sans',sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}
@@ -17,4 +17,81 @@
 .assistant-form{display:flex;gap:8px;padding:10px;border-top:1px solid #e6d3e0;background:#fff}
 .assistant-form input{flex:1;min-width:0;padding:10px;border:1px solid #c9a7bd;border-radius:10px;font-size:16px}
 .assistant-form button{background:#b01b83;color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer}
-@media (max-width:480px){.music-toggle{top:auto;bottom:70px}}
+@media (max-width:800px){.music-toggle{font-size:11px;padding:6px 10px}}
+
+/* Police de marque : October Crow (fichier fourni, voir assets/fonts/LISEZ-MOI-october-crow.txt) */
+@font-face{font-family:'October Crow';src:url('assets/fonts/october-crow.ttf') format('truetype');font-display:swap}
+.brand-script{font-family:'October Crow',cursive;font-size:32px}
+.footer-brand{font-family:'October Crow',cursive;font-size:40px}
+/* Melba : avatar */
+.melba-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px;background:#fff}
+.assistant-head .melba-avatar{width:36px;height:36px;margin-right:10px;border:2px solid #b01b83}
+.assistant-toggle .melba-avatar{width:26px;height:26px;margin-right:8px}
+@media (max-width:800px){
+  .header{height:auto;min-height:72px;padding-top:10px;padding-bottom:10px}
+  .brand-script{font-size:21px;white-space:nowrap}
+  .brand-sub{font-size:8px;white-space:nowrap}
+  .brand{min-width:auto}
+}
+
+/* Sélecteur de prestations en forme de crâne */
+.skull{position:relative;max-width:640px;margin:0 auto;padding:46px clamp(18px,4vw,40px) 36px;background:radial-gradient(ellipse at 50% 25%,#3b1234 0%,#17091b 62%,#09070a 100%);border:1px solid #8e256f;border-radius:50% 50% 40% 40% / 44% 44% 56% 56%;box-shadow:0 0 44px #6a0f5233,inset 0 0 40px #00000080}
+.sk-crumbs{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;font-size:12px;letter-spacing:.06em;color:#c8b2c1;min-height:24px;margin-bottom:18px}
+.sk-crumb{background:none;border:0;padding:2px 4px;color:#f39acb;cursor:pointer;font:inherit;text-decoration:underline}
+.sk-current{color:#f7eaf1;font-weight:600}
+.sk-sep{color:#8e256f}
+.sk-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sk-tile{position:relative;aspect-ratio:1/1;border-radius:50%;overflow:hidden;border:2px solid #b01b83;background:linear-gradient(160deg,#4a1640,#1d0c1f);padding:0;cursor:pointer;color:#fff;box-shadow:0 0 18px #b01b8340;transition:transform .2s,box-shadow .2s}
+.sk-tile:hover,.sk-tile:focus-visible{transform:scale(1.03);box-shadow:0 0 26px #e14ca777;outline:none}
+.sk-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.sk-tile::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 35%,#0b0410e6)}
+.sk-tile-label{position:absolute;left:8px;right:8px;bottom:14px;z-index:1;font:600 17px 'Cormorant Garamond',serif;text-transform:uppercase;letter-spacing:.6px;line-height:1.1;text-align:center}
+.sk-tile-plain::after{display:none}
+.sk-tile-plain .sk-tile-label{top:50%;bottom:auto;transform:translateY(-50%);padding:0 18px;font-size:15px}
+.sk-leaf{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:14px;width:100%;background:#120a13;border:1px solid #522543;color:#f7eaf1;border-radius:10px;padding:12px 16px;cursor:pointer;text-align:left;font:inherit}
+.sk-leaf:hover,.sk-leaf:focus-visible{border-color:#cc4e99;outline:none}
+.sk-leaf[aria-pressed=true]{border-color:#e14ca7;background:#3a1232;box-shadow:0 0 16px #e14ca744}
+.sk-leaf-name{font-size:14px;line-height:1.35}
+.sk-leaf-meta{font-size:12px;color:#e7cddd;white-space:nowrap}
+.sk-foot{margin-top:24px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center}
+.sk-choice{width:100%;text-align:center;font-size:13px;color:#e7cddd;margin:0}
+.sk-btn{background:transparent;color:#f7eaf1;border:1px solid #ad7097;border-radius:7px;padding:10px 16px;font:600 12px 'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+.sk-btn:disabled,.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+@media (max-width:800px){
+  .skull{padding:34px 14px 28px;border-radius:50% 50% 36% 36% / 40% 40% 60% 60%}
+  .sk-body{gap:10px}
+  .sk-tile-label{font-size:14px}
+  .sk-tile-plain .sk-tile-label{font-size:13px}
+  .sk-leaf{flex-direction:column;align-items:flex-start;gap:4px}
+}
+
+/* Réalisations : vidéos */
+.videos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1350px;margin:auto}
+.videos video{width:100%;max-height:520px;height:auto;background:#000;border-radius:6px;border:1px solid #6b3355;object-fit:contain}
+@media (max-width:800px){.videos{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+
+/* Page réservation */
+.resa{text-align:center;background:radial-gradient(ellipse at center,#56123f,#180b19 60%,#09080a);min-height:70vh}
+.resa-title{font:clamp(40px,5vw,60px) 'Cormorant Garamond',serif;font-weight:500;color:#f4e8ed;margin:6px 0 18px;line-height:1.1}
+.resa-title em{font-family:'Great Vibes',cursive;font-style:normal;color:#e785bd;font-size:1.2em}
+.choice-banner{max-width:760px;margin:0 auto 20px;padding:14px 18px;border:1px solid #8e256f;border-radius:10px;background:#1d0c1f;color:#f7eaf1;font-size:14px}
+.resa .booking-note{color:#c8a8bc}
+/* Silhouette de crâne (SVG en fond) */
+.skull{background:none;border:0;box-shadow:none;border-radius:0;max-width:600px;padding:70px clamp(22px,6vw,56px) 60px}
+.skull-bg{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.skull-bg path{fill:#14081a;stroke:#b01b83;stroke-width:2;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 18px #6a0f5266)}
+.skull>*:not(.skull-bg){position:relative;z-index:1}
+.sk-body{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:500px;margin:0 auto}
+.sk-tile{aspect-ratio:1/1}
+.sk-tile-label{left:10%;right:10%;bottom:14%;font-size:13px;line-height:1.15}
+.sk-tile-plain .sk-tile-label{top:50%;bottom:auto;font-size:13px;padding:0 10px}
+.sk-leaf{grid-column:1/-1}
+@media (max-width:800px){
+  .skull{padding:60px 18px 40px}
+  .sk-body{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .sk-tile-label{font-size:11px;bottom:12%;letter-spacing:.3px}
+  .sk-tile-plain .sk-tile-label{font-size:11px}
+}
+
+
+.sk-tile.has-img .sk-tile-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}

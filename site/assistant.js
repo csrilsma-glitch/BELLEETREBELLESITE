@@ -29,7 +29,7 @@
     const open = panel.hidden;
     setOpen(open);
     if (open && log.childElementCount === 0) {
-      addMessage('bot', 'Bonjour ! Je suis l’assistante de Belle & Rebelle. Posez-moi vos questions sur les prestations, ou dites-moi ce que vous souhaitez, je vous indiquerai comment réserver.');
+      addMessage('bot', 'Bonjour ! Je suis Melba, l’assistante de Belle & Rebelle. Posez-moi vos questions sur les prestations, ou dites-moi ce que vous souhaitez. Pour plusieurs prestations le même jour, je vous aide à réserver.');
     }
   });
 

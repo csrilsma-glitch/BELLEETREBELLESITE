@@ -9,29 +9,42 @@ const MAX_MESSAGES = 20;
 const MAX_CHARS = 1000;
 const MAX_TOOL_ROUNDS = 5;
 
-// Prestations. Les durées doivent correspondre à celles de SimplyBook.
-// sb = identifiant du service dans SimplyBook (variables SB_ID_* sur Netlify).
-const SERVICES = [
-  { id: 'gel', name: 'Pose gel', duration: 90, sb: process.env.SB_ID_GEL },
-  { id: 'capsules', name: 'Pose capsules', duration: 90, sb: process.env.SB_ID_CAPSULES },
-  { id: 'semi', name: 'Semi-permanent', duration: 45, sb: process.env.SB_ID_SEMI },
-  { id: 'nailart', name: 'Nail art & déco', duration: 30, sb: process.env.SB_ID_NAILART },
-  { id: 'depose', name: 'Dépose', duration: 30, sb: process.env.SB_ID_DEPOSE },
-];
+// Catalogue : même fichier que le sélecteur du site (site/assets/prestations.json).
+// sb = identifiant du service dans SimplyBook (à compléter dans ce fichier, ce n'est pas une clé secrète).
+const CATALOGUE = require('../../site/assets/prestations.json').services;
 
-const SYSTEM_PROMPT = `Tu es l'assistante de Belle & Rebelle, nail studio de Mélanie à Flers (28 rue de Messei, 61100 Flers).
+function toMinutes_(dur) {
+  const m = String(dur || '').match(/^(\d+)h(\d{2})$/);
+  return m ? (+m[1]) * 60 + (+m[2]) : 30;
+}
+function priceText(p) {
+  if (p === 0) return 'offert';
+  return p == null ? 'prix à confirmer' : p + ' €';
+}
+
+const SERVICES = CATALOGUE.map(s => ({
+  id: s.id,
+  name: s.path,
+  duration: toMinutes_(s.dur),
+  price: s.price,
+  sb: s.sb,
+}));
+
+const SYSTEM_PROMPT = `Tu es Melba, l'assistante de Belle & Rebelle, nail studio de Mélanie à Flers (28 rue de Messei, 61100 Flers).
 Tu réponds en français, de façon chaleureuse, courte et simple.
 
-Prestations (durées indicatives) :
-${SERVICES.map(s => `- ${s.name} (id: ${s.id}) : ${s.duration} min`).join('\n')}
+Prestations (durées et prix indicatifs) :
+${SERVICES.map(s => `- ${s.name} (id: ${s.id}) : ${s.duration} min, ${priceText(s.price)}`).join('\n')}
 
 Tu peux :
 - présenter les prestations et conseiller ;
 - vérifier les disponibilités avec l'outil check_availability ;
 - réserver avec l'outil book_appointment, quand la cliente a confirmé.
 
+Si la cliente signale un problème, une réclamation, une difficulté, une douleur, une allergie, un mécontentement ou un mot qui s'en approche, utilise l'outil notify_melanie avec un résumé court et utile (sans données personnelles superflues), puis dis-lui que Mélanie la recontactera. N'affirme jamais que le message est parti si l'outil répond qu'il ne l'a pas envoyé.
+
 Règles pour réserver :
-1. Demande d'abord la date souhaitée, les prestations, puis vérifie les disponibilités.
+1. Ne récite pas tout le catalogue : demande à la cliente ce qu'elle souhaite (famille puis prestation), puis la date souhaitée, puis vérifie les disponibilités.
 2. Propose les horaires réellement disponibles, sans en inventer.
 3. Avant de réserver, demande le nom, le téléphone et l'e-mail de la cliente.
 4. Récapitule (prestations, date, heure, durée totale) et attends son accord explicite.
@@ -41,6 +54,19 @@ Règles pour réserver :
 Plusieurs prestations enchaînées forment un seul rendez-vous continu. L'outil check_availability te donne les horaires qui conviennent pour toutes les prestations à la suite.`;
 
 const TOOLS = [
+  {
+    name: 'notify_melanie',
+    description: 'Envoie un e-mail à Mélanie (belleetrebelle.flers@outlook.com) pour signaler un problème ou une demande à traiter.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        subject: { type: 'string', description: 'Objet court du message' },
+        summary: { type: 'string', description: 'Résumé de ce que la cliente demande ou signale' },
+        client_contact: { type: 'string', description: 'Nom et moyen de contact, seulement si la cliente les a donnés' },
+      },
+      required: ['subject', 'summary'],
+    },
+  },
   {
     name: 'check_availability',
     description: 'Retourne les heures de début possibles pour enchaîner une ou plusieurs prestations à une date donnée.',
@@ -90,6 +116,8 @@ function pickServices(ids) {
   return list;
 }
 
+const NOT_ONLINE = 'Cette prestation ne peut pas être réservée en ligne pour le moment. Demandez à la cliente d\'appeler Mélanie au 06 62 28 75 45.';
+
 // Heures de début où toutes les prestations, enchaînées, sont disponibles.
 async function sequenceStarts(dateISO, services) {
   const cache = {};
@@ -108,9 +136,28 @@ async function sequenceStarts(dateISO, services) {
   }).sort();
 }
 
+async function sendMailToMelanie({ subject, summary, client_contact }) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return { ok: false, message: 'Envoi d\'e-mail non configuré sur le site.' };
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: process.env.MAIL_FROM || 'Belle & Rebelle <onboarding@resend.dev>',
+      to: ['belleetrebelle.flers@outlook.com'],
+      subject: '[Melba] ' + subject,
+      text: summary + (client_contact ? '\n\nContact : ' + client_contact : ''),
+    }),
+  });
+  if (!res.ok) return { ok: false, message: 'Le message n\'a pas pu être envoyé.' };
+  return { ok: true, message: 'Message transmis à Mélanie.' };
+}
+
 async function runTool(name, input) {
+  if (name === 'notify_melanie') return sendMailToMelanie(input);
   if (name === 'check_availability') {
     const services = pickServices(input.service_ids);
+    if (services.some(s => !s.sb)) return { error: NOT_ONLINE };
     const starts = await sequenceStarts(input.date, services);
     const total = services.reduce((n, s) => n + s.duration, 0);
     return { date: input.date, total_minutes: total, available_starts: starts };
@@ -118,6 +165,7 @@ async function runTool(name, input) {
 
   if (name === 'book_appointment') {
     const services = pickServices(input.service_ids);
+    if (services.some(s => !s.sb)) return { ok: false, message: NOT_ONLINE };
     // Vérification juste avant d'enregistrer
     const starts = await sequenceStarts(input.date, services);
     if (!starts.includes(input.start)) {
