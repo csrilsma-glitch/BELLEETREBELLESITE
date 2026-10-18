@@ -1,686 +1,118 @@
-// Sélecteur de prestations en forme de crâne (cartes à faire défiler).
-// Arborescence : Onglerie (A à F) + Press on nails. Libellés validés par Mélanie.
-// Durées et tarifs : fiches SimplyBook. Identifiants SimplyBook : assets/prestations.json.
-(function () {
-  const TREE = {
- "id": "root",
- "name": "Prestations",
- "children": [
-  {
-   "id": "onglerie",
-   "name": "Onglerie",
-   "children": [
-    {
-     "id": "gel",
-     "name": "Prestations Gel",
-     "children": [
-      {
-       "id": "gel-gainage",
-       "name": "Gel sans rallongement",
-       "dur": "1h30",
-       "price": 52
-      },
-      {
-       "id": "gel-chablon",
-       "name": "Extension chablon",
-       "dur": "2h00",
-       "price": 60
-      },
-      {
-       "id": "gel-premiere",
-       "name": "Première pose sur ongles rongés",
-       "dur": "1h15",
-       "price": 55
-      },
-      {
-       "id": "gel-remp-34",
-       "name": "Remplissage en 3 et 4 semaines de repousses",
-       "dur": "1h30",
-       "price": 45
-      },
-      {
-       "id": "gel-remp-5",
-       "name": "Remplissage après 5 semaines de repousses",
-       "dur": "1h30",
-       "price": 49
-      }
-     ],
-     "img": "assets/prestations/gel.jpg"
-    },
-    {
-     "id": "capsule",
-     "name": "Prestations Capsules",
-     "children": [
-      {
-       "id": "americaine",
-       "name": "Pose américaine",
-       "children": [
-        {
-         "id": "am-courte",
-         "name": "Courte ou medium",
-         "dur": "1h30",
-         "price": 48
-        },
-        {
-         "id": "am-longue",
-         "name": "Longue",
-         "dur": "1h30",
-         "price": 58
-        }
-       ],
-       "img": "assets/prestations/americaine.jpg"
-      },
-      {
-       "id": "popits",
-       "name": "Rallongement popits et demi popits",
-       "children": [
-        {
-         "id": "popits-court",
-         "name": "Popits court ou medium",
-         "dur": "2h00",
-         "price": 55
-        },
-        {
-         "id": "popits-long",
-         "name": "Popits long",
-         "dur": "2h30",
-         "price": 63
-        },
-        {
-         "id": "demi-court",
-         "name": "Demi popits court ou medium",
-         "dur": "2h00",
-         "price": 59
-        },
-        {
-         "id": "demi-long",
-         "name": "Demi popits long",
-         "dur": "2h30",
-         "price": 66
-        },
-        {
-         "id": "popits-amande",
-         "name": "Popits amandes Russes",
-         "dur": "3h00",
-         "price": 70
-        }
-       ],
-       "img": "assets/prestations/popits.jpg"
-      }
-     ],
-     "img": "assets/prestations/capsule.jpg"
-    },
-    {
-     "id": "semi",
-     "name": "Semi-permanent",
-     "children": [
-      {
-       "id": "semi-main-1",
-       "name": "Semi permanent main première pose",
-       "dur": "0h45",
-       "price": 35
-      },
-      {
-       "id": "semi-main-entretien",
-       "name": "Entretien semi permanent mains",
-       "dur": "0h45",
-       "price": 40
-      },
-      {
-       "id": "semi-pied-1",
-       "name": "Semi permanent pied première pose",
-       "dur": "0h45",
-       "price": 32
-      },
-      {
-       "id": "semi-pied-entretien",
-       "name": "Entretien semi permanent pieds",
-       "dur": "0h45",
-       "price": 36
-      }
-     ],
-     "img": "assets/prestations/semi.jpg"
-    },
-    {
-     "id": "deco",
-     "name": "Déco / Nail Arts",
-     "children": [
-      {
-       "id": "deco-simple",
-       "name": "Déco simple",
-       "children": [
-        {
-         "id": "deco-simple-unite",
-         "name": "Déco très simple à l’unité",
-         "dur": "0h15",
-         "price": 2
-        },
-        {
-         "id": "deco-simple-mains",
-         "name": "Déco très simple forfait mains complètes",
-         "dur": "0h30",
-         "price": 14
-        }
-       ],
-       "img": "assets/prestations/deco-simple.jpg"
-      },
-      {
-       "id": "deco-elab",
-       "name": "Déco élaborée",
-       "children": [
-        {
-         "id": "fc",
-         "name": "French classique",
-         "children": [
-          {
-           "id": "fc-2",
-           "name": "Deux doigts",
-           "dur": "0h05",
-           "price": 4
-          },
-          {
-           "id": "fc-4",
-           "name": "Quatre doigts",
-           "dur": "0h10",
-           "price": 8
-          },
-          {
-           "id": "fc-6",
-           "name": "Six doigts",
-           "dur": "0h20",
-           "price": 12
-          },
-          {
-           "id": "fc-mains",
-           "name": "Mains complètes",
-           "dur": "0h30",
-           "price": 14
-          }
-         ],
-         "img": "assets/prestations/fc.jpg"
-        },
-        {
-         "id": "fo",
-         "name": "French originale",
-         "children": [
-          {
-           "id": "fo-2",
-           "name": "Deux doigts",
-           "dur": "0h05",
-           "price": 6
-          },
-          {
-           "id": "fo-4",
-           "name": "Quatre doigts",
-           "dur": "0h10",
-           "price": 12
-          },
-          {
-           "id": "fo-6",
-           "name": "Six doigts",
-           "dur": "0h20",
-           "price": 18
-          },
-          {
-           "id": "fo-mains",
-           "name": "Mains complètes",
-           "dur": "0h30",
-           "price": 21
-          }
-         ],
-         "img": "assets/prestations/fo.jpg"
-        },
-        {
-         "id": "fr",
-         "name": "French reverse",
-         "children": [
-          {
-           "id": "fr-2",
-           "name": "Deux doigts",
-           "dur": "0h20",
-           "price": 10
-          },
-          {
-           "id": "fr-4",
-           "name": "Quatre doigts",
-           "dur": "0h30",
-           "price": 18
-          },
-          {
-           "id": "fr-6",
-           "name": "Six doigts",
-           "dur": "0h40",
-           "price": 26
-          },
-          {
-           "id": "fr-mains",
-           "name": "Mains complètes",
-           "dur": "1h00",
-           "price": 30
-          }
-         ],
-         "img": "assets/prestations/fr.jpg"
-        },
-        {
-         "id": "dp",
-         "name": "Décos personnalisées",
-         "children": [
-          {
-           "id": "dp-simple",
-           "name": "Simple",
-           "children": [
-            {
-             "id": "dp-s2",
-             "name": "Deux doigts",
-             "dur": "0h05",
-             "price": 6
-            },
-            {
-             "id": "dp-s4",
-             "name": "Quatre doigts",
-             "dur": "0h10",
-             "price": 12
-            },
-            {
-             "id": "dp-s6",
-             "name": "Six doigts",
-             "dur": "0h15",
-             "price": 18
-            },
-            {
-             "id": "dp-smains",
-             "name": "Mains complètes",
-             "dur": "0h20",
-             "price": 21
-            }
-           ],
-           "img": "assets/prestations/dp-simple.jpg"
-          },
-          {
-           "id": "dp-complexe",
-           "name": "Complexe",
-           "children": [
-            {
-             "id": "dp-c2",
-             "name": "Deux doigts",
-             "dur": "0h10",
-             "price": 8
-            },
-            {
-             "id": "dp-c4",
-             "name": "Quatre doigts",
-             "dur": "0h20",
-             "price": 16
-            },
-            {
-             "id": "dp-c6",
-             "name": "Six doigts",
-             "dur": "0h40",
-             "price": 24
-            },
-            {
-             "id": "dp-cmains",
-             "name": "Mains complètes",
-             "dur": "0h50",
-             "price": 28
-            }
-           ],
-           "img": "assets/prestations/dp-complexe.jpg"
-          }
-         ],
-         "img": "assets/prestations/dp.jpg"
-        },
-        {
-         "id": "bb",
-         "name": "Babyboomer / babycolor",
-         "children": [
-          {
-           "id": "bb-2",
-           "name": "Deux doigts",
-           "dur": "0h10",
-           "price": 7
-          },
-          {
-           "id": "bb-4",
-           "name": "Quatre doigts",
-           "dur": "0h20",
-           "price": 14
-          },
-          {
-           "id": "bb-6",
-           "name": "Six doigts",
-           "dur": "0h30",
-           "price": 21
-          },
-          {
-           "id": "bb-mains",
-           "name": "Mains complètes",
-           "dur": "0h40",
-           "price": 25
-          }
-         ],
-         "img": "assets/prestations/bb.jpg"
-        },
-        {
-         "id": "inc",
-         "name": "Incrustation complète",
-         "children": [
-          {
-           "id": "inc-2",
-           "name": "Deux doigts",
-           "dur": "0h10",
-           "price": 6
-          },
-          {
-           "id": "inc-4",
-           "name": "Quatre doigts",
-           "dur": "0h20",
-           "price": 12
-          },
-          {
-           "id": "inc-6",
-           "name": "Six doigts",
-           "dur": "0h30",
-           "price": 18
-          },
-          {
-           "id": "inc-mains",
-           "name": "Mains complètes",
-           "dur": "0h40",
-           "price": 21
-          }
-         ],
-         "img": "assets/prestations/inc.jpg"
-        },
-        {
-         "id": "relief",
-         "name": "Déco relief",
-         "children": [
-          {
-           "id": "relief-2",
-           "name": "Deux doigts",
-           "dur": "0h10",
-           "price": 8
-          },
-          {
-           "id": "relief-4",
-           "name": "Quatre doigts",
-           "dur": "0h20",
-           "price": 16
-          },
-          {
-           "id": "relief-6",
-           "name": "Six doigts",
-           "dur": "0h30",
-           "price": 24
-          },
-          {
-           "id": "relief-mains",
-           "name": "Mains complètes",
-           "dur": "0h40",
-           "price": 28
-          }
-         ],
-         "img": "assets/prestations/relief.jpg"
-        },
-        {
-         "id": "stickers",
-         "name": "Stickers faits mains",
-         "children": [
-          {
-           "id": "stk-2",
-           "name": "Deux doigts",
-           "dur": "0h05",
-           "price": 14
-          },
-          {
-           "id": "stk-4",
-           "name": "Quatre doigts",
-           "dur": "0h10",
-           "price": 22
-          },
-          {
-           "id": "stk-6",
-           "name": "Six doigts",
-           "dur": "0h15",
-           "price": 30
-          },
-          {
-           "id": "stk-mains",
-           "name": "Mains complètes",
-           "dur": "0h20",
-           "price": 38
-          }
-         ],
-         "img": "assets/prestations/stickers.jpg"
-        }
-       ],
-       "img": "assets/prestations/deco-elab.jpg"
-      }
-     ],
-     "img": "assets/prestations/deco.jpg"
-    },
-    {
-     "id": "casse",
-     "name": "En cas de casse",
-     "children": [
-      {
-       "id": "casse-1",
-       "name": "Réparation ongle cassé la 1ère semaine",
-       "dur": "0h15",
-       "price": 0
-      },
-      {
-       "id": "casse-2",
-       "name": "Réparation à partir de la 2ème semaine hors remplissage",
-       "dur": "0h15",
-       "price": 4
-      },
-      {
-       "id": "casse-3",
-       "name": "Réparation ongle cassé pendant le remplissage",
-       "dur": "0h15",
-       "price": 2
-      }
-     ],
-     "img": "assets/prestations/casse.jpg"
-    },
-    {
-     "id": "deposes",
-     "name": "Les déposes",
-     "children": [
-      {
-       "id": "dep-travail",
-       "name": "Dépose complète de mon travail",
-       "dur": "0h30",
-       "price": 20
-      },
-      {
-       "id": "dep-autre",
-       "name": "Dépose complète autre professionnelle",
-       "dur": "0h30",
-       "price": 25
-      },
-      {
-       "id": "dep-autre-repose",
-       "name": "Dépose complète autre professionnelle avec repose",
-       "dur": "0h30",
-       "price": 10
-      },
-      {
-       "id": "dep-semi",
-       "name": "Dépose semi permanent",
-       "dur": "0h20",
-       "price": 12
-      },
-      {
-       "id": "dep-rattrapage",
-       "name": "Rattrapage autre professionnelle",
-       "dur": "0h30",
-       "price": 8
-      }
-     ],
-     "img": "assets/prestations/deposes.jpg"
+/* Belle & Rebelle V10 — un seul choix actif, un catalogue partagé. */
+(() => {
+  'use strict';
+  const TREE = window.BR_TREE, FLAT = Object.create(null), KEY = 'br-selection-v10';
+  function walk(node, path = [], ids = []) {
+    for (const child of node.children || []) {
+      const next = [...path, child.name], branch = [...ids, child.id];
+      if (child.children) walk(child, next, branch);
+      else FLAT[child.id] = { ...child, path: next.join(' › '), branch };
     }
-   ],
-   "img": "assets/prestations/onglerie.jpg"
-  },
-  {
-   "id": "press",
-   "name": "Press on nails",
-   "children": [
-    {
-     "id": "press-kit",
-     "name": "Kit complet + prise de mesure",
-     "dur": "0h30",
-     "price": 30
-    },
-    {
-     "id": "press-kit-seul",
-     "name": "Kit complet uniquement",
-     "dur": "0h30",
-     "price": 25
-    }
-   ],
-   "img": "assets/prestations/press.jpg"
   }
- ]
-};
-
-  function fmtDur(d) {
-    if (!d) return '';
-    const m = d.match(/^(\d+)h(\d{2})$/);
-    if (!m) return d;
-    const h = +m[1], mi = +m[2];
-    if (!h) return mi + ' min';
-    return mi ? h + ' h ' + String(mi).padStart(2, '0') : h + ' h';
-  }
-  function fmtPrice(p) {
-    if (p === 0) return 'offert';
-    return p == null ? 'prix à confirmer' : p + ' €';
-  }
-  function fmtLine(p) { return [fmtDur(p.dur), fmtPrice(p.price)].join(' · '); }
-
-  // Liste à plat des prestations (utilisée aussi par la page réservation).
-  const FLAT = {};
-  (function walk(node, path) {
-    (node.children || []).forEach(child => {
-      const p = path.concat(child.name);
-      if (child.children) walk(child, p);
-      else FLAT[child.id] = { id: child.id, name: child.name, path: p.join(' › '), dur: child.dur, price: child.price };
-    });
-  })(TREE, []);
+  walk(TREE);
+  const fmtDur = d => {
+    const m = /^(\d+)h(\d{2})$/.exec(d || '');
+    return !m ? '' : (+m[1] ? `${+m[1]} h${+m[2] ? ' ' + m[2] : ''}` : `${+m[2]} min`);
+  };
+  const fmtPrice = p => p === 0 ? 'Offert' : new Intl.NumberFormat('fr-FR', {style:'currency',currency:'EUR',maximumFractionDigits:2}).format(p);
+  const fmtLine = p => `${fmtDur(p.dur)} · ${fmtPrice(p.price)}`;
+  const validIds = value => [...new Set(Array.isArray(value) ? value.filter(id => Object.hasOwn(FLAT, id)) : [])];
+  let selected = [];
+  try { selected = validIds(JSON.parse(sessionStorage.getItem(KEY) || '[]')); } catch (_) {}
+  function save() { try { sessionStorage.setItem(KEY, JSON.stringify(selected)); } catch (_) {} }
+  function setSelected(ids) { selected = validIds(ids); save(); window.dispatchEvent(new Event('br-selection')); }
+  const getSelected = () => [...selected];
+  const bookingUrl = () => 'reservation.html' + (selected.length ? '?prestations=' + encodeURIComponent(selected.join(',')) : '');
   window.BR_PRESTATIONS = FLAT;
-  window.BR_FORMAT = { fmtDur, fmtPrice, fmtLine };
-
-  const root = document.getElementById('skull');
-  if (!root) return;
-  const stage = document.getElementById('sk-body');
-  const crumbs = document.getElementById('sk-crumbs');
-  const titleEl = document.getElementById('sk-title');
-  const choiceEl = document.getElementById('sk-choice');
-  const backBtn = document.getElementById('sk-back');
-  const validateBtn = document.getElementById('sk-validate');
-  const prevBtn = document.getElementById('sk-prev');
-  const nextBtn = document.getElementById('sk-next');
-
-  // Pile des niveaux : chaque niveau garde la carte sélectionnée (index).
-  let levels = [{ node: TREE, index: 0 }];
-  const top = () => levels[levels.length - 1];
-  const items = () => top().node.children || [];
-
+  window.BR_FORMAT = {fmtDur,fmtPrice,fmtLine};
+  window.BR_SELECTION = {get:getSelected,set:setSelected,url:bookingUrl};
   function el(tag, cls, text) {
     const e = document.createElement(tag);
     if (cls) e.className = cls;
     if (text != null) e.textContent = text;
     return e;
   }
-
-  function placeCard(card, d) {
-    const scale = d === 0 ? 1 : 0.74;
-    card.style.transform = 'translate(-50%, -50%) translateX(' + (d * 74) + '%) scale(' + scale + ')';
-    card.style.opacity = d === 0 ? '1' : '0.42';
-    card.style.zIndex = d === 0 ? '3' : '1';
-  }
-
-  function validateCurrent() {
-    const c = items()[top().index];
-    if (!c) return;
-    if (c.children) {
-      levels.push({ node: c, index: 0 });
-      render();
-    } else {
-      location.href = 'reservation.html?prestation=' + encodeURIComponent(c.id);
+  function renderSelection() {
+    const list = document.getElementById('selection-list');
+    if (!list) return;
+    list.replaceChildren();
+    if (!selected.length) list.append(el('li','empty-selection','Votre sélection commence ici. Explorez le crâne pour trouver votre prestation.'));
+    for (const id of selected) {
+      const p = FLAT[id], row = el('li','selected-service'), copy = el('div');
+      copy.append(el('strong','',p.name),el('small','',p.path.split(' › ').slice(1,-1).join(' › ')),el('span','',fmtLine(p)));
+      const remove = el('button','remove-service','×'); remove.type='button';
+      remove.setAttribute('aria-label','Retirer : '+p.path);
+      remove.addEventListener('click',()=>setSelected(selected.filter(x=>x!==id)));
+      row.append(copy,remove); list.append(row);
     }
+    const total = selected.reduce((sum,id)=>sum+FLAT[id].price,0);
+    document.getElementById('selection-total').textContent=selected.length?`Total indicatif : ${fmtPrice(total)}`:'';
+    const link=document.getElementById('selection-book');
+    link.href=bookingUrl(); link.textContent=selected.length?'Continuer vers la réservation ↗':'Réserver sans sélection ↗';
+    document.getElementById('selection-add').hidden=!selected.length;
   }
-
-  function render() {
-    const lvl = top();
-    const list = items();
-    lvl.index = Math.max(0, Math.min(lvl.index, list.length - 1));
-
-    crumbs.replaceChildren();
-    levels.forEach((l, i) => {
-      if (i > 0) crumbs.append(el('span', 'sk-sep', '›'));
-      if (i < levels.length - 1) {
-        const b = el('button', 'sk-crumb', l.node.name);
-        b.type = 'button';
-        b.addEventListener('click', () => { levels = levels.slice(0, i + 1); render(); });
-        crumbs.append(b);
-      } else {
-        crumbs.append(el('span', 'sk-current', l.node.name));
-      }
-    });
-
-    stage.replaceChildren();
-    list.forEach((item, i) => {
-      const d = i - lvl.index;
-      if (Math.abs(d) > 1) return;
-      const card = el('button', 'sk2-card' + (d === 0 ? ' is-center' : ' is-side'));
-      card.type = 'button';
-      card.setAttribute('aria-label', item.name);
-      if (item.children) {
-        if (item.img) {
-          const img = el('img');
-          img.src = item.img;
-          img.alt = '';
-          img.loading = 'lazy';
-          card.append(img);
-        } else {
-          card.append(el('span', 'sk2-leaf-name', item.name));
-        }
-        card.append(el('span', 'sk2-card-btn', 'Voir plus'));
-      } else {
-        card.append(el('span', 'sk2-leaf-name', item.name));
-        card.append(el('span', 'sk2-leaf-meta', fmtLine(item)));
-        card.append(el('span', 'sk2-card-btn', 'Choisir'));
-      }
-      placeCard(card, d);
-      card.addEventListener('click', () => {
-        if (d === 0) validateCurrent();
-        else { lvl.index = i; render(); }
-      });
-      stage.append(card);
-    });
-
-    const c = list[lvl.index];
-    titleEl.textContent = levels.length === 1 ? 'Que souhaitez-vous ?' : lvl.node.name;
-    choiceEl.textContent = !c ? '' : c.children
-      ? 'Faites défiler, puis validez pour voir : ' + c.name
-      : 'Votre choix : ' + c.name + ' · ' + fmtLine(c);
-    backBtn.disabled = levels.length < 2;
-    prevBtn.disabled = lvl.index <= 0;
-    nextBtn.disabled = lvl.index >= list.length - 1;
+  window.addEventListener('br-selection',renderSelection); renderSelection();
+  const root=document.getElementById('skull');
+  if (!root) return;
+  const $=id=>document.getElementById(id), stage=$('sk-body'), crumbs=$('sk-crumbs');
+  let levels=[{node:TREE,index:0}];
+  const top=()=>levels[levels.length-1], items=()=>top().node.children;
+  // Recadrage des photographies transmises, sans remplacer les originaux.
+  function makePhoto(item) {
+    const ids=[...levels.map(l=>l.node.id),item.id];
+    let src='assets/familles-onglerie.jpg',size=[1349,359],crop;
+    if(ids.includes('press')){src='assets/familles-principales.jpg';size=[529,283];crop=[280,100,228,93];}
+    else if(ids.includes('deposes')){src='assets/depose-reference.jpg';size=[362,311];crop=[40,17,265,168];}
+    else if(ids.includes('casse'))crop=[1070,18,238,144];
+    else if(ids.includes('semi'))crop=[555,18,237,144];
+    else if(ids.includes('capsule'))crop=[298,18,237,144];
+    else if(ids.includes('gel'))crop=[40,18,237,144];
+    else crop=[813,18,237,144];
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox',crop.join(' '));svg.setAttribute('preserveAspectRatio','xMidYMid slice');
+    svg.setAttribute('aria-hidden','true');svg.classList.add('choice-photo');
+    const image=document.createElementNS('http://www.w3.org/2000/svg','image');
+    image.setAttribute('href',src);image.setAttribute('width',size[0]);image.setAttribute('height',size[1]);
+    svg.append(image);return svg;
   }
-
-  backBtn.addEventListener('click', () => { if (levels.length > 1) { levels.pop(); render(); } });
-  validateBtn.addEventListener('click', validateCurrent);
-  prevBtn.addEventListener('click', () => { top().index--; render(); });
-  nextBtn.addEventListener('click', () => { top().index++; render(); });
-  root.addEventListener('keydown', e => {
-    if (e.key === 'ArrowLeft') { top().index--; render(); }
-    if (e.key === 'ArrowRight') { top().index++; render(); }
+  const focusStage=()=>root.focus({preventScroll:true});
+  function render(){
+    const level=top(),list=items();level.index=Math.max(0,Math.min(level.index,list.length-1));
+    const current=list[level.index];crumbs.replaceChildren();
+    levels.forEach((l,i)=>{
+      if(i)crumbs.append(el('span','sk-sep','›'));
+      const crumb=el(i===levels.length-1?'span':'button','sk-crumb',l.node.name);
+      if(i<levels.length-1){crumb.type='button';crumb.addEventListener('click',()=>{levels=levels.slice(0,i+1);render();focusStage();});}
+      else crumb.setAttribute('aria-current','step');
+      crumbs.append(crumb);
+    });
+    const card=el('button','active-choice');card.type='button';card.setAttribute('aria-label','Valider : '+current.name);card.addEventListener('click',validate);card.append(makePhoto(current),el('span','choice-name',current.name));stage.replaceChildren(card);
+    $('sk-title').textContent=current.name;
+    $('sk-step').textContent=`Étape ${levels.length} · ${level.index+1} / ${list.length} choix`;
+    $('sk-choice').textContent=current.children?`${current.children.length} possibilités · Validez pour découvrir la suite.`:`${fmtLine(current)} · Tarif du catalogue fourni.`;
+    $('sk-validate').textContent=current.children?'VALIDER':selected.includes(current.id)?'AJOUTÉE ✓':'CHOISIR';
+    $('sk-validate').setAttribute('aria-label',current.children?'Valider : '+current.name:'Ajouter à la sélection : '+FLAT[current.id].path);
+    $('sk-back').disabled=levels.length===1;$('sk-prev').disabled=level.index===0;$('sk-next').disabled=level.index===list.length-1;
+    root.dataset.activeId=current.id;
+  }
+  function move(delta){top().index+=delta;render();}
+  function validate(){
+    const c=items()[top().index];
+    if(c.children){levels.push({node:c,index:0});render();focusStage();}
+    else{setSelected([...selected,c.id]);render();$('sk-choice').textContent=`${c.name} ajoutée à votre sélection. Continuez vers la réservation ou ajoutez une autre prestation.`;$('selection-book').focus({preventScroll:true});}
+  }
+  $('sk-prev').addEventListener('click',()=>move(-1));$('sk-next').addEventListener('click',()=>move(1));
+  $('sk-validate').addEventListener('click',validate);
+  $('sk-back').addEventListener('click',()=>{if(levels.length>1){levels.pop();render();focusStage();}});
+  $('selection-add').addEventListener('click',()=>{levels=[{node:TREE,index:0}];render();root.scrollIntoView({behavior:'auto',block:'center'});focusStage();});
+  root.addEventListener('keydown',e=>{
+    if(e.altKey||e.ctrlKey||e.metaKey)return;
+    if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();move(e.key==='ArrowLeft'?-1:1);}
+    if(e.key==='Enter'&&e.target===root){e.preventDefault();validate();}
   });
-
+  let start=null;
+  root.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'&&!e.target.closest('button'))start=[e.clientX,e.clientY];});
+  root.addEventListener('pointerup',e=>{if(!start)return;const dx=e.clientX-start[0],dy=e.clientY-start[1];start=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.5)move(dx<0?1:-1);});
+  root.addEventListener('pointercancel',()=>{start=null;});
   render();
 })();

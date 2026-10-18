@@ -1,74 +1,38 @@
-// Widget de chat de l'assistante Belle & Rebelle.
-// Envoie les messages à /.netlify/functions/chat (la clé API n'est jamais dans ce fichier).
-(function () {
-  const toggle = document.getElementById('assistant-toggle');
-  const panel = document.getElementById('assistant-panel');
-  const log = document.getElementById('assistant-log');
-  const form = document.getElementById('assistant-form');
-  const input = document.getElementById('assistant-input');
-  if (!toggle || !panel || !log || !form || !input) return;
-
-  const history = [];
-  let busy = false;
-
-  function addMessage(role, text) {
-    const div = document.createElement('div');
-    div.className = 'assistant-msg assistant-' + role;
-    div.textContent = text;
-    log.appendChild(div);
-    log.scrollTop = log.scrollHeight;
+/* Guide local de validation : aucun appel API, aucun message ni rendez-vous envoyé. */
+(() => {
+  const $=id=>document.getElementById(id),toggle=$('assistant-toggle'),panel=$('assistant-panel'),log=$('assistant-log'),form=$('assistant-form'),input=$('assistant-input');
+  if(!toggle||!panel||!log||!form||!input)return;
+  const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  function message(role,text,action){
+    const div=document.createElement('div');div.className='assistant-msg assistant-'+role;div.textContent=text;
+    if(action){const a=document.createElement('a');a.textContent=action.label;a.href=action.href;div.append(a);}
+    log.append(div);log.scrollTop=log.scrollHeight;
   }
-
-  function setOpen(open) {
-    panel.hidden = !open;
-    toggle.setAttribute('aria-expanded', String(open));
-    if (open) input.focus();
+  function draft(subject,body){return {label:'Préparer un e-mail pour Mélanie',href:'mailto:belleetrebelle.flers@outlook.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)};}
+  function answer(raw){
+    const text=normalize(raw), selected=(window.BR_SELECTION?.get()||[]).map(id=>window.BR_PRESTATIONS[id]);
+    const selection=selected.map(p=>p.path+' · '+window.BR_FORMAT.fmtLine(p)).join('\n');
+    if(/probleme|reclam|diffic|souci|casse|casse|douleur|rembours|erreur|annul|retard|mecontente|abime|decolle/.test(text)){
+      message('bot','Je peux vous aider à préparer un message à Mélanie. Rien n’est envoyé automatiquement : vous relisez puis envoyez votre e-mail vous-même. Pour une modification de rendez-vous, Mélanie vous confirmera la suite.',draft('Belle & Rebelle — demande d’aide',raw+(selection?'\n\nMa sélection :\n'+selection:'')));return;
+    }
+    if(/plusieurs|deux|consecut|enchai|multip|meme jour|pose et deco/.test(text)){
+      message('bot','Pour enchaîner plusieurs prestations le même jour, composez votre sélection dans le crâne. Mélanie doit confirmer leur compatibilité et le créneau. Je peux préparer la demande ; aucun rendez-vous n’est confirmé ici.',draft('Belle & Rebelle — plusieurs prestations le même jour','Bonjour Mélanie,\nJe souhaiterais plusieurs prestations le même jour.\n'+(selection||'Mes prestations : à préciser')+'\n\nMes disponibilités :\n'));return;
+    }
+    if(/acompte|paiement|payer|arrhes/.test(text)){message('bot','La réservation est sans acompte, y compris pour une première visite. Aucun paiement n’est demandé sur ce site.');return;}
+    if(/reserv|creneau|disponib|rendez|rdv/.test(text)){message('bot','Votre sélection est conservée sur la page de réservation. Vous pourrez ouvrir le calendrier SimplyBook et y vérifier les disponibilités réelles. La réservation est sans acompte. Je ne peux pas confirmer de créneau depuis ce chat.',{label:'Voir ma sélection et la réservation',href:window.BR_SELECTION?.url()||'reservation.html'});return;}
+    if(/adresse|ou etes|ou se|flers|salon/.test(text)){message('bot','Mélanie vous accueille au 28 rue de Messei, 61100 Flers. Téléphone : 06 62 28 75 45.');return;}
+    if(/horaire|ouvert/.test(text)){message('bot','Les disponibilités se vérifient dans le calendrier SimplyBook. Pour une question d’horaire, contactez Mélanie au 06 62 28 75 45.');return;}
+    const terms=text.replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3&&!['combien','coute','tarif','prix','pour','avec','veux','faire','prestation','ongles','bonjour'].includes(w));
+    const entries=Object.values(window.BR_PRESTATIONS||{});
+    const scored=entries.map(p=>({p,score:terms.reduce((n,t)=>n+(normalize(p.path).includes(t)?1:0),0)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+    if(scored.length){const best=scored.filter(x=>x.score===scored[0].score).slice(0,4);message('bot','Voici les prestations correspondantes dans le catalogue fourni :\n\n'+best.map(x=>x.p.path+'\n'+window.BR_FORMAT.fmtLine(x.p)).join('\n\n')+'\n\nLe tarif final se confirme dans SimplyBook.',{label:'Explorer le sélecteur',href:'index.html#prestations'});return;}
+    message('bot','Je peux vous guider dans les prestations, la réservation sans acompte et les demandes à Mélanie. Pour choisir une technique, explorez les deux familles dans le crâne. Pour une question précise, Mélanie reste joignable au 06 62 28 75 45.',{label:'Choisir une prestation',href:'index.html#prestations'});
   }
-
-  toggle.addEventListener('click', () => {
-    const open = panel.hidden;
-    setOpen(open);
-    if (open && log.childElementCount === 0) {
-      addMessage('bot', 'Bonjour ! Je suis Melba, l’assistante de Belle & Rebelle. Posez-moi vos questions sur les prestations, ou dites-moi ce que vous souhaitez. Pour plusieurs prestations le même jour, je vous aide à réserver.');
-    }
-  });
-
-  document.getElementById('assistant-close').addEventListener('click', () => setOpen(false));
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const text = input.value.trim();
-    if (!text || busy) return;
-
-    busy = true;
-    input.value = '';
-    addMessage('user', text);
-    history.push({ role: 'user', content: text });
-
-    const typing = document.createElement('div');
-    typing.className = 'assistant-msg assistant-bot assistant-typing';
-    typing.textContent = '…';
-    log.appendChild(typing);
-
-    try {
-      const res = await fetch('/.netlify/functions/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history.slice(-20) }),
-      });
-      const data = await res.json().catch(() => ({}));
-      typing.remove();
-      if (!res.ok) {
-        addMessage('bot', data.error || 'Désolée, je ne peux pas répondre pour le moment. Vous pouvez appeler Mélanie au 06 62 28 75 45.');
-      } else {
-        addMessage('bot', data.reply);
-        history.push({ role: 'assistant', content: data.reply });
-      }
-    } catch (err) {
-      typing.remove();
-      addMessage('bot', 'Problème de connexion. Vous pouvez appeler Mélanie au 06 62 28 75 45.');
-    } finally {
-      busy = false;
-    }
-  });
+  function setOpen(open){panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));if(open){if(!log.childElementCount)message('bot','Bonjour, je suis Melba ♡ Je vous aide à explorer le catalogue et à préparer votre réservation sans acompte. Dans cette version privée, je ne crée aucun rendez-vous et je n’envoie aucun message.');input.focus({preventScroll:true});}else toggle.focus({preventScroll:true});}
+  toggle.addEventListener('click',()=>setOpen(panel.hidden));$('assistant-close').addEventListener('click',()=>setOpen(false));
+  panel.addEventListener('keydown',e=>{if(e.key==='Escape')setOpen(false);});
+  const quick=document.createElement('div');quick.className='assistant-quick';
+  ['Sans acompte ?','Plusieurs prestations','Un problème'].forEach(label=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>{message('user',label);answer(label);});quick.append(b);});
+  panel.insertBefore(quick,form);
+  form.addEventListener('submit',e=>{e.preventDefault();const raw=input.value.trim();if(!raw)return;input.value='';message('user',raw);answer(raw);});
 })();

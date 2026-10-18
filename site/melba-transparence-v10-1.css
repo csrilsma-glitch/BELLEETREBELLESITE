@@ -1,0 +1,4 @@
+/* Melba visible à travers les bulles, texte opaque et ombré. */
+.assistant-log{background:linear-gradient(#fff6fb14,#fff6fb1f),url('assets/melba-fond.png') center 35%/cover no-repeat}
+.assistant-msg{background:rgba(35,9,28,.24);border-color:#ffb4dc66;color:#fff8fc;text-shadow:0 1px 2px #160917,0 0 3px #160917;box-shadow:0 3px 15px #3a0a2914}
+.assistant-user{background:rgba(96,12,66,.4);border-color:#f7b8db88;color:#fff}

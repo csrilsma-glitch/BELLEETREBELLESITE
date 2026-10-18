@@ -1,0 +1,33 @@
+BELLE & REBELLE — V10 FINALE — 18 OCTOBRE 2026
+
+CONTENU
+Le dossier site/ contient l'intégralité du site statique, sans compilation : pages, styles, scripts, police fournie avec sa licence, musique, crâne original, fond Melba, vidéos et PWA.
+
+MISE SUR GITHUB / NETLIFY
+1. Décompresser cette archive.
+2. Déposer site/, netlify.toml et les fichiers texte à la racine du dépôt GitHub.
+3. Pour Netlify : dossier publié = site ; aucune commande de construction.
+4. Conserver HTTPS : l'installation PWA et le service worker l'exigent.
+Pour GitHub Pages, les fichiers à servir sont ceux de site/ ; l'hébergement doit publier ce dossier. Tous les chemins sont relatifs, compatibles avec un sous-répertoire.
+Aucun déploiement GitHub ou Netlify n'a été effectué par cette livraison. La préversion fournie séparément est privée. L'archive statique ne contient pas de protection d'accès : celle-ci dépend de l'hébergeur choisi.
+
+FONCTIONNEMENT
+- Le crâne fourni est conservé. Les photographies, libellés, flèches et validations sont des éléments interactifs superposés au décor, et non une capture figée.
+- Deux familles au départ : Onglerie et Press on nails. Les six sous-familles Onglerie suivent l'ordre demandé ; les 64 prestations finales sont accessibles.
+- Les photographies de familles sont celles des références fournies. Les choix détaillés réutilisent l'image de leur famille ; aucune photo spécifique de technique n'a été inventée.
+- Prix et durées : catalogue fourni dans la V9, sans synchronisation avec le compte SimplyBook.
+- Le retour conserve les prestations déjà ajoutées. La page réservation récupère la sélection.
+- Réservation sans acompte, y compris pour les nouvelles clientes.
+- Le calendrier SimplyBook réel s'ouvre uniquement au clic. La présélection automatique et les réservations consécutives ne sont pas annoncées comme vérifiées. La cliente retrouve les libellés de sa sélection et confirme dans SimplyBook.
+- Melba : nouveau portrait en fond du chat, aucune photo de profil. Mise à jour V10.1 : bulles transparentes (24 % pour Melba, 40 % pour la cliente), fond plus visible, texte opaque avec ombre pour garder sa lisibilité. Guide local des prestations et de la réservation, pas une IA serveur connectée. Les problèmes et demandes multiples proposent un e-mail à relire puis envoyer volontairement ; rien n'est envoyé automatiquement.
+- Réalisations : un seul lecteur, boutons Précédente / Suivante, 12 vidéos originales, lecture non automatique.
+- Musique : commande près de la marque, volume discret, préférence et position conservées pendant la session. Le navigateur peut bloquer l'autoplay.
+- Responsive : une colonne pour le parcours sur petits écrans, menu compact, vidéo adaptée et chat positionné en bas à droite.
+
+PWA EN BONUS
+Le bouton Installer l'application déclenche l'installation si le navigateur la propose, ou montre les instructions adaptées. Sur iPhone, utiliser Safari > Partager > Sur l'écran d'accueil. Ce n'est pas un fichier APK. Le fonctionnement normal du site ne dépend pas de son installation.
+Le cache conserve seulement les ressources du site et les pages reconnues déjà visitées. Les vidéos, la musique et SimplyBook nécessitent une connexion. Aucun rendez-vous n'est mis en attente ou envoyé hors connexion.
+
+VALIDATION AVANT MISE EN LIGNE PUBLIQUE
+La page des mentions légales contient les informations professionnelles restant à compléter avec Mélanie ; aucun SIRET n'a été inventé. La balise noindex est conservée pour la validation. Elle peut être retirée des pages HTML au moment de la publication choisie.
+Les contrôles automatiques sont détaillés dans CONTROLES_V10.txt. Les essais visuels sur appareils réels, l'installation native PWA et les disponibilités SimplyBook restent à valider. Aucun service existant, réservation réelle ou e-mail n'a été modifié pendant le travail.
