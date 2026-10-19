@@ -17,11 +17,15 @@ Base de reprise : `v15-claude`, commit `46c4e29c40345b0be9e40eb059a995774bf6116e
 - Un rappel e-mail dépassé n'est plus envoyé, comme pour les rappels SMS.
 - En préproduction, l'accès base échoue si son URL ne correspond pas à la référence de test attendue ou si elle désigne le projet de production connu.
 - En préproduction, le traitement des jobs et les invocations directes d'envoi sont bloqués : aucun e-mail, SMS ou événement Outlook ne part de ce traitement. Ce mode ne prétend pas simuler une réception fournisseur.
-- Aucun changement du prompt, des outils ou de la personnalité de Melba ; aucun retrait SimplyBook ; aucun changement visuel.
+- Lecteur galerie : renouvellement de l’élément vidéo et libération de la source précédente, boutons lecture/pause/rejouer, erreur/réessai, navigation rapide ; coordination de la musique par événement délégué.
+- Cache PWA versionné à nouveau : JavaScript/CSS prioritaires au réseau, suppression des anciens caches V14, mise à jour du service worker sans cache HTTP. Vidéos toujours exclues.
+- Manager : fenêtre de chargement couvrant tout le mois même depuis sa fin ; historique par fiche cliente ajouté, sans limite au mois courant.
+- Verrou de base de test appliqué également aux requêtes Auth.
+- Aucun changement du prompt, des outils ou de la personnalité de Melba ; aucun retrait SimplyBook ; identité visuelle conservée.
 
 ## Tests effectivement exécutés
 
-- 29 tests Node passent ; 31 fichiers JavaScript valides ; catalogue de 64 prestations.
+- 31 tests Node passent ; 31 fichiers JavaScript valides ; catalogue de 64 prestations.
 - Tests SQL PGlite passent, y compris la nouvelle migration et le rappel e-mail.
 - Sur la vraie base Supabase de test : `tests/remote-preproduction.sql` passe. Il vérifie 54 € / 105 minutes pour gel-gainage + déco simple, création, idempotence, lien forgé, déplacement, rappel 24 h, annulation et refus sous 24 h. La transaction est annulée après vérification.
 - Deux appels SQL indépendants lancés en parallèle sur le même créneau : un seul succès, l'autre retourne « Créneau indisponible ». La réservation fictive a été annulée et ses jobs mis en état obsolete. Aucune suppression de données. Zéro réservation active ensuite.

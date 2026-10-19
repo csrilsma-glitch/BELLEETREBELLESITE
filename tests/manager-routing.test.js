@@ -78,3 +78,17 @@ test('dashboard lit les tables Manager et renvoie les clés attendues', async ()
   }
   assert.ok(calls.some(x => x.kind === 'db' && x.path.startsWith('br15_services')));
 });
+
+test('calendrier mensuel : le début et la fin du mois sont chargés même le 31',async()=>{
+ const calls=setup();await handler(event({action:'dashboard',date:'2026-10-31'}));
+ const query=calls.find(x=>x.kind==='db'&&x.path.startsWith('br15_bookings')).path;
+ assert(query.includes('starts=gte.2026-09-24T00:00:00.000Z'));
+ assert(query.includes('starts=lt.2026-11-08T00:00:00.000Z'));
+});
+
+test('historique cliente : filtre UUID obligatoire, aucun filtre de mois',async()=>{
+ let calls=setup();assert.equal((await handler(event({action:'history',id:'x&select=*'}))).statusCode,400);assert.equal(calls.length,0);
+ calls=setup();const response=await handler(event({action:'history',id:UUID}));
+ assert.equal(response.statusCode,200);assert.deepEqual(JSON.parse(response.body),{bookings:[]});
+ assert(calls[0].path.includes('client_id=eq.'+UUID));assert(!calls[0].path.includes('starts=gte.'));
+});

@@ -10,11 +10,14 @@ function body(e){if((e.body||'').length>24000)fail(413,'Requête trop volumineus
 function origin(e){const o=e.headers?.origin;if(o&&o!==(process.env.SITE_URL||PUBLIC))fail(403,'Origine refusée');}
 async function wrap(e,fn){try{origin(e);return await fn();}catch(err){console.error('BR15',err.status||500,err.name);return json(err.status||503,{error:err.status?err.message:'Service indisponible. Réessayez ou appelez Mélanie.'});}}
 async function request(url,opt={}){return fetch(url,{...opt,signal:opt.signal||AbortSignal.timeout(15000)});}
-async function db(path,{method='GET',data,prefer}={}){
+function isolation(){
  if(process.env.APP_ENV==='preproduction'){
  const expected=env('EXPECTED_SUPABASE_PROJECT_REF');
  if(expected==='mlbfnlidlvsqghcijuhw'||env('SUPABASE_URL')!=='https://'+expected+'.supabase.co')fail(503,'Base de préproduction isolée requise');
  }
+}
+async function db(path,{method='GET',data,prefer}={}){
+ isolation();
  const res=await request(env('SUPABASE_URL')+'/rest/v1/'+path,{method,headers:{apikey:env('SUPABASE_SECRET_KEY'),...(env('SUPABASE_SECRET_KEY').startsWith('eyJ')?{Authorization:'Bearer '+env('SUPABASE_SECRET_KEY')}:{}),'Content-Type':'application/json',...(prefer?{Prefer:prefer}:{})},...(data===undefined?{}:{body:JSON.stringify(data)})});
  const value=await res.json().catch(()=>null);
  if(!res.ok){if(res.status===400||res.status===409){const msg=value?.message||'';const safe=/Sélection|Prestations|Prestation|Durée|Coordonnées|Créneau|Réservation native|Clé déjà|Rendez-vous|Lien invalide|Délai|Action|Horaires|Un rendez-vous/.test(msg);fail(409,safe?msg:'Opération refusée');}fail(503,'Base de réservation indisponible');}return value;
@@ -32,7 +35,7 @@ function phone(x){const p=String(x||'').replace(/[\s.()-]/g,'').replace(/^0/,'+3
 async function rate(e,scope,max=30){const ip=e.headers?.['x-nf-client-connection-ip']||'unknown';if(!await rpc('limit',{p_key:scope+':'+sha(ip),p_max:max,p_seconds:600}))fail(429,'Trop de demandes. Réessayez dans quelques minutes.');}
 function cookies(e){return Object.fromEntries((e.headers?.cookie||'').split(';').filter(s=>s.includes('=')).map(s=>{const i=s.indexOf('=');return [s.slice(0,i).trim(),decodeURIComponent(s.slice(i+1))];}));}
 const cookie=(name,value,seconds=3600)=>`${name}=${encodeURIComponent(value)}; Path=/.netlify/functions/; HttpOnly; Secure; SameSite=Strict; Max-Age=${seconds}`;
-async function authRequest(path,{method='GET',data,token}={}){const r=await request(env('SUPABASE_URL')+'/auth/v1/'+path,{method,headers:{apikey:env('SUPABASE_PUBLISHABLE_KEY'),...(token?{Authorization:'Bearer '+token}:{}),'Content-Type':'application/json'},...(data?{body:JSON.stringify(data)}:{})});const d=await r.json().catch(()=>({}));if(!r.ok)fail(401,'Authentification refusée');return d;}
+async function authRequest(path,{method='GET',data,token}={}){isolation();const r=await request(env('SUPABASE_URL')+'/auth/v1/'+path,{method,headers:{apikey:env('SUPABASE_PUBLISHABLE_KEY'),...(token?{Authorization:'Bearer '+token}:{}),'Content-Type':'application/json'},...(data?{body:JSON.stringify(data)}:{})});const d=await r.json().catch(()=>({}));if(!r.ok)fail(401,'Authentification refusée');return d;}
 async function manager(e,{mfa=true}={}){
  const token=cookies(e).br15_session;if(!token)fail(401,'Connexion requise');
  const user=await authRequest('user',{token});

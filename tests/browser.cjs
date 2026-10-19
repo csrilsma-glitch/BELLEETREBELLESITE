@@ -30,6 +30,28 @@ for(const [name,width,height]of [['desktop',1440,1000],['tablet',820,1180],['mob
      if(i<12)await page.locator('#video-next').click();
    }
    console.log('12 vidéos : métadonnées et lecture Chromium OK');
+   await page.locator('#video-next').click();
+   await page.waitForFunction(()=>document.getElementById('realisation-player').readyState>=2);
+   await page.locator('#realisation-player').evaluate(p=>{p.muted=true;p.currentTime=p.duration-.1;return p.play();});
+   await page.waitForFunction(()=>document.getElementById('realisation-player').ended);
+   await page.locator('#video-play').click();
+   await page.waitForFunction(()=>{const p=document.getElementById('realisation-player');return !p.paused&&!p.ended&&p.currentTime<2;});
+   await page.locator('#video-play').click();assert(await page.locator('#realisation-player').evaluate(p=>p.paused));
+   await page.locator('#realisation-player').evaluate(p=>{window.previousVideo=p;});
+   await page.locator('#video-next').click();
+   assert(await page.evaluate(()=>!window.previousVideo.hasAttribute('src')&&window.previousVideo.paused&&!window.previousVideo.isConnected));
+   assert.equal(await page.locator('.video-showcase video').count(),1);
+   for(let i=0;i<8;i++)await page.locator(i%2?'#video-prev':'#video-next').click();
+   await page.waitForFunction(()=>document.getElementById('realisation-player').readyState>=2);
+   assert.equal(await page.locator('.video-showcase video').count(),1);
+   await page.route('**/realisation-03.mp4',route=>route.fulfill({status:404,body:'test unavailable'}));
+   await page.locator('#video-next').click();
+   await page.waitForFunction(()=>!!document.getElementById('realisation-player').error);
+   assert((await page.locator('#video-status').innerText()).includes('pas pu'));
+   await page.unroute('**/realisation-03.mp4');await page.locator('#video-play').click();
+   await page.waitForFunction(()=>document.getElementById('realisation-player').readyState>=2);
+   assert(await page.locator('#realisation-player').evaluate(p=>!p.error));
+   console.log('Vidéos : rejouer, pause, ressources libérées, navigation rapide et erreur/réessai OK');
  }
 
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' overflow accueil');await page.screenshot({path:'test-results/home-'+name+'.png',fullPage:false});
@@ -38,4 +60,15 @@ for(const [name,width,height]of [['desktop',1440,1000],['tablet',820,1180],['mob
  manager=false;await page.goto('http://127.0.0.1:8765/manager/');await page.locator('#login-panel').waitFor({state:'visible'});await page.locator('#login [name=email]').fill('manager@example.test');await page.locator('#login [name=password]').fill('fake');await page.locator('#login button').click();await page.locator('#mfa-panel').waitFor({state:'visible'});await page.locator('#mfa input').fill('123456');await page.locator('#mfa button').click();await page.locator('#studio').waitFor({state:'visible'});await page.screenshot({path:'test-results/manager-'+name+'.png',fullPage:false});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' overflow Manager');
  await page.locator('[data-view=catalogue]').click();assert.equal(await page.locator('#service-list details').count(),64);await page.locator('[data-view=settings]').click();await page.locator('#outlook-status').waitFor({state:'visible'});console.log(name,'Manager connexion MFA, agenda, 64 prestations, paramètres OK');await ctx.close();
 }
+const pwa=await browser.newContext({serviceWorkers:'allow'}),pwaPage=await pwa.newPage();
+await pwaPage.goto('http://127.0.0.1:8765/offline.html');
+await pwaPage.evaluate(async()=>{const old=await caches.open('br-v14-stale-test');await old.put('/gallery.js',new Response('obsolete'));await old.put('/assets/videos/realisation-01.mp4',new Response('obsolete video'));});
+await pwaPage.goto('http://127.0.0.1:8765/');await pwaPage.evaluate(()=>navigator.serviceWorker.ready);
+await pwaPage.waitForFunction(()=>!!navigator.serviceWorker.controller);
+assert(!(await pwaPage.evaluate(()=>caches.keys())).includes('br-v14-stale-test'));
+await pwaPage.evaluate(async()=>{const current=(await caches.keys()).find(k=>k.startsWith('br-v15-'));await(await caches.open(current)).put('/gallery.js',new Response('obsolete'));});
+assert((await pwaPage.evaluate(async()=>await(await fetch('/gallery.js')).text())).includes('function release(video)'));
+const cached=await pwaPage.evaluate(async()=>{const keys=await caches.keys();return(await Promise.all(keys.map(async k=>(await(await caches.open(k)).keys()).map(r=>new URL(r.url).pathname)))).flat();});
+assert(!cached.some(p=>p.endsWith('.mp4')||p.startsWith('/.netlify/')));await pwa.close();
+console.log('PWA : ancien cache supprimé, JavaScript actualisé, aucune vidéo/API en cache');
 await browser.close();server.close();assert.deepEqual(errors,[]);console.log('TESTS NAVIGATEUR OK : aucune erreur JavaScript. Fournisseurs simulés.');})().catch(e=>{console.error(e);process.exit(1);});
