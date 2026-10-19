@@ -11,6 +11,10 @@ function origin(e){const o=e.headers?.origin;if(o&&o!==(process.env.SITE_URL||PU
 async function wrap(e,fn){try{origin(e);return await fn();}catch(err){console.error('BR15',err.status||500,err.name);return json(err.status||503,{error:err.status?err.message:'Service indisponible. Réessayez ou appelez Mélanie.'});}}
 async function request(url,opt={}){return fetch(url,{...opt,signal:opt.signal||AbortSignal.timeout(15000)});}
 async function db(path,{method='GET',data,prefer}={}){
+ if(process.env.APP_ENV==='preproduction'){
+ const expected=env('EXPECTED_SUPABASE_PROJECT_REF');
+ if(expected==='mlbfnlidlvsqghcijuhw'||env('SUPABASE_URL')!=='https://'+expected+'.supabase.co')fail(503,'Base de préproduction isolée requise');
+ }
  const res=await request(env('SUPABASE_URL')+'/rest/v1/'+path,{method,headers:{apikey:env('SUPABASE_SECRET_KEY'),...(env('SUPABASE_SECRET_KEY').startsWith('eyJ')?{Authorization:'Bearer '+env('SUPABASE_SECRET_KEY')}:{}),'Content-Type':'application/json',...(prefer?{Prefer:prefer}:{})},...(data===undefined?{}:{body:JSON.stringify(data)})});
  const value=await res.json().catch(()=>null);
  if(!res.ok){if(res.status===400||res.status===409){const msg=value?.message||'';const safe=/Sélection|Prestations|Prestation|Durée|Coordonnées|Créneau|Réservation native|Clé déjà|Rendez-vous|Lien invalide|Délai|Action|Horaires|Un rendez-vous/.test(msg);fail(409,safe?msg:'Opération refusée');}fail(503,'Base de réservation indisponible');}return value;

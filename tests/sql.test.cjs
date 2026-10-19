@@ -1,6 +1,7 @@
 const {PGlite}=require('@electric-sql/pglite');const {btree_gist}=require('@electric-sql/pglite/contrib/btree_gist');const fs=require('fs'),assert=require('node:assert/strict');
 (async()=>{const db=new PGlite({extensions:{btree_gist}});await db.exec(`set timezone='UTC';create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);`);
 for(const f of ['001_v15.sql','002_catalogue.sql','003_outlook.sql','004_privacy.sql']){await db.exec(fs.readFileSync('supabase/'+f,'utf8'));console.log('Migration OK',f);}
+for(const f of fs.readdirSync('supabase/migrations').filter(f=>f.endsWith('.sql')).sort()){await db.exec(fs.readFileSync('supabase/migrations/'+f,'utf8'));console.log('Migration OK',f);}
 const query=(s,args=[])=>db.query(s,args),scalar=async(s,args)=>(await query(s,args)).rows[0].v;
 assert.equal(await scalar('select count(*)::int v from br15_services'),64);
 const q=await scalar("select br15_quote(array['gel-gainage','deco-simple-unit']) v").catch(()=>null);
@@ -14,6 +15,7 @@ const start=slots[0].starts,key='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const book=async(k,t=start,hash='abc')=>scalar('select br15_book($1,$2,$3,$4,$5,$6,$7) v',[ids,t,'Cliente test','test@example.test','+33600000000',k,hash]);
 const results=await Promise.allSettled([book(key),book('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')]);assert.equal(results.filter(x=>x.status==='fulfilled').length,1);console.log('OK deux demandes concurrentes : une seule réservation');
 const booking=results.find(x=>x.status==='fulfilled').value;
+assert.equal(await scalar("select count(*)::int v from br15_jobs where booking_id=$1 and kind='email-reminder' and run_at=$2::timestamptz-interval '24 hours'",[booking.id,start]),1);console.log('OK rappel e-mail 24 h');
 assert.equal((await book(key)).id,booking.id);assert.equal(await scalar('select count(*)::int v from br15_bookings'),1);console.log('OK double clic idempotent');
 await assert.rejects(book(key,start,'wrong'));console.log('OK idempotence inaccessible sans secret');
 await assert.rejects(query("select br15_change($1,'wrong','cancel')",[booking.id]));console.log('OK lien d’annulation forgé refusé');
@@ -21,6 +23,7 @@ await db.exec('update br15_settings set cancel_hours=0');
 const moved=(await query('select * from br15_slots($1,$2,$3)',[date,ids,booking.id])).rows.find(s=>new Date(s.starts).getTime()>new Date(start).getTime()+4*3600000);
 assert(moved);await query("select br15_change($1,'abc','move',$2)",[booking.id,moved.starts]);console.log('OK déplacement atomique');
 await query("select br15_change($1,'abc','cancel')",[booking.id]);
+assert.equal(await scalar("select count(*)::int v from br15_jobs where booking_id=$1 and kind='email-reminder' and state='pending'",[booking.id]),0);console.log('OK aucun rappel e-mail après annulation');
 assert((await query('select * from br15_slots($1,$2)',[date,ids])).rows.some(s=>new Date(s.starts).getTime()===new Date(moved.starts).getTime()));console.log('OK annulation libère le créneau');
 await query("select br15_admin('block',$1)",[JSON.stringify({starts:start,ends:slots[0].ends,label:'Congé'})]);assert(!(await query('select * from br15_slots($1,$2)',[date,ids])).rows.some(s=>new Date(s.starts).getTime()===new Date(start).getTime()));console.log('OK congés bloquants');
 const blocks=(await query('select * from br15_blocks')).rows;await query("select br15_admin('unblock',$1)",[JSON.stringify({id:blocks[0].id})]);

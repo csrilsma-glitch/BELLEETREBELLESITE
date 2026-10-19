@@ -23,6 +23,10 @@ for(const [name,width,height]of [['desktop',1440,1000],['tablet',820,1180],['mob
      await page.waitForFunction(()=>{const p=document.getElementById('realisation-player');return p.readyState>=2||p.error;});
      const result=await page.locator('#realisation-player').evaluate(async p=>{if(p.error)return {error:p.error.code};p.muted=true;try{await p.play();p.pause();return {ok:true,duration:p.duration};}catch(e){return {error:e.message};}});
      assert(result.ok,'Vidéo '+i+': '+JSON.stringify(result));
+     if(i===1){
+       await page.locator('#realisation-player').evaluate(p=>{p.currentTime=Math.max(0,p.duration-.1);return p.play();});
+       await page.waitForFunction(()=>document.getElementById('realisation-player').ended);
+     }
      if(i<12)await page.locator('#video-next').click();
    }
    console.log('12 vidéos : métadonnées et lecture Chromium OK');
