@@ -9,6 +9,7 @@ function authorized(header, secret) {
 }
 
 exports.handler = async (event) => {
+  if (process.env.APP_ENV === 'preproduction') return { statusCode: 503, body: JSON.stringify({ error: 'SMS désactivés en préproduction' }) };
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: { Allow: 'POST' }, body: JSON.stringify({ error: 'Méthode non autorisée' }) };
   }

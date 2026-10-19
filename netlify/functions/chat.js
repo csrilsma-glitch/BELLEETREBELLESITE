@@ -137,6 +137,7 @@ async function sequenceStarts(dateISO, services) {
 }
 
 async function sendMailToMelanie({ subject, summary, client_contact }) {
+  if (process.env.APP_ENV === 'preproduction') return { ok: false, message: 'Envoi d\'e-mail désactivé en préproduction.' };
   const key = process.env.RESEND_API_KEY;
   if (!key) return { ok: false, message: 'Envoi d\'e-mail non configuré sur le site.' };
   const res = await fetch('https://api.resend.com/emails', {

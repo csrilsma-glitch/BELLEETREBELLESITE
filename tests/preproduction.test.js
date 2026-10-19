@@ -3,6 +3,24 @@ const assert=require('node:assert/strict');
 const c=require('../netlify/functions/lib/core');
 const n=require('../netlify/functions/lib/notifications');
 
+test('préproduction : anciens envois et Outlook bloqués même avec des clés configurées',async()=>{
+ const previous={...process.env},fetch=global.fetch;let calls=0;
+ process.env.APP_ENV='preproduction';process.env.RESEND_API_KEY='test';process.env.BREVO_API_KEY='test';process.env.SMS_ADMIN_TOKEN='test';
+ process.env.SIMPLYBOOK_COMPANY='test';process.env.SIMPLYBOOK_API_KEY='test';
+ global.fetch=async()=>{calls++;throw Error('unexpected external call');};
+ try{
+  const sms=await require('../netlify/functions/send-sms').handler({httpMethod:'POST',headers:{authorization:'Bearer test'},body:'{}'});
+  assert.equal(sms.statusCode,503);
+  const mail=await require('../netlify/functions/chat')._test.nativeRunTool('notify_melanie',{subject:'test',summary:'test'},{});
+  assert.equal(mail.ok,false);
+  await assert.rejects(require('../netlify/functions/simplybook').startTimesFor('test','2026-10-26'),/préproduction/);
+  const outlook=require('../netlify/functions/lib/outlook');
+  await assert.rejects(outlook.exchange({}),/préproduction/);
+  await assert.rejects(outlook.graph('/me'),/préproduction/);
+  assert.equal(calls,0);
+ }finally{process.env=previous;global.fetch=fetch;}
+});
+
 test('préproduction : base de production refusée avant toute requête réseau',async()=>{
  const previous={...process.env},fetch=global.fetch;let calls=0;
  process.env.APP_ENV='preproduction';process.env.EXPECTED_SUPABASE_PROJECT_REF='mlbfnlidlvsqghcijuhw';

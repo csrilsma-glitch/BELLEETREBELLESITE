@@ -9,6 +9,7 @@ const API_URL = 'https://user-api.simplybook.me/';
 let cachedToken = null; // { token, expires } gardé le temps de la fonction
 
 async function rpc(url, method, params, headers = {}) {
+  if (process.env.APP_ENV === 'preproduction') throw new Error('SimplyBook désactivé en préproduction');
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },

@@ -1,7 +1,7 @@
 const c=require('./core');
 const ROOT='https://graph.microsoft.com/v1.0';
-async function connection(){return (await c.db('br15_outlook?id=eq.true'))[0];}
-async function exchange(data){const r=await c.request('https://login.microsoftonline.com/consumers/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:c.env('MICROSOFT_CLIENT_ID'),client_secret:c.env('MICROSOFT_CLIENT_SECRET'),redirect_uri:c.env('MICROSOFT_REDIRECT_URI'),...data}).toString()});const v=await r.json();if(!r.ok)c.fail(503,'Autorisation Outlook à renouveler');return v;}
+async function connection(){if(process.env.APP_ENV==='preproduction')c.fail(503,'Outlook désactivé en préproduction');return (await c.db('br15_outlook?id=eq.true'))[0];}
+async function exchange(data){if(process.env.APP_ENV==='preproduction')c.fail(503,'Outlook désactivé en préproduction');const r=await c.request('https://login.microsoftonline.com/consumers/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:c.env('MICROSOFT_CLIENT_ID'),client_secret:c.env('MICROSOFT_CLIENT_SECRET'),redirect_uri:c.env('MICROSOFT_REDIRECT_URI'),...data}).toString()});const v=await r.json();if(!r.ok)c.fail(503,'Autorisation Outlook à renouveler');return v;}
 async function graph(path,{method='GET',data}={}){
  let o=await connection();if(!o)c.fail(503,'Outlook non autorisé');let t=c.unseal(o.encrypted);
  if(t.expires_at<Date.now()+90000){
