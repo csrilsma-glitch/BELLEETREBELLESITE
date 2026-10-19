@@ -8,7 +8,7 @@ Base de reprise : `v15-claude`, commit `46c4e29c40345b0be9e40eb059a995774bf6116e
 - Netlify : `belleetrebelle-v15-preproduction`, ID `b298408f-1d4c-482d-865c-754dbb2f0829`, équipe `belleetrebelle-flers`. Protection par connexion à l'équipe pour tous les déploiements, confirmée à la création.
 - Aucune donnée ni clé de production copiée. Les 64 prestations proviennent de la migration catalogue existante. Les 12 tables sont installées dans la base de test avec les migrations 001–004 et le nouveau rappel e-mail.
 - Horaires de test : lundi–jeudi 10–19 h, vendredi 10–15 h, week-end fermé ; fuseau Paris. Calendrier natif activé uniquement dans la base de test. Texte clientèle explicitement fictif.
-- Variables Netlify de test configurées : `APP_ENV=preproduction`, `EXPECTED_SUPABASE_PROJECT_REF=xrpjrweqdhihloykabml`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `NATIVE_BOOKING_ENABLED=true`, `SITE_URL`. Deux secrets aléatoires distincts générés et enregistrés uniquement dans Netlify : `BOOKING_SIGNING_KEY` et `TOKEN_ENCRYPTION_KEY`.
+- Variables Netlify de test configurées : `APP_ENV=preproduction`, `EXPECTED_SUPABASE_PROJECT_REF=xrpjrweqdhihloykabml`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `NATIVE_BOOKING_ENABLED=true`, `SITE_URL`. Deux secrets aléatoires distincts générés pour le projet de test : `BOOKING_SIGNING_KEY` et `TOKEN_ENCRYPTION_KEY`.
 - `.netlify/` et `supabase/.temp/` sont exclus de Git.
 
 ## Corrections
@@ -35,7 +35,7 @@ Base de reprise : `v15-claude`, commit `46c4e29c40345b0be9e40eb059a995774bf6116e
 
 ## Non terminé — ne pas annoncer prêt à publier
 
-- Nouveau site Netlify encore sans déploiement applicatif : il manque notamment `SUPABASE_SECRET_KEY` du projet de test et la liaison du code au nouveau site. Le connecteur Supabase exposé permet les requêtes et migrations, mais pas la récupération de cette clé ni le réglage Auth.
+- Nouveau site Netlify encore sans déploiement applicatif : la liaison du dépôt au nouveau site reste bloquée dans le navigateur. `SUPABASE_SECRET_KEY` est maintenant présente et protégée ; sa valeur masquée ne permet pas de vérifier ses droits avant un appel serveur déployé. Le connecteur Supabase ne permet pas le réglage Auth.
 - Connexion Manager réelle, récupération et MFA personnelle de Mélanie restent à tester. Aucun compte personnel copié dans la base de test.
 - Consentement OAuth propre à la V15 non obtenu ; le connecteur Outlook ChatGPT ne l'accorde pas. Aucun événement Outlook réel créé.
 - Réception effective Resend et rappel via ordonnanceur Netlify non testés. Aucun crédit SMS consommé.
@@ -46,3 +46,20 @@ Base de reprise : `v15-claude`, commit `46c4e29c40345b0be9e40eb059a995774bf6116e
 ## Suite
 
 Terminer l'accès au tableau de bord Supabase si nécessaire pour configurer l'Auth de test et transférer sa clé serveur vers Netlify sans la publier dans la conversation. Lier la branche de développement au site de préproduction protégé. Tester le parcours HTTP contre cette base isolée. Garder les envois externes bloqués jusqu'à un test fournisseur explicitement limité. Obtenir le consentement Microsoft de Mélanie seulement lorsqu'il sera nécessaire, sur un calendrier de test dédié, puis valider les parcours réels avant toute migration de production.
+
+## Point de reprise — 19 octobre 2026, après 22 h (Paris)
+
+Vérification en lecture seule par le connecteur Netlify : neuf variables présentes. `APP_ENV`, référence et URL Supabase, URL du site et activation native ont les valeurs de test attendues. `SUPABASE_SECRET_KEY`, `BOOKING_SIGNING_KEY`, `TOKEN_ENCRYPTION_KEY` ont `is_secret=true`, scope functions inclus et valeurs présentes pour production/branch-deploy/deploy-preview du projet **isolé**. Le contexte appelé « production » par Netlify désigne ici seulement l’URL principale de ce projet de préproduction. Aucune valeur secrète n’a été affichée. Aucun secret de production transféré.
+
+Ne pas régénérer ces secrets à la reprise. Ne pas confondre présence/masquage avec validation cryptographique ou accès effectif de la clé serveur : ces derniers restent à tester côté serveur.
+
+Le navigateur confirme la connexion au compte Netlify et la liste du dépôt autorisé. Cependant la sélection du dépôt déclenche `credential_observation_restricted` ; la récupération autorisée par navigation ne conserve pas le formulaire de liaison. Ne pas boucler sur cette procédure ni contourner cette protection. Le connecteur Netlify disponible ne propose pas d’action de liaison de dépôt ou de lancement de build. Aucun build applicatif lancé pendant cette reprise, aucun agent Netlify payant lancé.
+
+Blocages regroupés pour le retour de Cyril :
+1. Achever la liaison du dépôt dans le projet de préproduction, branche `dev/v15-work-20261019`, publish `site`, functions `netlify/functions`, base et commande vides ; les variables sont désormais enregistrées séparément et ne sont plus à ressaisir. Le premier déploiement est autorisé uniquement sur ce projet isolé. Vérifier la protection équipe sur tous les déploiements.
+2. Vérifier les endpoints déployés contre la base de test, puis créer un compte de test Manager par le canal administratif approprié et tester Auth/récupération/MFA. L’enrôlement personnel de Mélanie reste à sa charge.
+3. Préparer le consentement Microsoft propre au site et un calendrier de test ; aucun accès Outlook autonome n’est encore validé.
+4. Le mode de préproduction bloque les envois externes. Un test de réception Resend limité nécessite un destinataire de test explicitement choisi ; les SMS restent désactivés et aucun crédit consommé.
+5. Vérifier les futurs rendez-vous SimplyBook et la migration avant toute bascule publique.
+
+Le site public, `main`, les DNS et les données de production restent inchangés. Ne pas annoncer une PWA utilisable ni fournir une URL comme fonctionnelle tant que le déploiement et l’authentification réelle ne sont pas validés.
