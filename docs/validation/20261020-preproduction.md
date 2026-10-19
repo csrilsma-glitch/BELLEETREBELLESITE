@@ -28,3 +28,13 @@ La confirmation de réservation affirmait que les notifications étaient en cour
 2. Tester la connexion Manager complète sur Netlify, la récupération avec un lien administratif généré sans envoi, et l’installation Android sur un appareil réel. Aucun e-mail de récupération envoyé pendant cette validation.
 3. Outlook et fournisseurs : aucune clé de production copiée, aucun consentement personnel ni synchronisation ni réception réelle validés. Les envois restent coupés. Pour un test futur, autorisation distincte et destinataire/calendrier de test nécessaires.
 4. Ne pas basculer : SimplyBook futur, information clientèle, paramètres métier et recette finale restent à valider. Aucun changement main, domaine, DNS, site public, base de production ou données clientes réelles.
+
+## Sauvegarde et blocage de publication du correctif
+
+Les corrections applicatives et le runner de test sans secrets sont sauvegardés sur `dev/v15-validation-20261020`, commit `1e1cb6c5fd1fc430f1fd5af502ac88d027aad4c8` (base 0ecc647). Le site Netlify continue de servir le déploiement antérieur 221e4a1, testé en direct. Le correctif des messages n’est PAS encore déployé.
+
+Le 20 octobre vers 1 h Paris, la reprise de l’authentification CLI a été bloquée par la politique réseau de l’environnement : accès à https://api.netlify.com:443 refusé. Ne pas exporter de cookie ou de jeton du navigateur ni contourner cette politique. La voie tableau de bord a retrouvé le dépôt autorisé mais sa sélection déclenche encore credential_observation_restricted. Ne pas boucler sur la liaison.
+
+La session Netlify du navigateur a été rétablie et le périmètre privé reste actif. La demande de reconnexion à la console Supabase a été déclinée ; aucune nouvelle tentative de connexion n’a été faite après ce refus. Le connecteur Supabase reste opérationnel. Une connexion console personnelle et la création d’un compte test durable permettront la recette Manager complète.
+
+Nettoyage vérifié : zéro réservation de test active, zéro manager de test actif, compte Auth automatique bloqué ; runner d’intégration remplacé par HTTP 410 et contrôle JWT maintenu. Aucun e-mail ou SMS réel, aucun nouveau forfait ni clé API personnelle, aucune intervention en production.
