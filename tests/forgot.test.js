@@ -148,3 +148,16 @@ test('production : lien sur le domaine public, inchangé', async () => {
   try { assert.equal(forgot._test.resetUrl(), 'https://belleetrebelle-nailstudio.fr/manager/reset-password.html'); }
   finally { restore(); }
 });
+
+test('délai de connexion Auth : message clair, journalisé sans secret', async () => {
+  const restore = env({ SUPABASE_URL: 'https://fictif.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'cle-fictive-test' });
+  const fetch = global.fetch, consoleError = console.error, logs = [];
+  global.fetch = async () => { throw Object.assign(new Error('délai dépassé'), { name: 'TimeoutError' }); };
+  console.error = (...a) => logs.push(a.join(' '));
+  try {
+    await assert.rejects(c.authRequest('token?grant_type=password', { method: 'POST', data: { email: 'a@b.test', password: 'secret-test-mdp-7731' } }),
+      e => e.status === 503 && /répond lentement/.test(e.message));
+    assert.ok(logs.some(l => l.includes('TimeoutError')));
+    assert.ok(!logs.some(l => l.includes('cle-fictive-test') || l.includes('secret-test-mdp-7731')), 'aucun secret journalisé');
+  } finally { global.fetch = fetch; console.error = consoleError; restore(); }
+});

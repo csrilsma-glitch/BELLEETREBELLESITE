@@ -1,5 +1,8 @@
 (()=>{
 'use strict';
+// Lien de récupération arrivé sur la page d’accueil du Manager (retour de secours de Supabase) :
+// on le transmet à la page de réinitialisation. Le fragment (#…) n’est jamais envoyé au serveur.
+if(/(^|[#&])(type=recovery|error_code=|error=)/.test(location.hash)&&!location.pathname.includes('reset-password')){location.replace('/manager/reset-password.html'+location.hash);return;}
 // « Mot de passe oublié ? ♡ » : demande un lien de récupération, sans révéler si l’adresse a un compte.
 const $=id=>document.getElementById(id);
 const open=$('forgot-open'),panel=$('forgot-panel'),form=$('forgot-form'),status=$('forgot-status'),send=$('forgot-send'),back=$('forgot-back');

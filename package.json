@@ -6,7 +6,8 @@
     "test": "node --test tests/*.test.js",
     "check": "node scripts/check.js",
     "test:sql": "node tests/sql.test.cjs",
-    "test:browser": "node tests/browser.cjs"
+    "test:browser": "node tests/browser.cjs",
+    "test:recovery": "node tests/recovery-browser.cjs"
   },
   "engines": {
     "node": ">=22"
