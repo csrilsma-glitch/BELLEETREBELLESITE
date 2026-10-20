@@ -34,7 +34,8 @@ async function deliver(j){
  const data=await res.json().catch(()=>({}));return {provider_id:String(data.id||data.messageId||'accepted')};
 }
 async function run(){const results=[],deadline=Date.now()+18000;
- for(let n=0;n<4&&Date.now()<deadline;n++){const jobs=await c.rpc('claim',{});if(!jobs.length)break;const j=jobs[0];try{
+ // Vider les rafales de confirmations/modifications sans dépasser le budget de 18 s.
+ for(let n=0;n<24&&Date.now()<deadline;n++){const jobs=await c.rpc('claim',{});if(!jobs.length)break;const j=jobs[0];try{
  const result=await deliver(j);await c.db('br15_jobs?id=eq.'+j.id,{method:'PATCH',data:{state:result.obsolete?'obsolete':'sent',provider_id:result.provider_id||null,error:null}});results.push({id:j.id,state:result.obsolete?'obsolete':'sent'});
  }catch(err){const sms=j.kind.startsWith('sms-'),// Un SMS dont la requête est partie sans réponse claire (timeout, 5xx, 408) peut avoir été accepté : pas de relance aveugle.
  ambiguous=sms&&j.provider_called===true&&!err.definite;const state=ambiguous?'uncertain':'failed';await c.db('br15_jobs?id=eq.'+j.id,{method:'PATCH',data:{state,error:err.status?err.message:'Échec fournisseur ; vérifier avant renvoi',run_at:new Date(Date.now()+Math.min(60,2**j.attempts)*60000).toISOString()}});results.push({id:j.id,state});}}
