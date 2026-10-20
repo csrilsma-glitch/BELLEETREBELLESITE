@@ -1,9 +1,11 @@
 const c=require('./core'),o=require('./outlook');
 async function deliver(j){
- if(process.env.APP_ENV==='preproduction')c.fail(503,'Envois externes désactivés en préproduction');
+ // En préproduction, la file est traitée mais aucun fournisseur n’est appelé : l’envoi est simulé.
+ const simulated=process.env.APP_ENV==='preproduction';
  const b=(await c.db('br15_bookings?id=eq.'+j.booking_id))[0];if(!b||b.revision!==j.payload.revision)return {obsolete:true};
- if(j.kind==='outlook')return {provider_id:await o.push(b)};
  if(j.kind.endsWith('-reminder')&&(b.status!=='confirme'||Date.parse(b.starts)<Date.now()))return {obsolete:true};
+ if(simulated)return {provider_id:'preprod-simulated'};
+ if(j.kind==='outlook')return {provider_id:await o.push(b)};
  const client=(await c.db('br15_clients?id=eq.'+b.client_id))[0];
  const when=c.localTime(b.starts),event=j.payload.event||'confirmation';
  const url=(process.env.SITE_URL||c.PUBLIC)+'/reservation.html#booking='+b.id+'&token='+c.tokenFor(b.request_key);
@@ -20,7 +22,6 @@ async function deliver(j){
  const data=await res.json().catch(()=>({}));return {provider_id:String(data.id||data.messageId||'accepted')};
 }
 async function run(){const results=[],deadline=Date.now()+18000;
- if(process.env.APP_ENV==='preproduction')return results;
  for(let n=0;n<4&&Date.now()<deadline;n++){const jobs=await c.rpc('claim',{});if(!jobs.length)break;const j=jobs[0];try{
  const result=await deliver(j);await c.db('br15_jobs?id=eq.'+j.id,{method:'PATCH',data:{state:result.obsolete?'obsolete':'sent',provider_id:result.provider_id||null,error:null}});results.push({id:j.id,state:result.obsolete?'obsolete':'sent'});
  }catch(err){const sms=j.kind.startsWith('sms-'),ambiguous=sms&&!err.definite&&!err.status;const state=ambiguous?'uncertain':'failed';await c.db('br15_jobs?id=eq.'+j.id,{method:'PATCH',data:{state,error:err.status?err.message:'Échec fournisseur ; vérifier avant renvoi',run_at:new Date(Date.now()+Math.min(60,2**j.attempts)*60000).toISOString()}});results.push({id:j.id,state});}}
