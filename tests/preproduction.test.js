@@ -117,3 +117,16 @@ test('SMS : clé absente = échec relançable, aucun envoi',async()=>{
  let calls=0;const p=await runSmsWith(async()=>{calls++;return {ok:true,status:200,json:async()=>({})};},{BREVO_API_KEY:undefined});
  assert.equal(p.state,'failed');assert.equal(calls,0);
 });
+
+test('régression : une prestation terminée ne déclenche aucun envoi (job « terminé » écarté, sans appel fournisseur)',async()=>{
+const previous={...process.env},fetch=global.fetch,db=c.db;let external=0;
+delete process.env.APP_ENV;process.env.RESEND_API_KEY='cle-fictive-test';process.env.BREVO_API_KEY='cle-fictive-test';
+global.fetch=async()=>{external++;throw Error('appel fournisseur interdit');};
+c.db=async()=>[{id:'b1',revision:1,status:'termine',starts:'2099-01-01T10:00:00Z',client_id:'c1',services:[{path:'Gel'}],cents:5200,request_key:'k'}];
+try{
+  for(const kind of ['email-client','email-manager','sms-confirmation']){
+    assert.deepEqual(await n.deliver({kind,booking_id:'b1',payload:{revision:1,event:'terminé'}}),{obsolete:true},kind);
+  }
+  assert.equal(external,0);
+}finally{process.env=previous;global.fetch=fetch;c.db=db;}
+});

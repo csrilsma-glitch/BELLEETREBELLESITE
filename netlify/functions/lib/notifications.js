@@ -3,6 +3,8 @@ async function deliver(j){
  // En préproduction, la file est traitée mais aucun fournisseur n’est appelé : l’envoi est simulé.
  const simulated=process.env.APP_ENV==='preproduction';
  const b=(await c.db('br15_bookings?id=eq.'+j.booking_id))[0];if(!b||b.revision!==j.payload.revision)return {obsolete:true};
+ // Une prestation terminée ne notifie personne : tout job « terminé » encore en file est écarté.
+ if(j.payload.event==='terminé')return {obsolete:true};
  if(j.kind.endsWith('-reminder')&&(b.status!=='confirme'||Date.parse(b.starts)<Date.now()))return {obsolete:true};
  if(simulated)return {provider_id:'preprod-simulated'};
  if(j.kind==='outlook')return {provider_id:await o.push(b)};

@@ -30,4 +30,12 @@ const blocks=(await query('select * from br15_blocks')).rows;await query("select
 await query("select br15_admin('settings',$1)",[JSON.stringify({compatibility:[ids]})]);await assert.rejects(query('select br15_quote($1)',[ids]));console.log('OK incompatibilités configurables');
 await db.exec('set role anon');await assert.rejects(query('select * from br15_clients'));await assert.rejects(query('select br15_quote($1)',[ids]));await db.exec('reset role');console.log('OK RLS et RPC refusés aux anonymes');
 const winter=await scalar("select ('2027-01-15 09:00'::timestamp at time zone 'Europe/Paris')::text v"),summer=await scalar("select ('2027-07-15 09:00'::timestamp at time zone 'Europe/Paris')::text v");assert(winter.includes('08:00'));assert(summer.includes('07:00'));console.log('OK fuseau Paris été/hiver');
+// Régression : une prestation marquée « terminée » par Mélanie ne génère aucune notification à la cliente.
+await query("select br15_admin('settings',$1)",[JSON.stringify({compatibility:[]})]);
+const later=await scalar("select ((now() at time zone 'Europe/Paris')::date+5)::text v");
+const laterSlot=(await query('select * from br15_slots($1,$2)',[later,ids])).rows[0];
+const doneBooking=await scalar('select br15_book($1,$2,$3,$4,$5,$6,$7) v',[ids,laterSlot.starts,'Cliente terminee','fin@example.test','+33600000001','dddddddd-dddd-4ddd-8ddd-dddddddddddd','hashfin']);
+await query("select br15_change($1,'','complete',null,true)",[doneBooking.id]);
+assert.equal(await scalar("select count(*)::int v from br15_jobs where booking_id=$1 and payload->>'event'='terminé'",[doneBooking.id]),0,'aucune notification « terminé »');
+assert.equal(await scalar('select status v from br15_bookings where id=$1',[doneBooking.id]),'termine');console.log('OK prestation terminée sans notification cliente');
 console.log('TOUS LES TESTS SQL PASSENT');await db.close();})().catch(e=>{console.error(e.message,e.stack);process.exit(1);});
