@@ -89,3 +89,31 @@ test('rappel e-mail dépassé : aucun envoi fournisseur',async()=>{
  try{assert.deepEqual(await n.deliver({kind:'email-reminder',payload:{revision:1}}),{obsolete:true});assert.equal(calls,1);}
  finally{c.db=db;}
 });
+
+// Classement des échecs SMS : pas de relance aveugle après une demande possiblement acceptée.
+async function runSmsWith(fetchImpl,env={}){
+ const previous={...process.env},fetch=global.fetch,rpc=c.rpc,db=c.db;const patches=[];let served=0;
+ delete process.env.APP_ENV;process.env.BREVO_API_KEY='cle-fictive-test';process.env.BOOKING_SIGNING_KEY='test-signing-key-fictif';
+ Object.assign(process.env,env);
+ global.fetch=fetchImpl;
+ c.rpc=async(name)=>name==='claim'?(served++?[]:[{id:'s1',kind:'sms-confirmation',booking_id:'b1',dedupe:'b1:1:sms',payload:{revision:1,event:'confirmation'},attempts:1}]):{};
+ c.db=async(path,opts)=>{if(opts&&opts.method==='PATCH')patches.push(opts.data);return path.startsWith('br15_clients')?[{id:'c1',name:'Cliente fictive',email:'x@example.test',phone:'+33600000000'}]:[{id:'b1',revision:1,status:'confirme',created_at:'2026-10-20T08:00:00Z',starts:'2099-01-01T10:00:00Z',ends:'2099-01-01T11:30:00Z',client_id:'c1',services:[{path:'Gel'}],cents:5200,request_key:'k'}];};
+ try{await n.run();return patches[0];}
+ finally{process.env=previous;global.fetch=fetch;c.rpc=rpc;c.db=db;}
+}
+test('SMS : erreur 5xx après envoi = incertain, pas de relance',async()=>{
+ const p=await runSmsWith(async()=>({ok:false,status:500,json:async()=>({})}));
+ assert.equal(p.state,'uncertain');
+});
+test('SMS : timeout réseau après envoi = incertain',async()=>{
+ const p=await runSmsWith(async()=>{throw new Error('timeout');});
+ assert.equal(p.state,'uncertain');
+});
+test('SMS : refus 4xx définitif = échec relançable',async()=>{
+ const p=await runSmsWith(async()=>({ok:false,status:400,json:async()=>({})}));
+ assert.equal(p.state,'failed');
+});
+test('SMS : clé absente = échec relançable, aucun envoi',async()=>{
+ let calls=0;const p=await runSmsWith(async()=>{calls++;return {ok:true,status:200,json:async()=>({})};},{BREVO_API_KEY:undefined});
+ assert.equal(p.state,'failed');assert.equal(calls,0);
+});

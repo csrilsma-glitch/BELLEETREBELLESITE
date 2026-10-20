@@ -16,7 +16,10 @@ async function deliver(j){
  res=await c.request('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+c.env('RESEND_API_KEY'),'Content-Type':'application/json','Idempotency-Key':j.dedupe},body:JSON.stringify(data)});
  }else{
  // Même endpoint/expéditeur que la fonction Brevo reçue et déjà testée.
- res=await c.request('https://api.brevo.com/v3/transactionalSMS/sms',{method:'POST',headers:{'api-key':c.env('BREVO_API_KEY'),'Content-Type':'application/json'},body:JSON.stringify({sender:'BELREBELLE',recipient:client.phone,content:`Belle & Rebelle : ${event} du RDV ${when}. ${b.status==='annule'?'Annule.':'Sans acompte. Infos : 06 62 28 75 45.'}`,type:'transactional',tag:'br15-'+j.id})});
+ // Clé lue avant tout appel : une erreur de configuration ne doit jamais compter comme envoi.
+ const brevoKey=c.env('BREVO_API_KEY');
+ j.provider_called=true;
+ res=await c.request('https://api.brevo.com/v3/transactionalSMS/sms',{method:'POST',headers:{'api-key':brevoKey,'Content-Type':'application/json'},body:JSON.stringify({sender:'BELREBELLE',recipient:client.phone,content:`Belle & Rebelle : ${event} du RDV ${when}. ${b.status==='annule'?'Annule.':'Sans acompte. Infos : 06 62 28 75 45.'}`,type:'transactional',tag:'br15-'+j.id})});
  }
  if(!res.ok){const err=new Error('Fournisseur '+res.status);err.definite=res.status>=400&&res.status<500&&res.status!==408;throw err;}
  const data=await res.json().catch(()=>({}));return {provider_id:String(data.id||data.messageId||'accepted')};
@@ -24,6 +27,7 @@ async function deliver(j){
 async function run(){const results=[],deadline=Date.now()+18000;
  for(let n=0;n<4&&Date.now()<deadline;n++){const jobs=await c.rpc('claim',{});if(!jobs.length)break;const j=jobs[0];try{
  const result=await deliver(j);await c.db('br15_jobs?id=eq.'+j.id,{method:'PATCH',data:{state:result.obsolete?'obsolete':'sent',provider_id:result.provider_id||null,error:null}});results.push({id:j.id,state:result.obsolete?'obsolete':'sent'});
- }catch(err){const sms=j.kind.startsWith('sms-'),ambiguous=sms&&!err.definite&&!err.status;const state=ambiguous?'uncertain':'failed';await c.db('br15_jobs?id=eq.'+j.id,{method:'PATCH',data:{state,error:err.status?err.message:'Échec fournisseur ; vérifier avant renvoi',run_at:new Date(Date.now()+Math.min(60,2**j.attempts)*60000).toISOString()}});results.push({id:j.id,state});}}
+ }catch(err){const sms=j.kind.startsWith('sms-'),// Un SMS dont la requête est partie sans réponse claire (timeout, 5xx, 408) peut avoir été accepté : pas de relance aveugle.
+ ambiguous=sms&&j.provider_called===true&&!err.definite;const state=ambiguous?'uncertain':'failed';await c.db('br15_jobs?id=eq.'+j.id,{method:'PATCH',data:{state,error:err.status?err.message:'Échec fournisseur ; vérifier avant renvoi',run_at:new Date(Date.now()+Math.min(60,2**j.attempts)*60000).toISOString()}});results.push({id:j.id,state});}}
  return results;}
 module.exports={deliver,run};
