@@ -6,6 +6,10 @@ async function deliver(j){
  const b=(await c.db('br15_bookings?id=eq.'+j.booking_id))[0];if(!b||b.revision!==j.payload.revision)return {obsolete:true};
  // Une prestation terminée ne notifie personne : tout job « terminé » encore en file est écarté.
  if(j.payload.event==='terminé')return {obsolete:true};
+ // Économie Brevo : pas de SMS pour les déplacements/annulations, déjà convenus avec la cliente.
+ // Les confirmations initiales et rappels SMS restent possibles selon les réglages.
+ const event=j.payload.event||'confirmation';
+ if(j.kind.startsWith('sms-')&&!['confirmation','rappel'].includes(event))return {obsolete:true};
  if(j.kind.endsWith('-reminder')&&(b.status!=='confirme'||Date.parse(b.starts)<Date.now()))return {obsolete:true};
  const test=simulated&&await rt.allowed(j,b);
  if(simulated&&!test)return {provider_id:'preprod-simulated'};
