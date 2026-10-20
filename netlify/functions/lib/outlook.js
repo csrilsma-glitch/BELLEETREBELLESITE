@@ -1,14 +1,14 @@
 const c=require('./core');
 const ROOT='https://graph.microsoft.com/v1.0';
-async function connection(){if(process.env.APP_ENV==='preproduction')c.fail(503,'Outlook désactivé en préproduction');return (await c.db('br15_outlook?id=eq.true'))[0];}
-// Préproduction : aucun accès Outlook, sauf le parcours de connexion d’un compte Microsoft de TEST,
-// et seulement si OUTLOOK_PREPROD_TEST=true. Graph, synchronisation et écriture restent toujours bloqués.
+async function connection(){if(process.env.APP_ENV==='preproduction'&&!preprodConnectAllowed())c.fail(503,'Outlook désactivé en préproduction');return (await c.db('br15_outlook?id=eq.true'))[0];}
+// Préproduction : accès Microsoft autorisé uniquement par drapeau explicite et compte Outlook désigné.
+// Ne jamais activer ces variables sur le site public sans validation.
 const testFlag=()=>process.env.OUTLOOK_PREPROD_TEST==='true';
 const testAccount=()=>String(process.env.OUTLOOK_PREPROD_TEST_ACCOUNT||'').trim().toLowerCase();
 function preprodConnectAllowed(){return testFlag()&&testAccount().includes('@');}
 function assertTestAccount(t){const claims=idClaims(t),actual=String(claims?.preferred_username||'').trim().toLowerCase();if(!testAccount()||actual!==testAccount())c.fail(403,'Compte Microsoft non autorisé pour le test préproduction');return true;}
 function idClaims(t){if(!t||typeof t.id_token!=='string')return null;try{return JSON.parse(Buffer.from(t.id_token.split('.')[1],'base64url').toString());}catch{return null;}}
-async function exchange(data,{connectFlow=false}={}){if(process.env.APP_ENV==='preproduction'&&!(connectFlow&&preprodConnectAllowed()))c.fail(503,'Outlook désactivé en préproduction');const r=await c.request('https://login.microsoftonline.com/consumers/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:c.env('MICROSOFT_CLIENT_ID'),client_secret:c.env('MICROSOFT_CLIENT_SECRET'),redirect_uri:c.env('MICROSOFT_REDIRECT_URI'),...data}).toString()});const v=await r.json();if(!r.ok)c.fail(503,'Autorisation Outlook à renouveler');return v;}
+async function exchange(data,{connectFlow=false}={}){if(process.env.APP_ENV==='preproduction'&&!preprodConnectAllowed())c.fail(503,'Outlook désactivé en préproduction');const r=await c.request('https://login.microsoftonline.com/consumers/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:c.env('MICROSOFT_CLIENT_ID'),client_secret:c.env('MICROSOFT_CLIENT_SECRET'),redirect_uri:c.env('MICROSOFT_REDIRECT_URI'),...data}).toString()});const v=await r.json();if(!r.ok)c.fail(503,'Autorisation Outlook à renouveler');return v;}
 async function graph(path,{method='GET',data}={}){
  let o=await connection();if(!o)c.fail(503,'Outlook non autorisé');let t=c.unseal(o.encrypted);
  if(t.expires_at<Date.now()+90000){
@@ -28,7 +28,7 @@ async function push(b){
  const path=calendarPath(o)+'/events';
  if(b.status==='annule'){
  if(mapping){await graph(path+'/'+encodeURIComponent(mapping.event_id),{method:'DELETE'});await c.db('br15_outlook_events?booking_id=eq.'+b.id,{method:'DELETE'});}return 'annule';}
- const data={subject:'Belle & Rebelle — Rendez-vous',body:{contentType:'text',content:b.services.map(s=>s.path).join('\n')},start:{dateTime:new Date(b.starts).toISOString().replace('Z',''),timeZone:'UTC'},end:{dateTime:new Date(b.ends).toISOString().replace('Z',''),timeZone:'UTC'},showAs:'busy',transactionId:b.id};
+ const data={subject:(process.env.APP_ENV==='preproduction'?'[TEST V15] ':'')+'Belle & Rebelle — Rendez-vous',body:{contentType:'text',content:b.services.map(s=>s.path).join('\n')},start:{dateTime:new Date(b.starts).toISOString().replace('Z',''),timeZone:'UTC'},end:{dateTime:new Date(b.ends).toISOString().replace('Z',''),timeZone:'UTC'},showAs:'busy',transactionId:b.id};
  let r;if(mapping)r=await graph(path+'/'+encodeURIComponent(mapping.event_id),{method:'PATCH',data});
  if(!mapping||r?.missing)r=await graph(path,{method:'POST',data});
  if(r?.id)await c.db('br15_outlook_events?on_conflict=booking_id',{method:'POST',prefer:'resolution=merge-duplicates',data:{booking_id:b.id,event_id:r.id,revision:b.revision}});
