@@ -8,7 +8,7 @@ async function deliver(j){
  if(j.kind==='outlook')return {provider_id:await o.push(b)};
  const client=(await c.db('br15_clients?id=eq.'+b.client_id))[0];
  const when=c.localTime(b.starts),event=j.payload.event||'confirmation';
- const url=(process.env.SITE_URL||c.PUBLIC)+'/reservation.html#booking='+b.id+'&token='+c.tokenFor(b.request_key);
+ const url=c.siteUrl()+'/reservation.html#booking='+b.id+'&token='+c.tokenFor(b.request_key);
  const text=`Belle & Rebelle — ${event}\n${client.name}, votre rendez-vous : ${when}.\n${b.services.map(x=>x.path).join('\n')}\nTotal : ${(b.cents/100).toFixed(2)} € — paiement sur place, sans acompte.\n${b.status==='annule'?'Rendez-vous annulé.':'Gérer mon rendez-vous : '+url}\nTéléphone : 06 62 28 75 45.`;
  let res;
  if(j.kind.startsWith('email-')){

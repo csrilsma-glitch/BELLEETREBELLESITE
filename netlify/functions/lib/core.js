@@ -1,6 +1,9 @@
 'use strict';
 const crypto=require('node:crypto');
 const PUBLIC='https://belleetrebelle-nailstudio.fr';
+const PREPROD_SITE='https://belleetrebelle-v15-preproduction.netlify.app';
+// URL publique du site : en préproduction, jamais le domaine de production.
+function siteUrl(){const base=process.env.SITE_URL;if(process.env.APP_ENV==='preproduction'){if(base!==PREPROD_SITE)fail(503,'SITE_URL de préproduction incorrect');return base;}return base||PUBLIC;}
 class Failure extends Error {constructor(status,message){super(message);this.status=status;}}
 const fail=(status,message)=>{throw new Failure(status,message);};
 function env(key){return process.env[key]||fail(503,'Configuration serveur manquante : '+key);}
@@ -50,4 +53,4 @@ function seal(value){const key=Buffer.from(env('TOKEN_ENCRYPTION_KEY'),'base64')
 function unseal(value){const b=Buffer.from(value,'base64'),d=crypto.createDecipheriv('aes-256-gcm',Buffer.from(env('TOKEN_ENCRYPTION_KEY'),'base64'),b.subarray(0,12));d.setAuthTag(b.subarray(12,28));return JSON.parse(Buffer.concat([d.update(b.subarray(28)),d.final()]).toString());}
 const localTime=x=>new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',dateStyle:'full',timeStyle:'short'}).format(new Date(x));
 function ics(b){const fmt=x=>new Date(x).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Belle Rebelle//V15//FR','METHOD:PUBLISH','BEGIN:VEVENT','UID:'+b.id+'@belleetrebelle-nailstudio.fr','DTSTAMP:'+fmt(b.created_at),'SEQUENCE:'+b.revision,'DTSTART:'+fmt(b.starts),'DTEND:'+fmt(b.ends),'SUMMARY:Belle & Rebelle - Rendez-vous','LOCATION:28 rue de Messei 61100 Flers','STATUS:'+(b.status==='annule'?'CANCELLED':'CONFIRMED'),'END:VEVENT','END:VCALENDAR',''].join('\r\n');}
-module.exports={PUBLIC,Failure,fail,env,json,body,origin,wrap,request,db,rpc,sha,sign,safeEqual,tokenFor,uuid,ids,date,instant,phone,rate,cookies,cookie,authRequest,manager,seal,unseal,localTime,ics};
+module.exports={PUBLIC,PREPROD_SITE,siteUrl,Failure,fail,env,json,body,origin,wrap,request,db,rpc,sha,sign,safeEqual,tokenFor,uuid,ids,date,instant,phone,rate,cookies,cookie,authRequest,manager,seal,unseal,localTime,ics};

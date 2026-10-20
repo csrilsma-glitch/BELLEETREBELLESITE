@@ -110,3 +110,41 @@ test('double authentification : mauvais code TOTP = 403, pas 401 (évite le faux
     assert.match(JSON.parse(r.body).error, /incorrect ou expiré/);
   } finally { restore(); }
 });
+
+const PREPROD = 'https://belleetrebelle-v15-preproduction.netlify.app';
+test('préproduction : test réel seulement pour l’adresse autorisée, avec le drapeau explicite', async () => {
+  const restore = env({ APP_ENV: 'preproduction', SITE_URL: PREPROD, PREPROD_RECOVERY_TEST: 'true', PREPROD_RECOVERY_ALLOWLIST: 'Manager.Test@Exemple.FR' });
+  const calls = stub();
+  try {
+    await forgot.handler(req('autre@exemple.test'));
+    assert.equal(calls.length, 0, 'adresse non autorisée : aucun appel');
+    await forgot.handler(req('manager.test@exemple.fr'));
+    assert.equal(calls.length, 1, 'adresse autorisée : un appel');
+    assert.equal(calls[0].path, 'recover?redirect_to=' + encodeURIComponent(PREPROD + '/manager/reset-password.html'));
+  } finally { restore(); }
+});
+test('préproduction : drapeau absent ou faux = aucun appel même pour l’adresse listée', async () => {
+  const restore = env({ APP_ENV: 'preproduction', SITE_URL: PREPROD, PREPROD_RECOVERY_TEST: 'false', PREPROD_RECOVERY_ALLOWLIST: 'manager.test@exemple.fr' });
+  const calls = stub();
+  try {
+    const r = await forgot.handler(req('manager.test@exemple.fr'));
+    assert.equal(r.statusCode, 200);
+    assert.equal(calls.length, 0);
+  } finally { restore(); }
+});
+test('préproduction : SITE_URL absent ou production = aucun appel, jamais le domaine public', async () => {
+  const restore = env({ APP_ENV: 'preproduction', PREPROD_RECOVERY_TEST: 'true', PREPROD_RECOVERY_ALLOWLIST: 'manager.test@exemple.fr', SITE_URL: 'https://belleetrebelle-nailstudio.fr' });
+  const calls = stub();
+  try {
+    // Réponse identique (pas d’oracle) ; aucun e-mail ; l’erreur de configuration est journalisée.
+    const r = await forgot.handler(req('manager.test@exemple.fr'));
+    assert.equal(r.statusCode, 200);
+    assert.equal(JSON.parse(r.body).message, forgot._test.GENERIC);
+    assert.equal(calls.length, 0);
+  } finally { restore(); }
+});
+test('production : lien sur le domaine public, inchangé', async () => {
+  const restore = env({});
+  try { assert.equal(forgot._test.resetUrl(), 'https://belleetrebelle-nailstudio.fr/manager/reset-password.html'); }
+  finally { restore(); }
+});
