@@ -1,14 +1,15 @@
 const c=require('./lib/core'),b=require('./lib/booking');
 // Période bloquée : dates valides, fin strictement après le début, motif obligatoire (contrôle avant toute écriture).
 function blockData(x){
- const s=new Date(x?.starts),e=new Date(x?.ends),label=String(x?.label??'').trim().slice(0,200);
+ if(typeof x?.starts!=='string'||typeof x?.ends!=='string')c.fail(400,'Date de début ou de fin invalide.');
+ const s=new Date(c.instant(x.starts)),e=new Date(c.instant(x.ends)),label=typeof x.label==='string'?x.label.trim().slice(0,200):'';
  if(isNaN(s)||isNaN(e))c.fail(400,'Date de début ou de fin invalide.');
  if(e<=s)c.fail(400,'La date de fin doit être postérieure à la date de début.');
  if(!label)c.fail(400,'Indiquez un motif pour cette période.');
  return {starts:s.toISOString(),ends:e.toISOString(),label};
 }
-// Notes cliente : même troncature que le SQL (4000 caractères) pour pouvoir comparer après écriture.
-function clientData(x){if(!c.uuid(x?.id))c.fail(400,'Identifiant invalide');return {id:x.id,notes:Array.from(String(x.notes??'')).slice(0,4000).join('')};}
+// Refuser les notes trop longues plutôt que confirmer une sauvegarde tronquée.
+function clientData(x){if(!c.uuid(x?.id))c.fail(400,'Identifiant invalide');if(typeof x.notes!=='string')c.fail(400,'Texte des notes invalide.');if(Array.from(x.notes).length>4000)c.fail(400,'Les notes sont limitées à 4000 caractères. Raccourcissez le texte avant de réessayer.');return {id:x.id,notes:x.notes};}
 exports.handler=e=>c.wrap(e,async()=>{
  await c.manager(e);if(e.httpMethod!=='POST')return c.json(405,{error:'POST requis'});const d=c.body(e);
  if(d.action==='dashboard'){

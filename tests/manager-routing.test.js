@@ -127,8 +127,14 @@ test('client : identifiant non UUID refusé sans appel',async()=>{
  const calls=setup();const r=await handler(event({action:'client',data:{id:'x',notes:'n'}}));
  assert.equal(r.statusCode,400);assert.equal(calls.length,0);
 });
-test('client : notes tronquées à 4000 caractères comme le SQL',async()=>{
+test('client : notes trop longues refusées sans écriture ni perte silencieuse',async()=>{
  const calls=setup();const long='é'.repeat(4500);c.db=async()=>[{notes:'é'.repeat(4000)}];
  const r=await handler(event({action:'client',data:{id:UUID,notes:long}}));
- assert.equal(r.statusCode,200);assert.equal(calls.find(x=>x.kind==='rpc').args.p_data.notes.length,4000);
+ assert.equal(r.statusCode,400);assert.equal(calls.length,0);assert.match(JSON.parse(r.body).error,/4000/);
 });
+
+test('block : champs null, numériques, tableaux et objets refusés avant écriture',async()=>{
+ for(const value of [null,0,[],{},true]){const calls=setup();const r=await handler(event({action:'block',data:{starts:value,ends:'2026-11-05T12:00:00Z',label:'Test'}}));assert.equal(r.statusCode,400,JSON.stringify(value));assert.equal(calls.length,0);}
+});
+
+test('client : texte absent ou non textuel refusé sans effacer les notes',async()=>{for(const notes of [undefined,null,42,{},[]]){const calls=setup();const r=await handler(event({action:'client',data:{id:UUID,notes}}));assert.equal(r.statusCode,400);assert.equal(calls.length,0);}});

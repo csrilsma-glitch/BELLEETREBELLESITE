@@ -13,17 +13,18 @@ function dashboard(state){return {settings:{enabled:false,lead_minutes:120,horiz
  await new Promise(r=>server.listen(PORT,'127.0.0.1',r));
  const browser=await chromium.launch({executablePath:process.env.BROWSER_EXECUTABLE||chromium.executablePath(),args:['--no-sandbox','--disable-dev-shm-usage'],headless:true});
  const errors=[];
- for(const [name,width,height,standalone] of [['desktop',1440,1000,false],['mobile-standalone',390,844,true],['mobile-browser',390,844,false]]){
+ for(const [name,width,height,standalone] of [['desktop',1440,1000,false],['mobile-standalone',390,844,true],['mobile-browser',390,844,false],['landscape',844,390,false],['legacy-media',390,844,false]]){
   const state={notes:'',blocks:[{id:'b1',starts:'2026-10-30T09:00:00Z',ends:'2026-10-30T10:00:00Z',label:'Congé',source:'manager'}]};
-  const sent=[];let failNotes=true;
+  const sent=[];let failNotes=true,slowNotes=false,releaseNotes,notesStarted;
   const ctx=await browser.newContext({viewport:{width,height},serviceWorkers:'block'}),page=await ctx.newPage();
   page.on('pageerror',e=>errors.push(name+': '+e.message));
+  if(name==='legacy-media')await page.addInitScript(()=>{const real=window.matchMedia.bind(window);window.matchMedia=q=>q.includes('display-mode: standalone')?{matches:false,addListener(){},removeListener(){}}:real(q);});
   if(standalone)await page.addInitScript(()=>{const real=window.matchMedia.bind(window);window.matchMedia=q=>q.includes('display-mode: standalone')?{matches:true,addEventListener(){},removeEventListener(){}}:real(q);});
   await page.route('**/.netlify/functions/**',async route=>{
    const req=route.request(),n=req.url().split('/').pop(),d=req.postDataJSON()||{};let v={ok:true},code=200;
    if(n==='manager'){
     if(d.action==='dashboard')v=dashboard(state);
-    else if(d.action==='client'){sent.push('client');if(failNotes){code=503;v={error:'Notes non enregistrées. Réessayez.'};}else{state.notes=d.data.notes;}}
+    else if(d.action==='client'){sent.push('client');if(failNotes){code=503;v={error:'Notes non enregistrées. Réessayez.'};}else{const submitted=d.data.notes;if(slowNotes){notesStarted();await new Promise(resolve=>{releaseNotes=resolve;});}state.notes=submitted;}}
     else if(d.action==='block'){sent.push('block');state.blocks.push({id:'b2',starts:d.data.starts,ends:d.data.ends,label:d.data.label,source:'manager'});}
     else if(d.action==='unblock'){sent.push('unblock');state.blocks=state.blocks.filter(b=>b.id!==d.data.id);}
     else if(d.action==='history')v={bookings:[]};
@@ -36,6 +37,7 @@ function dashboard(state){return {settings:{enabled:false,lead_minutes:120,horiz
   // Installer : masqué en mode autonome, visible sinon.
   const installVisible=await page.locator('#install').isVisible();
   assert.equal(installVisible,!standalone,name+' : bouton Installer');
+  if(!standalone){await page.evaluate(()=>window.dispatchEvent(new Event('appinstalled')));assert.equal(await page.locator('#install').isVisible(),false,'appinstalled masque le bouton sans lancement standalone');}
   // Clientes : notes non confirmées → message près de la fiche, pas seulement en haut de page.
   await page.locator('[data-view="clients"]').click();
   const card=page.locator('#client-list article').first();
@@ -47,6 +49,13 @@ function dashboard(state){return {settings:{enabled:false,lead_minutes:120,horiz
   await card.getByRole('button',{name:'Enregistrer les notes'}).click();
   await page.waitForFunction(()=>document.querySelector('#client-list .inline-msg')?.textContent.includes('vérifiées'));
   assert.equal(state.notes,'Note de test V15',name+' : note reçue par le serveur');
+  // Une modification pendant l’écriture ne doit jamais être annoncée comme enregistrée.
+  slowNotes=true;let startedResolve;const started=new Promise(resolve=>{startedResolve=resolve;});notesStarted=startedResolve;
+  await card.locator('textarea').fill('Version envoyée');await card.getByRole('button',{name:'Enregistrer les notes'}).click();await started;const requests=sent.filter(x=>x==='client').length;await card.getByRole('button',{name:'Enregistrer les notes'}).click();assert.equal(sent.filter(x=>x==='client').length,requests,'double clic ne relance pas une écriture en cours');
+  await card.locator('textarea').fill('Brouillon plus récent');releaseNotes();
+  await page.waitForFunction(()=>document.querySelector('#client-list .inline-msg')?.textContent.includes('modifications'));
+  assert.equal(state.notes,'Version envoyée');assert.equal(await card.locator('textarea').inputValue(),'Brouillon plus récent');
+  slowNotes=false;
   // Périodes : fin avant début refusée avant tout envoi.
   await page.locator('[data-view="settings"]').click();
   await page.locator('details:has(#block-form) > summary').click();
@@ -65,6 +74,7 @@ function dashboard(state){return {settings:{enabled:false,lead_minutes:120,horiz
   const remove=page.locator('.block-row button',{hasText:'Retirer'}).first();
   assert.equal(await remove.isVisible(),true,name+' : bouton Retirer visible');
   const box=await remove.boundingBox();assert.ok(box.height>=30,name+' : hauteur du bouton');
+  await remove.click();await page.waitForFunction(()=>document.getElementById('block-msg').textContent.includes('retirée'));assert.equal(sent.filter(x=>x==='unblock').length,1);assert.equal(state.blocks.some(b=>b.id==='b1'),false);
   // Pas de défilement horizontal de la page.
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
   assert.ok(overflow<=1,name+' : défilement horizontal de '+overflow+'px');

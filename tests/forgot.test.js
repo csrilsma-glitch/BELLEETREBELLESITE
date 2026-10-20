@@ -112,15 +112,14 @@ test('double authentification : mauvais code TOTP = 403, pas 401 (évite le faux
 });
 
 const PREPROD = 'https://belleetrebelle-v15-preproduction.netlify.app';
-test('préproduction : test réel seulement pour l’adresse autorisée, avec le drapeau explicite', async () => {
+test('préproduction : ancien drapeau réel et allowlist ignorés sans appel Auth', async () => {
   const restore = env({ APP_ENV: 'preproduction', SITE_URL: PREPROD, PREPROD_RECOVERY_TEST: 'true', PREPROD_RECOVERY_ALLOWLIST: 'Manager.Test@Exemple.FR' });
   const calls = stub();
   try {
     await forgot.handler(req('autre@exemple.test'));
     assert.equal(calls.length, 0, 'adresse non autorisée : aucun appel');
     await forgot.handler(req('manager.test@exemple.fr'));
-    assert.equal(calls.length, 1, 'adresse autorisée : un appel');
-    assert.equal(calls[0].path, 'recover?redirect_to=' + encodeURIComponent(PREPROD + '/manager/reset-password.html'));
+    assert.equal(calls.length, 0, 'même adresse listée : aucun e-mail');
   } finally { restore(); }
 });
 test('préproduction : drapeau absent ou faux = aucun appel même pour l’adresse listée', async () => {
@@ -139,7 +138,7 @@ test('préproduction : SITE_URL absent ou production = aucun appel, jamais le do
     // Réponse identique (pas d’oracle) ; aucun e-mail ; l’erreur de configuration est journalisée.
     const r = await forgot.handler(req('manager.test@exemple.fr'));
     assert.equal(r.statusCode, 200);
-    assert.equal(JSON.parse(r.body).message, forgot._test.GENERIC);
+    assert.equal(JSON.parse(r.body).message, forgot._test.SIMULATED);
     assert.equal(calls.length, 0);
   } finally { restore(); }
 });
