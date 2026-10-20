@@ -242,7 +242,7 @@ async function callClaude(apiKey, messages) {
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ model: MODEL, max_tokens: 1100, system: SYSTEM_PROMPT + liveCatalogue + (process.env.NATIVE_BOOKING_ENABLED === 'true' ? '\nMode natif V15 : le clic sur le bouton de confirmation affiché à la cliente crée le rendez-vous. Avant cela, il s’agit uniquement d’une proposition. Ne dis jamais que le rendez-vous est confirmé avant ce clic et son résultat serveur.' : ''), tools: TOOLS, messages }),
+    body: JSON.stringify({ model: MODEL, max_tokens: 1100, system: SYSTEM_PROMPT + liveCatalogue + (process.env.NATIVE_BOOKING_ENABLED === 'true' ? '\nRègles commerciales confirmées par Mélanie : paiement exclusivement sur place, aucun acompte ni paiement en ligne, y compris lors de la première visite. Plusieurs prestations sont regroupées dans un seul rendez-vous avec prix et durée cumulés.\nMode natif V15 : le clic sur le bouton de confirmation affiché à la cliente crée le rendez-vous. Avant cela, il s’agit uniquement d’une proposition. Ne dis jamais que le rendez-vous est confirmé avant ce clic et son résultat serveur.' : ''), tools: TOOLS, messages }),
   });
   if (!res.ok) throw new Error('API Claude ' + res.status);
   return res.json();
