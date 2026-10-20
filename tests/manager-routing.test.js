@@ -22,8 +22,8 @@ function setup() {
 }
 const event = (body) => ({ httpMethod: 'POST', headers: { origin: PUBLIC }, body: JSON.stringify(body) });
 
-test('hours, block, unblock, settings, service, client passent par rpc admin', async () => {
-  for (const action of ['hours', 'block', 'unblock', 'settings', 'service', 'client']) {
+test('hours, unblock, settings, service passent par rpc admin', async () => {
+  for (const action of ['hours', 'unblock', 'settings', 'service']) {
     const calls = setup();
     const r = await handler(event({ action, data: { x: 1 } }));
     assert.equal(r.statusCode, 200, action);
@@ -91,4 +91,44 @@ test('historique cliente : filtre UUID obligatoire, aucun filtre de mois',async(
  calls=setup();const response=await handler(event({action:'history',id:UUID}));
  assert.equal(response.statusCode,200);assert.deepEqual(JSON.parse(response.body),{bookings:[]});
  assert(calls[0].path.includes('client_id=eq.'+UUID));assert(!calls[0].path.includes('starts=gte.'));
+});
+
+// Recette V15 : périodes bloquées validées avant écriture, notes vérifiées après écriture.
+test('block : fin avant début, dates invalides ou motif vide refusés sans aucun appel base',async()=>{
+ const bad=[
+  {starts:'2026-10-29T12:00:00+01:00',ends:'2026-10-21T13:00:00+02:00',label:'Teste. Pause'},
+  {starts:'2026-10-29T12:00:00+01:00',ends:'2026-10-29T12:00:00+01:00',label:'Pause'},
+  {starts:'pas-une-date',ends:'2026-10-29T13:00:00+01:00',label:'Pause'},
+  {starts:'2026-10-29T12:00:00+01:00',ends:'2026-10-29T13:00:00+01:00',label:'   '},
+ ];
+ for(const data of bad){const calls=setup();const r=await handler(event({action:'block',data}));assert.equal(r.statusCode,400,JSON.stringify(data));assert.equal(calls.length,0);}
+});
+test('block : période valide envoyée en ISO UTC avec motif borné',async()=>{
+ const calls=setup();const r=await handler(event({action:'block',data:{starts:'2026-10-29T12:00:00+01:00',ends:'2026-10-29T13:00:00+01:00',label:'  Pause  '}}));
+ assert.equal(r.statusCode,200);const rpc=calls.find(x=>x.kind==='rpc');assert.equal(rpc.name,'admin');assert.equal(rpc.args.p_action,'block');
+ assert.deepEqual(rpc.args.p_data,{starts:'2026-10-29T11:00:00.000Z',ends:'2026-10-29T12:00:00.000Z',label:'Pause'});
+});
+test('client : notes relues après écriture ; échec signalé si la note n’a pas changé',async()=>{
+ const save=c.db;
+ try{
+  let calls=setup();c.db=async p=>{calls.push({kind:'db',path:p});return [{notes:'Bonjour'}];};
+  let r=await handler(event({action:'client',data:{id:UUID,notes:'Bonjour'}}));
+  assert.equal(r.statusCode,200);assert.equal(calls.find(x=>x.kind==='rpc').name,'admin');
+  assert.ok(calls.some(x=>x.kind==='db'&&x.path==='br15_clients?select=notes&id=eq.'+UUID));
+  calls=setup();c.db=async()=>[{notes:'ancienne note'}];
+  r=await handler(event({action:'client',data:{id:UUID,notes:'Nouvelle note'}}));
+  assert.equal(r.statusCode,503);assert.match(JSON.parse(r.body).error,/Notes non enregistrées/);
+  calls=setup();c.db=async()=>[];
+  r=await handler(event({action:'client',data:{id:UUID,notes:'x'}}));
+  assert.equal(r.statusCode,503);
+ }finally{c.db=save;}
+});
+test('client : identifiant non UUID refusé sans appel',async()=>{
+ const calls=setup();const r=await handler(event({action:'client',data:{id:'x',notes:'n'}}));
+ assert.equal(r.statusCode,400);assert.equal(calls.length,0);
+});
+test('client : notes tronquées à 4000 caractères comme le SQL',async()=>{
+ const calls=setup();const long='é'.repeat(4500);c.db=async()=>[{notes:'é'.repeat(4000)}];
+ const r=await handler(event({action:'client',data:{id:UUID,notes:long}}));
+ assert.equal(r.statusCode,200);assert.equal(calls.find(x=>x.kind==='rpc').args.p_data.notes.length,4000);
 });

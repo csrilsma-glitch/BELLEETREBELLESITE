@@ -1,4 +1,14 @@
 const c=require('./lib/core'),b=require('./lib/booking');
+// Période bloquée : dates valides, fin strictement après le début, motif obligatoire (contrôle avant toute écriture).
+function blockData(x){
+ const s=new Date(x?.starts),e=new Date(x?.ends),label=String(x?.label??'').trim().slice(0,200);
+ if(isNaN(s)||isNaN(e))c.fail(400,'Date de début ou de fin invalide.');
+ if(e<=s)c.fail(400,'La date de fin doit être postérieure à la date de début.');
+ if(!label)c.fail(400,'Indiquez un motif pour cette période.');
+ return {starts:s.toISOString(),ends:e.toISOString(),label};
+}
+// Notes cliente : même troncature que le SQL (4000 caractères) pour pouvoir comparer après écriture.
+function clientData(x){if(!c.uuid(x?.id))c.fail(400,'Identifiant invalide');return {id:x.id,notes:Array.from(String(x.notes??'')).slice(0,4000).join('')};}
 exports.handler=e=>c.wrap(e,async()=>{
  await c.manager(e);if(e.httpMethod!=='POST')return c.json(405,{error:'POST requis'});const d=c.body(e);
  if(d.action==='dashboard'){
@@ -16,7 +26,15 @@ exports.handler=e=>c.wrap(e,async()=>{
  }
  if(d.action==='create')return c.json(201,await b.book({...d,confirmed:true,consent:true}));
  if(['cancel','move','complete'].includes(d.action)){if(!c.uuid(d.id))c.fail(400,'Identifiant invalide');if(d.action==='move')await b.availability(c.date(d.date),d.service_ids,d.id);const r=await c.rpc('change',{p_id:d.id,p_hash:'',p_action:d.action,p_start:d.action==='move'?c.instant(d.starts):null,p_manager:true});return c.json(200,{ok:true,id:r.id});}
- if(['settings','service','hours','block','unblock','client'].includes(d.action))return c.json(200,await c.rpc('admin',{p_action:d.action,p_data:d.data}));
+ if(d.action==='block')return c.json(200,await c.rpc('admin',{p_action:'block',p_data:blockData(d.data)}));
+ if(d.action==='client'){
+ // La fonction SQL répond « ok » même si aucune ligne n’a été modifiée : on relit la note pour confirmer l’écriture.
+ const p=clientData(d.data);await c.rpc('admin',{p_action:'client',p_data:p});
+ const saved=(await c.db('br15_clients?select=notes&id=eq.'+p.id))[0];
+ if(!saved||saved.notes!==p.notes)c.fail(503,'Notes non enregistrées. Réessayez.');
+ return c.json(200,{ok:true});
+ }
+ if(['settings','service','hours','unblock'].includes(d.action))return c.json(200,await c.rpc('admin',{p_action:d.action,p_data:d.data}));
  if(d.action==='erase-client'){if(!c.uuid(d.id))c.fail(400,'Identifiant invalide');return c.json(200,await c.rpc('erase_client',{p_id:d.id}));}
  if(d.action==='export')return c.json(200,{clients:await c.db('br15_clients'),bookings:await c.db('br15_bookings?select=id,client_id,starts,ends,status,cents,minutes,services')});
  if(d.action==='retry'){if(!c.uuid(d.id))c.fail(400,'Identifiant invalide');await c.db('br15_jobs?id=eq.'+d.id+'&state=in.(failed,uncertain)',{method:'PATCH',data:{state:'pending',attempts:0,run_at:new Date().toISOString(),error:null}});return c.json(200,{ok:true});}
