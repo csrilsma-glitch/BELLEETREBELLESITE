@@ -11,11 +11,12 @@ async function deliver(j){
  const event=j.payload.event||'confirmation';
  if(j.kind.startsWith('sms-')&&!['confirmation','rappel'].includes(event))return {obsolete:true};
  if(j.kind.endsWith('-reminder')&&(b.status!=='confirme'||Date.parse(b.starts)<Date.now()))return {obsolete:true};
+ // Outlook : en préproduction, écriture seulement si le compte désigné est confirmé (outlook.testWriteAllowed).
+ if(j.kind==='outlook'){if(simulated&&!(await o.testWriteAllowed()))return {provider_id:'preprod-simulated'};return {provider_id:await o.push(b)};}
  const test=simulated&&await rt.allowed(j,b);
  if(simulated&&!test)return {provider_id:'preprod-simulated'};
- if(j.kind==='outlook')return {provider_id:await o.push(b)};
  const client=(await c.db('br15_clients?id=eq.'+b.client_id))[0];
- const when=c.localTime(b.starts),event=j.payload.event||'confirmation';
+ const when=c.localTime(b.starts);
  const url=c.siteUrl()+'/reservation.html#booking='+b.id+'&token='+c.tokenFor(b.request_key);
  const text=(test?'TEST préproduction : rendez-vous fictif, aucun rendez-vous réel n’a été créé.\n':'')+`Belle & Rebelle — ${event}\n${client.name}, votre rendez-vous : ${when}.\n${b.services.map(x=>x.path).join('\n')}\nTotal : ${(b.cents/100).toFixed(2)} € — paiement sur place, sans acompte.\n${b.status==='annule'?'Rendez-vous annulé.':'Gérer mon rendez-vous : '+url}\nTéléphone : 06 62 28 75 45.`;
  let res;

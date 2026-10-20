@@ -6,6 +6,23 @@ async function connection(){if(process.env.APP_ENV==='preproduction'&&!preprodCo
 const testFlag=()=>process.env.OUTLOOK_PREPROD_TEST==='true';
 const testAccount=()=>String(process.env.OUTLOOK_PREPROD_TEST_ACCOUNT||'').trim().toLowerCase();
 function preprodConnectAllowed(){return testFlag()&&testAccount().includes('@');}
+// Préproduction : écriture et synchronisation Outlook seulement si le drapeau explicite est présent et si
+// l'identité réelle du jeton OAuth (Graph /me, lecture seule) correspond au compte désigné. Résultat mis en cache 10 min.
+let identityAt=0,identityOk=false;
+async function testWriteAllowed(){
+ if(process.env.APP_ENV!=='preproduction')return true;
+ if(!preprodConnectAllowed())return false;
+ if(Date.now()-identityAt<600000)return identityOk;
+ let ok=false;
+ try{
+  const me=await graph('/me?$select=mail,userPrincipalName,otherMails');
+  const ids=[me?.mail,me?.userPrincipalName,...(Array.isArray(me?.otherMails)?me.otherMails:[])].filter(Boolean).map(x=>String(x).trim().toLowerCase());
+  ok=ids.includes(testAccount());
+  if(!ok)console.error('BR15 outlook identity : compte différent du compte désigné');
+ }catch(err){console.error('BR15 outlook identity',err?.status||500,err?.name||'Error');ok=false;}
+ identityAt=Date.now();identityOk=ok;return ok;
+}
+async function syncAllowed(){return testWriteAllowed();}
 async function assertTestAccount(t){
  const expected=testAccount();if(!expected||!t?.access_token)c.fail(403,'Compte Microsoft non autorisé pour le test préproduction');
  // Les comptes Outlook personnels peuvent présenter un alias différent dans preferred_username.
@@ -31,6 +48,7 @@ async function graph(path,{method='GET',data}={}){
 }
 const calendarPath=o=>'/me/calendars/'+encodeURIComponent(o.calendar_id);
 async function push(b){
+ if(!(await testWriteAllowed()))c.fail(503,'Écriture Outlook non autorisée');
  const o=await connection();if(!o?.calendar_id)c.fail(503,'Calendrier Outlook non sélectionné');
  const mapping=(await c.db('br15_outlook_events?booking_id=eq.'+b.id))[0];
  const path=calendarPath(o)+'/events';
@@ -57,4 +75,4 @@ async function pull(){
  await c.db('br15_outlook?id=eq.true',{method:'PATCH',data:{last_sync:new Date().toISOString(),error:conflicts?'Conflit Outlook : '+conflicts+' période(s) à vérifier dans le Manager':null}});
  return {ok:true,imported:blocks.length,conflicts};
 }
-module.exports={connection,exchange,graph,calendarPath,push,pull,preprodConnectAllowed,assertTestAccount,idClaims,testFlag};
+module.exports={connection,exchange,graph,calendarPath,push,pull,preprodConnectAllowed,assertTestAccount,idClaims,testFlag,testWriteAllowed,syncAllowed};

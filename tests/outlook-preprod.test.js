@@ -34,6 +34,9 @@ function stub() {
     if (String(url).includes('/oauth2/v2.0/token')) {
       return { ok: true, status: 200, json: async () => ({ access_token: 'access-fictif-secret', refresh_token: 'refresh-fictif-secret', expires_in: 3600, id_token: idToken(microsoftAccount) }) };
     }
+    if (String(url).startsWith('https://graph.microsoft.com/v1.0/me?')) {
+      return { ok: true, status: 200, json: async () => ({ mail: microsoftAccount, userPrincipalName: microsoftAccount, otherMails: [] }) };
+    }
     throw new Error('appel réseau inattendu : ' + url);
   };
 }
@@ -91,28 +94,13 @@ test('drapeau true : la connexion de test est ouverte, avec scope openid et comp
     const r = await connect(connectEvent);
     assert.equal(r.statusCode, 200);
     const url = new URL(JSON.parse(r.body).url);
-    assert.equal(url.searchParams.get('scope'), 'offline_access Calendars.ReadWrite openid');
+    assert.equal(url.searchParams.get('scope'), 'offline_access Calendars.ReadWrite User.Read openid');
     assert.equal(url.searchParams.get('login_hint'), TEST_ACCOUNT);
     assert.ok(dbLog.some(x => x.path === 'br15_oauth' && x.method === 'POST'), 'état OAuth enregistré (base de préproduction)');
   } finally { restore(); }
 });
-test('drapeau true : Graph, synchronisation, écriture et calendriers restent bloqués', async () => {
-  setEnv({ APP_ENV: 'preproduction', OUTLOOK_PREPROD_TEST: 'true', OUTLOOK_PREPROD_TEST_ACCOUNT: TEST_ACCOUNT });
-  stub();
-  try {
-    await assert.rejects(o.connection(), e => e.status === 503);
-    await assert.rejects(o.graph('/me/calendars'), e => e.status === 503);
-    await assert.rejects(o.pull(), e => e.status === 503);
-    await assert.rejects(o.push({ id: 'b1', starts: '2099-01-01T10:00:00Z', ends: '2099-01-01T11:00:00Z', services: [], status: 'confirme', revision: 1 }), e => e.status === 503);
-    await assert.rejects(o.exchange({ grant_type: 'refresh_token' }), e => e.status === 503, 'rafraîchissement refusé hors parcours de connexion');
-    for (const action of ['calendars', 'select', 'sync']) {
-      const r = await manager({ httpMethod: 'POST', headers: {}, body: JSON.stringify({ action, calendar_id: 'x' }) });
-      assert.equal(r.statusCode, 503, action);
-    }
-    assert.deepEqual(fetchLog, [], 'aucun appel Graph');
-    assert.ok(!dbLog.some(x => x.method === 'POST' && String(x.path).includes('br15_outlook_events')), 'aucun événement enregistré');
-  } finally { restore(); }
-});
+// Le blocage Graph du drapeau « true » n'existe plus : l'écriture est désormais conditionnée à la vérification
+// d'identité du jeton (Graph /me) et couverte par tests/outlook-write.test.js.
 
 // 4. Compte de test : jeton chiffré, stocké uniquement dans la base de préproduction.
 test('drapeau true, compte de test : jeton chiffré et stocké dans la base de préproduction uniquement', async () => {
@@ -127,8 +115,9 @@ test('drapeau true, compte de test : jeton chiffré et stocké dans la base de p
     assert.ok(!saved.data.encrypted.includes('access-fictif-secret'), 'jeton non lisible en clair');
     assert.ok(!saved.data.encrypted.includes('refresh-fictif-secret'), 'refresh non lisible en clair');
     assert.equal(saved.data.calendar_id, null, 'aucun calendrier choisi automatiquement');
-    assert.deepEqual(fetchLog.filter(u => !u.includes('/oauth2/v2.0/token')), [], 'seul l’échange de jeton, aucun Graph');
-    assert.ok(fetchLog.every(u => u.startsWith('https://login.microsoftonline.com/')));
+    // Seuls l’échange de jeton et la vérification d’identité /me (lecture) sont autorisés.
+    assert.deepEqual(fetchLog.filter(u => !u.includes('/oauth2/v2.0/token') && !u.startsWith('https://graph.microsoft.com/v1.0/me?')), [], 'aucun autre appel');
+    assert.ok(fetchLog.every(u => u.startsWith('https://login.microsoftonline.com/') || u.startsWith('https://graph.microsoft.com/v1.0/me?')));
     // Le jeton ne peut être déchiffré qu’avec la clé de l’environnement de préproduction.
     assert.equal(c.unseal(saved.data.encrypted).access_token, 'access-fictif-secret');
   } finally { restore(); }
@@ -144,7 +133,7 @@ for (const [label, account] of [['autre compte', REAL_ACCOUNT], ['id_token sans 
       assert.equal(r.statusCode, 403);
       assert.ok(!dbLog.some(x => x.path.startsWith('br15_outlook?on_conflict=id')), 'aucun jeton enregistré');
       assert.ok(!JSON.stringify(dbLog).includes('encrypted'));
-      assert.ok(fetchLog.every(u => u.includes('/oauth2/v2.0/token')), 'aucun appel Graph');
+      assert.ok(fetchLog.every(u => u.includes('/oauth2/v2.0/token') || u.startsWith('https://graph.microsoft.com/v1.0/me?')), 'seulement échange de jeton et /me');
     } finally { restore(); microsoftAccount = null; }
   });
 }

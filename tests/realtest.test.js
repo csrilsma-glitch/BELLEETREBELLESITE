@@ -69,7 +69,8 @@ test('essai réel : rappels, Manager, Outlook, modifications et annulations rest
  try{
   assert.deepEqual(await n.deliver(job('email-manager')),{provider_id:'preprod-simulated'});
   assert.deepEqual(await n.deliver({...job('email-reminder','rappel'),payload:{event:'rappel',revision:1}}),{provider_id:'preprod-simulated'});
-  assert.deepEqual(await n.deliver(job('sms-confirmation','modification')),{provider_id:'preprod-simulated'});
+  // Modification SMS : règle « pas de SMS pour les déplacements » (commit 85eb874) → obsolète, jamais envoyé.
+  assert.deepEqual(await n.deliver(job('sms-confirmation','modification')),{obsolete:true});
   assert.deepEqual(await n.deliver(job('email-client','annulation')),{provider_id:'preprod-simulated'});
   assert.deepEqual(await n.deliver({...job('outlook'),payload:{revision:1}}),{provider_id:'preprod-simulated'});
   assert.equal(h.calls.length,0);
