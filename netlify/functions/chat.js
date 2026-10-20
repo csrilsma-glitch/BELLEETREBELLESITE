@@ -1,6 +1,7 @@
 // Fonction serveur : relaie la conversation vers Claude, qui peut consulter
 // et réserver dans le calendrier SimplyBook de Mélanie via des outils.
 // La clé API Anthropic reste ici (variable ANTHROPIC_API_KEY).
+// La variable doit être présente au moment du déploiement Netlify des Functions.
 
 const { startTimesFor, bookOne } = require('./simplybook');
 
