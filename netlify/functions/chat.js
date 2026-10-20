@@ -242,7 +242,7 @@ async function callClaude(apiKey, messages) {
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ model: MODEL, max_tokens: 500, system: SYSTEM_PROMPT + liveCatalogue + (process.env.NATIVE_BOOKING_ENABLED === 'true' ? '\nMode natif V15 : le clic sur le bouton de confirmation affiché à la cliente crée le rendez-vous. Avant cela, il s’agit uniquement d’une proposition. Ne dis jamais que le rendez-vous est confirmé avant ce clic et son résultat serveur.' : ''), tools: TOOLS, messages }),
+    body: JSON.stringify({ model: MODEL, max_tokens: 1100, system: SYSTEM_PROMPT + liveCatalogue + (process.env.NATIVE_BOOKING_ENABLED === 'true' ? '\nMode natif V15 : le clic sur le bouton de confirmation affiché à la cliente crée le rendez-vous. Avant cela, il s’agit uniquement d’une proposition. Ne dis jamais que le rendez-vous est confirmé avant ce clic et son résultat serveur.' : ''), tools: TOOLS, messages }),
   });
   if (!res.ok) throw new Error('API Claude ' + res.status);
   return res.json();
@@ -287,8 +287,13 @@ exports.handler = async (event) => {
       data = await callClaude(apiKey, messages);
     }
 
-    const reply = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
-    return json(200, { pendingBooking:context.pending, reply: reply || 'Je suis désolée, je n\'ai pas de réponse. Vous pouvez appeler Mélanie au 06 62 28 75 45.' });
+    let reply = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+    if(!reply && !context.pending){
+      console.warn('Melba: réponse sans texte, stop_reason='+String(data.stop_reason));
+      const retry=await callClaude(apiKey,[...messages,{role:'user',content:'Merci de répondre directement à la dernière question de la cliente, en français et sans utiliser d’outil si ce n’est pas nécessaire.'}]);
+      reply=(retry.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+    }
+    return json(200, { pendingBooking:context.pending, reply: reply || 'Je rencontre un souci pour formuler ma réponse. Peux-tu reformuler ta question ?' });
   } catch (err) {
     console.error('Erreur', err.message);
     return json(502, { error: 'Réponse indisponible, réessayez ou appelez Mélanie.' });
