@@ -22,8 +22,12 @@ exports.handler=e=>c.wrap(e,async()=>{
  const factor=(user.factors||[]).find(x=>x.factor_type==='totp'&&x.status==='verified');
  if(d.action==='verify'){
   if(!factor||!/^\d{6}$/.test(d.code||''))c.fail(400,'Code de sécurité invalide');
-  const ch=await c.authRequest('factors/'+factor.id+'/challenge',{method:'POST',token:s.token,data:{}});
-  const verified=await c.authRequest('factors/'+factor.id+'/verify',{method:'POST',token:s.token,data:{challenge_id:ch.id,code:d.code}});
+  // Un mauvais code ne doit pas ressembler à un lien expiré : on renvoie 403, la session reste valable.
+  let verified;
+  try{
+   const ch=await c.authRequest('factors/'+factor.id+'/challenge',{method:'POST',token:s.token,data:{}});
+   verified=await c.authRequest('factors/'+factor.id+'/verify',{method:'POST',token:s.token,data:{challenge_id:ch.id,code:d.code}});
+  }catch(err){c.fail(403,'Code de sécurité incorrect ou expiré');}
   if(!verified.access_token||aal(verified.access_token)!=='aal2')c.fail(403,'Code de sécurité requis');
   s.token=verified.access_token;
   return c.json(200,{ok:true},{'Set-Cookie':recoveryCookie(c.seal(s),Math.max(0,Math.floor((s.expires-Date.now())/1000)))});
