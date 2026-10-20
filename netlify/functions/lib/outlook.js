@@ -6,7 +6,15 @@ async function connection(){if(process.env.APP_ENV==='preproduction'&&!preprodCo
 const testFlag=()=>process.env.OUTLOOK_PREPROD_TEST==='true';
 const testAccount=()=>String(process.env.OUTLOOK_PREPROD_TEST_ACCOUNT||'').trim().toLowerCase();
 function preprodConnectAllowed(){return testFlag()&&testAccount().includes('@');}
-function assertTestAccount(t){const claims=idClaims(t),actual=String(claims?.preferred_username||'').trim().toLowerCase();if(!testAccount()||actual!==testAccount())c.fail(403,'Compte Microsoft non autorisé pour le test préproduction');return true;}
+async function assertTestAccount(t){
+ const expected=testAccount();if(!expected||!t?.access_token)c.fail(403,'Compte Microsoft non autorisé pour le test préproduction');
+ // Les comptes Outlook personnels peuvent présenter un alias différent dans preferred_username.
+ // Vérifier l’identité réelle auprès de Microsoft Graph, sans enregistrer le jeton avant contrôle.
+ const response=await c.request(ROOT+'/me?$select=mail,userPrincipalName,otherMails',{headers:{Authorization:'Bearer '+t.access_token}});
+ if(!response.ok)c.fail(503,'Vérification du compte Microsoft impossible');
+ const me=await response.json();const identities=[me.mail,me.userPrincipalName,...(Array.isArray(me.otherMails)?me.otherMails:[])].filter(Boolean).map(x=>String(x).trim().toLowerCase());
+ if(!identities.includes(expected))c.fail(403,'Le compte Microsoft connecté ne correspond pas à celui autorisé pour le test');return true;
+}
 function idClaims(t){if(!t||typeof t.id_token!=='string')return null;try{return JSON.parse(Buffer.from(t.id_token.split('.')[1],'base64url').toString());}catch{return null;}}
 async function exchange(data,{connectFlow=false}={}){if(process.env.APP_ENV==='preproduction'&&!preprodConnectAllowed())c.fail(503,'Outlook désactivé en préproduction');const r=await c.request('https://login.microsoftonline.com/consumers/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:c.env('MICROSOFT_CLIENT_ID'),client_secret:c.env('MICROSOFT_CLIENT_SECRET'),redirect_uri:c.env('MICROSOFT_REDIRECT_URI'),...data}).toString()});const v=await r.json();if(!r.ok)c.fail(503,'Autorisation Outlook à renouveler');return v;}
 async function graph(path,{method='GET',data}={}){
