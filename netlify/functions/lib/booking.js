@@ -9,7 +9,7 @@ async function book(input){
  await outlookGuard();
  const token=c.tokenFor(input.request_key);
  const b=await c.rpc('book',{p_ids:c.ids(input.service_ids),p_start:c.instant(input.starts),p_name:String(input.client_name||''),p_email:String(input.client_email||''),p_phone:c.phone(input.client_phone),p_key:input.request_key,p_hash:c.sha(token)});
- return {ok:true,notifications_disabled:process.env.APP_ENV==='preproduction'&&!require('./realtest').active(),booking:{id:b.id,starts:b.starts,ends:b.ends,services:b.services,cents:b.cents,minutes:b.minutes,status:b.status},token,manage_url:'/reservation.html#booking='+b.id+'&token='+token};
+ return {ok:true,notifications_disabled:process.env.APP_ENV==='preproduction'&&!require('./realtest').marked(b),booking:{id:b.id,starts:b.starts,ends:b.ends,services:b.services,cents:b.cents,minutes:b.minutes,status:b.status},token,manage_url:'/reservation.html#booking='+b.id+'&token='+token};
 }
 async function owned(id,token){if(!c.uuid(id)||typeof token!=='string'||token.length>100)c.fail(400,'Lien invalide');const b=(await c.db('br15_bookings?id=eq.'+id))[0];if(!b||!c.safeEqual(b.token_hash,c.sha(token))||Date.now()>Date.parse(b.token_expires))c.fail(403,'Lien invalide ou expiré');return b;}
 module.exports={settings,availability,book,owned};

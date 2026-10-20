@@ -1,53 +1,46 @@
-/* Mode de test « réservation réelle » — PRÉPRODUCTION UNIQUEMENT, désactivé par défaut.
+/* Essais réels de notifications — PRÉPRODUCTION UNIQUEMENT.
 
-   Autorise au plus UN e-mail de confirmation (Resend) et UNE SMS de confirmation (Brevo),
-   et seulement pour une réservation créée après l'activation dont la cliente correspond
-   exactement à l'e-mail ET au téléphone autorisés. Tout le reste (autres clientes, rappels,
-   e-mail Manager, modifications, annulations, Outlook) reste simulé.
+   Par défaut, toute notification de préproduction est simulée (lib/notifications.js).
+   Une réservation n'envoie de vrais e-mail (Resend) et SMS (Brevo) de confirmation que si
+   l'opérateur la marque explicitement en base : br15_bookings.real_test_until = instant
+   d'expiration. Le destinataire est celui saisi par la cliente sur cette réservation.
 
-   Activation (variables Netlify de préproduction, jamais en production) :
-   PREPROD_REAL_TEST=true
-   PREPROD_REAL_TEST_EMAIL=fiteleny@gmail.com
-   PREPROD_REAL_TEST_PHONE=+33677600688
-   PREPROD_REAL_TEST_SINCE=<instant ISO d'activation>
-   PREPROD_REAL_TEST_UNTIL=<instant ISO d'expiration>  (passé cette date, tout redevient simulé) */
+   Garde-fous :
+   - APP_ENV=preproduction obligatoire (la production n'est jamais concernée) ;
+   - marquage par réservation, expiration automatique à real_test_until ;
+   - un seul envoi réel par réservation et par canal, toutes révisions confondues ;
+   - plafond quotidien global, toutes réservations confondues ;
+   - uniquement la confirmation ; rappels, Manager, Outlook, modifications et annulations restent simulés ;
+   - aucune variable Netlify à régler : désactiver = remettre real_test_until à null. */
 const c=require('./core');
 const KINDS={'email-client':'email','sms-confirmation':'sms'};
-const norm=x=>String(x||'').trim().toLowerCase();
-const digits=x=>String(x||'').replace(/\s/g,'');
+const DAILY_CAP=5;
 const EMAIL=/^[^\s@]+@[^\s@]+\.[^\s@]+$/,PHONE=/^\+33[1-9]\d{8}$/;
 
-function config(){
- return {
-  on:process.env.APP_ENV==='preproduction'&&process.env.PREPROD_REAL_TEST==='true',
-  email:norm(process.env.PREPROD_REAL_TEST_EMAIL),
-  phone:digits(process.env.PREPROD_REAL_TEST_PHONE),
-  since:Date.parse(process.env.PREPROD_REAL_TEST_SINCE||''),
-  until:Date.parse(process.env.PREPROD_REAL_TEST_UNTIL||''),
- };
-}
-
-// Vrai seulement si le mode est activé, valide et non expiré.
-function active(now=Date.now()){
- const k=config();
- return k.on&&EMAIL.test(k.email)&&PHONE.test(k.phone)&&Number.isFinite(k.since)&&Number.isFinite(k.until)&&now<k.until;
+// Vrai si la réservation est marquée pour un essai réel et que la fenêtre n'a pas expiré.
+function marked(b,now=Date.now()){
+ const until=Date.parse((b&&b.real_test_until)||'');
+ return Number.isFinite(until)&&now<until;
 }
 
 // Vrai si ce job précis peut partir réellement. Appelé uniquement en préproduction.
 async function allowed(j,b){
- if(!active())return false;
+ if(process.env.APP_ENV!=='preproduction')return false;
  const kind=KINDS[j.kind];
- if(!kind)return false;                                  // rappels, Manager, Outlook : toujours simulés
+ if(!kind)return false;                                              // rappels, Manager, Outlook : simulés
  if((j.payload&&j.payload.event||'confirmation')!=='confirmation')return false;
- if(!b||b.status!=='confirme')return false;
- const k=config();
- if(!(Date.parse(b.created_at)>=k.since))return false;   // réservation créée après l'activation seulement
+ if(!b||b.status!=='confirme'||!marked(b))return false;
  const client=(await c.db('br15_clients?id=eq.'+b.client_id))[0];
- if(!client||norm(client.email)!==k.email||digits(client.phone)!==k.phone)return false;
- // Un seul envoi réel par canal : tout autre envoi réel parti, en cours ou incertain bloque le suivant.
- // Les envois simulés (provider_id = preprod-simulated) ne comptent pas.
- const prior=await c.db('br15_jobs?kind=eq.'+j.kind+'&id=neq.'+j.id+'&state=in.(sending,sent,uncertain)&or=(provider_id.is.null,provider_id.neq.preprod-simulated)&select=id');
- return prior.length===0;
+ if(!client)return false;
+ if(kind==='email'&&!EMAIL.test(String(client.email||'')))return false;
+ if(kind==='sms'&&!PHONE.test(String(client.phone||'')))return false;
+ // Un seul envoi réel par réservation et par canal : tout envoi réel parti, en cours ou incertain bloque le suivant.
+ const sameBooking=await c.db('br15_jobs?booking_id=eq.'+b.id+'&kind=eq.'+j.kind+'&id=neq.'+j.id+'&state=in.(sending,sent,uncertain)&or=(provider_id.is.null,provider_id.neq.preprod-simulated)&select=id');
+ if(sameBooking.length)return false;
+ // Plafond quotidien global : les envois réels des dernières 24 h, tous canaux confondus pour ce type.
+ const since=new Date(Date.now()-86400000).toISOString();
+ const today=await c.db('br15_jobs?kind=eq.'+j.kind+'&id=neq.'+j.id+'&claimed_at=gte.'+since+'&state=in.(sending,sent,uncertain)&or=(provider_id.is.null,provider_id.neq.preprod-simulated)&select=id');
+ return today.length<DAILY_CAP;
 }
 
-module.exports={config,active,allowed,_test:{norm,digits}};
+module.exports={marked,allowed,DAILY_CAP};
