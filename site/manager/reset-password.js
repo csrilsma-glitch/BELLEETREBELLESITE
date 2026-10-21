@@ -29,7 +29,7 @@ async function run(form,fn){
  finally{busy=false;button.disabled=false;}
 }
 // Lien expiré, déjà utilisé ou incomplet : message clair, sans détail technique.
-if(errorCode||errorDescription||!access||type!=='recovery'){
+if(errorCode||errorDescription||!access||!['recovery','invite'].includes(type)){
  const expired=errorCode==='otp_expired';
  needNewLink(errorCode||errorDescription||access
   ?(expired?'Ce lien a expiré. Demandez-en un nouveau depuis la page de connexion.':'Ce lien n’est plus valide ou a déjà été utilisé. Demandez-en un nouveau depuis la page de connexion.')
