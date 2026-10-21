@@ -2,7 +2,7 @@
   let deferred=null;
   const button=document.getElementById('install-app'),status=document.getElementById('install-status'),dialog=document.getElementById('install-dialog');
   const installed=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-  function refresh(){if(!button)return;button.textContent=installed()?'Application déjà installée':'Installer l’application';}
+  function refresh(){if(!button)return;button.textContent=installed()?'Application déjà installée':'Installer B&R APP';}
   window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferred=event;refresh();});
   window.addEventListener('appinstalled',()=>{deferred=null;if(status)status.textContent='Belle & Rebelle est installée sur votre appareil ♡';refresh();});
   if('serviceWorker' in navigator&&window.isSecureContext){

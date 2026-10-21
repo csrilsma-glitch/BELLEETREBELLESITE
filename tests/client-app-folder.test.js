@@ -1,0 +1,45 @@
+'use strict';
+// B&R APP (cliente) dans /app/ : manifeste, périmètre, installation depuis l'accueil, Manager inchangé.
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('fs');
+const path = require('path');
+const { execFileSync } = require('child_process');
+const site = path.join(__dirname, '..', 'site');
+const read = p => fs.readFileSync(path.join(site, p), 'utf8');
+
+test('B&R APP : manifeste propre, identité et périmètre dans /app/', () => {
+  const m = JSON.parse(read('app/manifest.webmanifest'));
+  assert.equal(m.name, 'B&R APP');
+  assert.equal(m.id, '/app/');
+  assert.equal(m.scope, '/app/');
+  assert.equal(m.start_url, '/app/');
+  assert.equal(m.display, 'standalone');
+  assert.ok(m.icons.some(i => i.sizes === '192x192') && m.icons.some(i => i.sizes === '512x512'));
+});
+
+test('B&R APP ne couvre pas le Manager', () => {
+  const m = JSON.parse(read('app/manifest.webmanifest'));
+  assert.ok(!('/manager/'.startsWith(m.scope)) && !m.scope.startsWith('/manager'), 'le périmètre ne doit pas contenir /manager/');
+  assert.notEqual(m.id, '/manager/');
+});
+
+test('accueil : bouton « Installer B&R APP » et manifeste /app/', () => {
+  const home = read('index.html');
+  assert.match(home, /<link rel="manifest" href="app\/manifest\.webmanifest">/);
+  assert.match(home, /id="install-app"[^>]*>Installer B&amp;R APP</);
+  assert.match(read('pwa.js'), /'Installer B&R APP'/);
+});
+
+test('coque /app/ : iframe vers l’accueil public, service worker dans /app/', () => {
+  const shell = read('app/index.html');
+  assert.match(shell, /<iframe[^>]*src="\.\.\/\?source=pwa"/);
+  assert.match(shell, /register\('sw\.js', \{ scope: '\.\/'/);
+  assert.ok(fs.existsSync(path.join(site, 'app', 'sw.js')));
+});
+
+test('pages publiques et Manager non modifiés par rapport à origin/main', () => {
+  const repo = path.join(__dirname, '..');
+  const changed = execFileSync('git', ['diff', '--name-only', 'origin/main', '--', 'site/manager', 'site/manifest.webmanifest', 'site/sw.js', 'netlify', 'netlify.toml', 'supabase'], { cwd: repo }).toString().trim();
+  assert.equal(changed, '', 'fichiers protégés modifiés : ' + changed);
+});
