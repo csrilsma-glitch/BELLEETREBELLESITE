@@ -54,6 +54,7 @@ function prepare(br) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'br-build-'));
   copyTree(path.join(repo, 'site'), path.join(dir, 'site'));
   fs.mkdirSync(path.join(dir, 'scripts'));
+  copyTree(path.join(repo, 'netlify', 'functions'), path.join(dir, 'netlify', 'functions'));
   fs.copyFileSync(path.join(repo, 'scripts', 'build-site.js'), path.join(dir, 'scripts', 'build-site.js'));
   const env = { ...process.env };
   if (br === undefined) delete env.BR_SITE; else env.BR_SITE = br;
@@ -69,6 +70,8 @@ test('build Manager : publie seulement le Manager et les assets, avec redirectio
   assert.ok(fs.existsSync(path.join(dir, 'site', 'manager', 'manager.js')));
   assert.equal(fs.readFileSync(path.join(dir, 'site', '_redirects'), 'utf8').trim(), '/  /manager/  301');
   assert.ok(fs.existsSync(path.join(dir, 'site', 'assets', 'icon-192.png')));
+  assert.ok(!fs.existsSync(path.join(dir, 'netlify', 'functions', 'jobs-scheduled.mjs')), 'planification retirée du site Manager');
+  assert.ok(fs.existsSync(path.join(dir, 'netlify', 'functions', 'jobs.js')));
   fs.rmSync(dir, { recursive: true, force: true });
 });
 

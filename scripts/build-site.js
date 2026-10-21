@@ -22,6 +22,9 @@ for (const name of fs.readdirSync(site)) {
   if (name === 'manager' || name === 'assets') continue;
   fs.rmSync(path.join(site, name), { recursive: true, force: true });
 }
+// Pas de file de notifications ni de synchronisation Outlook planifiées ici : elles restent sur le site principal, seul à avoir les clés d'envoi.
+// Les fonctions sont regroupées après la commande de build, donc retirer le fichier suffit à supprimer la planification.
+fs.rmSync(path.join(root, 'netlify', 'functions', 'jobs-scheduled.mjs'), { force: true });
 // La racine du sous-domaine renvoie vers /manager/, pour que les chemins relatifs du Manager restent valides.
 fs.writeFileSync(path.join(site, '_redirects'), '/  /manager/  301\n');
 console.log('Site Manager préparé : ' + fs.readdirSync(site).join(', '));
