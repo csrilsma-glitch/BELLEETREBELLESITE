@@ -28,6 +28,7 @@ function harness({me=ACCOUNT,mapping=null}={}){
  c.request=async(url,opts={})=>{
   graphCalls.push({url:String(url),method:opts.method||'GET',body:opts.body});
   if(String(url).includes('/me?'))return {ok:true,status:200,json:async()=>({mail:me,userPrincipalName:me,otherMails:[]})};
+  if(String(url).endsWith('/me/calendars/cal-test'))return {ok:true,status:200,json:async()=>({id:'cal-test',name:'Belle & Rebelle — Préproduction V15',canEdit:true,isDefaultCalendar:false})};
   if(String(url).includes('/events')){writes.push({method:opts.method||'GET',url:String(url),body:opts.body});return {ok:true,status:200,json:async()=>({id:'evt-'+writes.length})};}
   return {ok:true,status:200,json:async()=>({})};
  };

@@ -1,0 +1,11 @@
+const {PGlite}=require('@electric-sql/pglite'),{btree_gist}=require('@electric-sql/pglite/contrib/btree_gist'),fs=require('fs'),assert=require('node:assert/strict');
+(async()=>{const d=new PGlite({extensions:{btree_gist}});await d.exec('create role anon;create role authenticated;create role service_role;create schema extensions;create schema auth;create table auth.users(id uuid primary key);');
+await d.exec(fs.readFileSync('supabase/migrations/20261019185534_v15_schema.sql','utf8'));await d.exec(fs.readFileSync('supabase/migrations/20261019185541_v15_catalogue.sql','utf8'));
+await d.exec("insert into auth.users values('123e4567-e89b-42d3-a456-426614174000');insert into br15_managers(user_id) values('123e4567-e89b-42d3-a456-426614174000');insert into br15_hours(dow,opens,closes) values(1,'10:00','19:00');update br15_settings set privacy_text='CONSERVÉ',enabled=false;");
+const tables=['br15_services','br15_hours','br15_managers','br15_settings'];const before={};for(const t of tables)before[t]=(await d.query('select * from '+t+' order by 1')).rows;
+await d.exec(fs.readFileSync('supabase/production/20261021182148_v15_production_release.sql','utf8'));
+for(const t of tables)assert.deepEqual((await d.query('select * from '+t+' order by 1')).rows,before[t],t+' conservée');
+assert.equal((await d.query('select count(*)::int n from br15_bookings')).rows[0].n,0);assert.equal((await d.query('select count(*)::int n from br15_jobs')).rows[0].n,0);
+assert.equal((await d.query("select count(*)::int n from pg_proc where pronamespace='public'::regnamespace and proname like 'br15_%' and has_function_privilege('anon',oid,'EXECUTE')")).rows[0].n,0);
+assert.equal((await d.query("select relrowsecurity from pg_class where oid='br15_block_outlook'::regclass")).rows[0].relrowsecurity,true);
+console.log('Mise à niveau production : 64 prestations, horaires, Manager et réglages conservés ; aucune donnée fictive importée ; RPC privées.');await d.close();})().catch(e=>{console.error(e);process.exit(1);});

@@ -22,7 +22,7 @@ async function testWriteAllowed(){
  }catch(err){console.error('BR15 outlook identity',err?.status||500,err?.name||'Error');ok=false;}
  identityAt=Date.now();identityOk=ok;return ok;
 }
-async function syncAllowed(){return testWriteAllowed();}
+async function syncAllowed(){if(!await testWriteAllowed())return false;await require('./preprod-calendar').ensure(module.exports,c);return true;}
 async function assertTestAccount(t){
  const expected=testAccount();if(!expected||!t?.access_token)c.fail(403,'Compte Microsoft non autorisé pour le test préproduction');
  // Les comptes Outlook personnels peuvent présenter un alias différent dans preferred_username.
@@ -35,6 +35,13 @@ async function assertTestAccount(t){
 function idClaims(t){if(!t||typeof t.id_token!=='string')return null;try{return JSON.parse(Buffer.from(t.id_token.split('.')[1],'base64url').toString());}catch{return null;}}
 async function exchange(data,{connectFlow=false}={}){if(process.env.APP_ENV==='preproduction'&&!preprodConnectAllowed())c.fail(503,'Outlook désactivé en préproduction');const r=await c.request('https://login.microsoftonline.com/consumers/oauth2/v2.0/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:c.env('MICROSOFT_CLIENT_ID'),client_secret:c.env('MICROSOFT_CLIENT_SECRET'),redirect_uri:c.env('MICROSOFT_REDIRECT_URI'),...data}).toString()});const v=await r.json();if(!r.ok)c.fail(503,'Autorisation Outlook à renouveler');return v;}
 async function graph(path,{method='GET',data}={}){
+ if(process.env.APP_ENV==='preproduction'&&method!=='GET'&&path!=='/me/calendars'){
+  const match=path.match(/^\/me\/calendars\/([^/]+)\/events(?:\/[^/?]+)?$/),selected=await connection();
+  if(!match||decodeURIComponent(match[1])!==selected?.calendar_id)c.fail(403,'Écriture hors calendrier de test refusée');
+  const cal=await graph('/me/calendars/'+encodeURIComponent(selected.calendar_id));
+  if(cal.name!==require('./preprod-calendar').NAME||!cal.canEdit||cal.isDefaultCalendar)c.fail(403,'Calendrier de préproduction isolé requis');
+ }
+
  let o=await connection();if(!o)c.fail(503,'Outlook non autorisé');let t=c.unseal(o.encrypted);
  if(t.expires_at<Date.now()+90000){
  // Rotation sérialisée via une courte location SQL.
@@ -48,7 +55,7 @@ async function graph(path,{method='GET',data}={}){
 }
 const calendarPath=o=>'/me/calendars/'+encodeURIComponent(o.calendar_id);
 async function push(b){
- if(!(await testWriteAllowed()))c.fail(503,'Écriture Outlook non autorisée');
+ if(!(await syncAllowed()))c.fail(503,'Écriture Outlook non autorisée');
  const o=await connection();if(!o?.calendar_id)c.fail(503,'Calendrier Outlook non sélectionné');
  const mapping=(await c.db('br15_outlook_events?booking_id=eq.'+b.id))[0];
  const path=calendarPath(o)+'/events';
@@ -61,6 +68,7 @@ async function push(b){
  return r?.id||mapping?.event_id;
 }
 async function pull(){
+ if(process.env.APP_ENV==='preproduction'&&!await syncAllowed())c.fail(503,'Synchronisation de test non autorisée');
  const o=await connection();if(!o?.calendar_id)c.fail(409,'Sélectionnez le calendrier dédié');
  // Horizon complet : les événements manuels deviennent des indisponibilités, pas des réservations clientes.
  const s=(await c.db('br15_settings?id=eq.true'))[0],from=new Date(),to=new Date(Date.now()+(s.horizon_days+1)*86400000);
