@@ -27,6 +27,7 @@ exports.handler=e=>c.wrap(e,async()=>{
  }
  if(d.action==='create')return c.json(201,await b.book({...d,confirmed:true,consent:true}));
  if(['cancel','move','complete'].includes(d.action)){if(!c.uuid(d.id))c.fail(400,'Identifiant invalide');if(d.action==='move')await b.availability(c.date(d.date),d.service_ids,d.id);const r=await c.rpc('change',{p_id:d.id,p_hash:'',p_action:d.action,p_start:d.action==='move'?c.instant(d.starts):null,p_manager:true});return c.json(200,{ok:true,id:r.id});}
+ if(d.action==='update-block'){if(!c.uuid(d.data?.id))c.fail(400,'Identifiant invalide');const x=blockData(d.data);return c.json(200,await c.rpc('update_block',{p_id:d.data.id,p_starts:x.starts,p_ends:x.ends,p_label:x.label}));}
  if(d.action==='block')return c.json(200,await c.rpc('admin',{p_action:'block',p_data:blockData(d.data)}));
  if(d.action==='client'){
  // La fonction SQL répond « ok » même si aucune ligne n’a été modifiée : on relit la note pour confirmer l’écriture.

@@ -67,8 +67,8 @@ async function pull(){
  let path=calendarPath(o)+'/calendarView?startDateTime='+encodeURIComponent(from.toISOString())+'&endDateTime='+encodeURIComponent(to.toISOString())+'&$top=100';
  const events=[];
  while(path){const r=await graph(path);if(r.missing)c.fail(503,'Calendrier Outlook introuvable');events.push(...r.value);const next=r['@odata.nextLink'];if(next&&!next.startsWith(ROOT+'/'))c.fail(503,'Lien Graph invalide');path=next?next.slice(ROOT.length):null;if(events.length>5000)c.fail(503,'Trop d’événements à synchroniser');}
- const mappings=await c.db('br15_outlook_events'),own=new Set(mappings.map(x=>x.event_id));
- const blocks=events.filter(x=>!own.has(x.id)&&!x.isCancelled&&x.showAs!=='free').map(x=>({external_id:x.id,starts:x.start.dateTime.endsWith('Z')?x.start.dateTime:x.start.dateTime+'Z',ends:x.end.dateTime.endsWith('Z')?x.end.dateTime:x.end.dateTime+'Z',source:'outlook',label:'Occupé dans Outlook'}));
+ const mappings=await c.db('br15_outlook_events'),blockMappings=await c.db('br15_block_outlook'),own=new Set([...mappings,...blockMappings].map(x=>x.event_id).filter(Boolean)),ownTransactions=new Set(blockMappings.map(x=>x.block_id));
+ const blocks=events.filter(x=>!own.has(x.id)&&!ownTransactions.has(x.transactionId)&&!x.isCancelled&&x.showAs!=='free').map(x=>({external_id:x.id,starts:x.start.dateTime.endsWith('Z')?x.start.dateTime:x.start.dateTime+'Z',ends:x.end.dateTime.endsWith('Z')?x.end.dateTime:x.end.dateTime+'Z',source:'outlook',label:'Occupé dans Outlook'}));
  await c.rpc('outlook_blocks',{p_blocks:blocks});
  const bookings=await c.db('br15_bookings?status=eq.confirme&starts=lt.'+to.toISOString()+'&ends=gt.'+from.toISOString()+'&select=starts,ends');
  const conflicts=blocks.filter(x=>bookings.some(b=>Date.parse(b.starts)<Date.parse(x.ends)&&Date.parse(b.ends)>Date.parse(x.starts))).length;

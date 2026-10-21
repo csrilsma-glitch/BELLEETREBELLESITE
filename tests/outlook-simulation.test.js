@@ -74,6 +74,7 @@ function stubDb(world, { bookings = [] } = {}) {
       const id = path.split('eq.')[1]; return world.mappings.filter(x => x.booking_id === id);
     }
     if (path.startsWith('br15_outlook_events')) return world.mappings;
+    if (path.startsWith('br15_block_outlook')) return world.blockMappings||[];
     return [];
   };
   c.rpc = async (name, data) => {
@@ -195,4 +196,14 @@ test('simulation : aucune connexion calendrier = erreur explicite, aucun appel',
     await assert.rejects(o.push(booking()), e => e.status === 503 && /non sélectionné/.test(e.message));
     assert.equal(w.calls.length, 0);
   } finally { restoreAll(); }
+});
+
+test('simulation : pauses Manager exportées exclues par mapping et transactionId sans boucle',async()=>{
+ const w=setup();try{
+ w.blockMappings=[{block_id:'pause-1',event_id:'pause-mapped'},{block_id:'pause-2',event_id:null}];
+ w.events.push(w.ev('pause-mapped','2099-02-01T09:00:00Z','2099-02-01T10:00:00Z'));
+ w.events.push(w.ev('pause-unmapped','2099-02-02T09:00:00Z','2099-02-02T10:00:00Z',{transactionId:'pause-2'}));
+ w.events.push(w.ev('personal','2099-02-03T09:00:00Z','2099-02-03T10:00:00Z'));
+ await o.pull();assert.deepEqual(w.blocks.map(x=>x.external_id),['personal']);
+ }finally{restoreAll()}
 });

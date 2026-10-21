@@ -61,4 +61,18 @@ const doneBooking=await scalar('select br15_book($1,$2,$3,$4,$5,$6,$7) v',[ids,l
 await query("select br15_change($1,'','complete',null,true)",[doneBooking.id]);
 assert.equal(await scalar("select count(*)::int v from br15_jobs where booking_id=$1 and payload->>'event'='terminé'",[doneBooking.id]),0,'aucune notification « terminé »');
 assert.equal(await scalar('select status v from br15_bookings where id=$1',[doneBooking.id]),'termine');console.log('OK prestation terminée sans notification cliente');
+// File durable des indisponibilités, y compris après suppression de la pause.
+const blockStart=await scalar("select (now()+interval '30 days')::text v"),blockEnd=await scalar("select (now()+interval '30 days 1 hour')::text v");
+const blocked=await scalar("select br15_admin('block',$1) v",[JSON.stringify({starts:blockStart,ends:blockEnd,label:'Congé test sync'})]);
+assert.equal(await scalar('select revision v from br15_block_outlook where block_id=$1',[blocked.id]),1);
+await query('select br15_update_block($1,$2,$3,$4)',[blocked.id,blockStart,blockEnd,'Pause modifiée']);
+assert.equal(await scalar('select revision v from br15_block_outlook where block_id=$1',[blocked.id]),2);
+await query("select br15_admin('unblock',$1)",[JSON.stringify({id:blocked.id})]);
+const tomb=(await query('select revision,desired from br15_block_outlook where block_id=$1',[blocked.id])).rows[0];assert.equal(tomb.revision,3);assert.equal(tomb.desired,null);
+assert.equal(await scalar("select count(*)::int v from br15_jobs where kind='outlook-block' and payload->>'block_id'=$1 and state='pending'",[blocked.id]),1);
+assert.equal(await scalar('select br15_block_lease($1,2,$2) v',[blocked.id,'123e4567-e89b-42d3-a456-426614174000']),false);
+assert.equal(await scalar('select br15_block_lease($1,3,$2) v',[blocked.id,'123e4567-e89b-42d3-a456-426614174000']),true);
+assert.equal(await scalar('select br15_block_lease($1,3,$2) v',[blocked.id,'123e4567-e89b-42d3-a456-426614174001']),false);
+assert.equal(await scalar("select count(*)::int v from pg_proc where pronamespace='public'::regnamespace and proname like 'br15_%' and has_function_privilege('anon',oid,'EXECUTE')"),0);
+console.log('OK file pauses : versions, modification, suppression durable, déduplication et verrou concurrent, RPC privées');
 console.log('TOUS LES TESTS SQL PASSENT');await db.close();})().catch(e=>{console.error(e.message,e.stack);process.exit(1);});

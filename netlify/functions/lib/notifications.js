@@ -3,6 +3,7 @@ async function deliver(j){
  // En préproduction, la file est traitée mais aucun fournisseur e-mail ou SMS n’est appelé : l’envoi est toujours simulé.
  // Aucun chemin d’envoi réel n’existe en préproduction (les essais réels ont été supprimés).
  const simulated=process.env.APP_ENV==='preproduction';
+ if(j.kind==='outlook-block')return require('./block-outlook').deliver(j);
  const b=(await c.db('br15_bookings?id=eq.'+j.booking_id))[0];if(!b||b.revision!==j.payload.revision)return {obsolete:true};
  // Une prestation terminée ne notifie personne : tout job « terminé » encore en file est écarté.
  if(j.payload.event==='terminé')return {obsolete:true};
@@ -35,7 +36,7 @@ async function deliver(j){
 async function run(){const results=[],deadline=Date.now()+18000;
  // Vider les rafales de confirmations/modifications sans dépasser le budget de 18 s.
  for(let n=0;n<24&&Date.now()<deadline;n++){const jobs=await c.rpc('claim',{});if(!jobs.length)break;const j=jobs[0];try{
- const result=await deliver(j);await c.db('br15_jobs?id=eq.'+j.id,{method:'PATCH',data:{state:result.obsolete?'obsolete':'sent',provider_id:result.provider_id||null,error:null}});results.push({id:j.id,state:result.obsolete?'obsolete':'sent'});
+ const result=await deliver(j);if(result.deferred){await c.db('br15_jobs?id=eq.'+j.id,{method:'PATCH',data:{state:'pending',attempts:Math.max(0,j.attempts-1),run_at:new Date(Date.now()+300000).toISOString(),error:'Synchronisation Outlook en attente d’autorisation'}});results.push({id:j.id,state:'pending'});continue;}await c.db('br15_jobs?id=eq.'+j.id,{method:'PATCH',data:{state:result.obsolete?'obsolete':'sent',provider_id:result.provider_id||null,error:null}});results.push({id:j.id,state:result.obsolete?'obsolete':'sent'});
  }catch(err){const sms=j.kind.startsWith('sms-'),// Un SMS dont la requête est partie sans réponse claire (timeout, 5xx, 408) peut avoir été accepté : pas de relance aveugle.
  ambiguous=sms&&j.provider_called===true&&!err.definite;const state=ambiguous?'uncertain':'failed';await c.db('br15_jobs?id=eq.'+j.id,{method:'PATCH',data:{state,error:err.status?err.message:'Échec fournisseur ; vérifier avant renvoi',run_at:new Date(Date.now()+Math.min(60,2**j.attempts)*60000).toISOString()}});results.push({id:j.id,state});}}
  return results;}
