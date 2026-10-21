@@ -38,6 +38,17 @@ await query("select br15_change($1,'abc','cancel')",[booking.id]);
 assert.equal(await scalar("select count(*)::int v from br15_jobs where booking_id=$1 and kind='email-reminder' and state='pending'",[booking.id]),0);console.log('OK aucun rappel e-mail après annulation');
 assert((await query('select * from br15_slots($1,$2)',[date,ids])).rows.some(s=>new Date(s.starts).getTime()===new Date(moved.starts).getTime()));console.log('OK annulation libère le créneau');
 await query("select br15_admin('block',$1)",[JSON.stringify({starts:start,ends:slots[0].ends,label:'Congé'})]);assert(!(await query('select * from br15_slots($1,$2)',[date,ids])).rows.some(s=>new Date(s.starts).getTime()===new Date(start).getTime()));console.log('OK congés bloquants');
+// Une pause Manager reste locale mais protège tous les chemins de réservation.
+const pauseBefore=(await query("select * from br15_blocks where source='manager'")).rows;
+await query("select br15_outlook_blocks('[]'::jsonb)");
+assert.deepEqual((await query("select * from br15_blocks where source='manager'")).rows,pauseBefore);
+await assert.rejects(book('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',start));
+const outside=await book('ffffffff-ffff-4fff-8fff-ffffffffffff',moved.starts);
+await assert.rejects(query("select br15_change($1,'abc','move',$2)",[outside.id,start]));
+await query("select br15_change($1,'abc','cancel')",[outside.id]);
+const pause=pauseBefore[0];
+assert((await query('select * from br15_slots($1,$2)',[date,ids])).rows.every(s=>new Date(s.ends)<=new Date(pause.starts)||new Date(s.starts)>=new Date(pause.ends)));
+console.log('OK pause Manager : réservation et déplacement refusés, aucun chevauchement multiple, import Outlook préserve la pause');
 const blocks=(await query('select * from br15_blocks')).rows;await query("select br15_admin('unblock',$1)",[JSON.stringify({id:blocks[0].id})]);
 await query("select br15_admin('settings',$1)",[JSON.stringify({compatibility:[ids]})]);await assert.rejects(query('select br15_quote($1)',[ids]));console.log('OK incompatibilités configurables');
 await db.exec('set role anon');await assert.rejects(query('select * from br15_clients'));await assert.rejects(query('select br15_quote($1)',[ids]));await db.exec('reset role');console.log('OK RLS et RPC refusés aux anonymes');
