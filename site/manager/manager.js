@@ -6,7 +6,7 @@ function note(t,error=false){status.textContent=t;status.className=error?'error'
 function inline(node,text,error=false){node.textContent=text;node.className='inline-msg '+(error?'error':'ok');}
 async function inlineSafe(node,fn,okText){try{await fn();if(okText)inline(node,okText);}catch(e){inline(node,e.message,true);}}
 function cardMsg(card){let m=card.querySelector('.inline-msg');if(!m){m=el('p',undefined,'inline-msg');m.setAttribute('role','status');m.setAttribute('aria-live','polite');card.append(m);}return m;}
-async function api(name,d){const r=await fetch('/.netlify/functions/'+name,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d),credentials:'same-origin',cache:'no-store'});const value=await r.json();if(!r.ok){if(r.status===401&&name!=='manager-auth')locked();throw Error(value.error||'Service indisponible');}return value;}
+async function api(name,d){let r;try{r=await fetch('/.netlify/functions/'+name,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d),credentials:'same-origin',cache:'no-store'});}catch{throw Error('Connexion réseau interrompue. Vérifiez votre accès Internet puis réessayez.');}const value=await r.json().catch(()=>({error:'Réponse du serveur illisible. Réessayez.'}));if(!r.ok){if(r.status===401&&!(name==='manager-auth'&&d.action==='login')){locked();throw Error('Votre session a expiré ou a été révoquée. Reconnectez-vous avec votre mot de passe et votre code de sécurité.');}throw Error(value.error||'Service indisponible');}return value;}
 function locked(){$('studio').hidden=true;$('login-panel').hidden=false;$('mfa-panel').hidden=true;$('logout').hidden=true;data=null;for(const id of ['appointments','client-list','service-list','jobs','calendar','stats'])$(id).replaceChildren();}
 const el=(tag,text,cls)=>{const x=document.createElement(tag);if(text!==undefined)x.textContent=text;if(cls)x.className=cls;return x;};
 function button(text,fn){const x=el('button',text);x.type='button';x.onclick=()=>safe(fn);return x;}
@@ -78,7 +78,7 @@ window.addEventListener('appinstalled',()=>{installedHere=true;installPrompt=nul
 if(installMode.addEventListener)installMode.addEventListener('change',refreshInstall);else if(installMode.addListener)installMode.addListener(refreshInstall);
 refreshInstall();
 installButton.onclick=async()=>{if(installed()){refreshInstall();return;}if(installPrompt){await installPrompt.prompt();installPrompt=null;}else note('Dans le menu du navigateur, choisissez « Installer l’application » ou « Ajouter à l’écran d’accueil ». Installation disponible après mise en ligne en HTTPS.');};
-if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js',{scope:'/manager/'}).catch(()=>{});
+// Enregistrement et mise à jour du service worker dans pwa-runtime.js.
 // Les données clientes restent uniquement en mémoire ; jamais localStorage ou caches.
 try{await load();}catch(e){locked();if(e.message.includes('deux facteurs')){try{await mfa();}catch{note('Connectez-vous à votre espace privé.');}}else note('Connectez-vous à votre espace privé.');}
 })();

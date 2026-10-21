@@ -19,7 +19,7 @@ async function api(data){
  return d;
 }
 async function run(form,fn){
- if(busy)return;busy=true;const button=form.querySelector('button');button.disabled=true;
+ if(busy)return;busy=true;const button=form.querySelector('button:not([type=button])');button.disabled=true;
  try{await fn();}
  catch(e){
   // Session de récupération expirée ou lien consommé : il faut un nouveau lien, sans message technique.

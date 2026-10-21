@@ -12,7 +12,9 @@
 .password-field{position:relative;margin:15px 0}
 .password-field label{margin:0}
 .password-field input{padding-right:60px}
-.password-field #password-toggle{position:absolute;right:3px;bottom:3px;display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:8px;margin:0;background:transparent;border:0;color:#f1b4d8}
-.password-field #password-toggle:hover{background:#61334f}
+.password-field [data-password-toggle]{position:absolute;right:3px;bottom:3px;display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:8px;margin:0;background:transparent;border:0;color:#f1b4d8}
+.password-field [data-password-toggle]:hover{background:#61334f}
 .password-eye-slash{display:none}
-#password-toggle[aria-pressed="true"] .password-eye-slash{display:block}
+[data-password-toggle][aria-pressed="true"] .password-eye-slash{display:block}
+
+#pwa-network{padding:10px 14px;border:1px solid #74415f;border-radius:8px;color:#ffd4ec}#pwa-update{font:inherit}
