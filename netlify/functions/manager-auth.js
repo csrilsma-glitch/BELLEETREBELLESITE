@@ -20,7 +20,7 @@ exports.handler=e=>c.wrap(e,async()=>{
  }
  const {user,token}=await c.manager(e,{mfa:false});
  const factors=user.factors||[];
- if(d.action==='factors')return c.json(200,{factors:factors.map(f=>({id:f.id,status:f.status,factor_type:f.factor_type}))});
+ if(d.action==='factors')return c.json(200,{email:user.email,factors:factors.map(f=>({id:f.id,status:f.status,factor_type:f.factor_type}))});
  if(d.action==='enroll'){
  // Un facteur vérifié n’est jamais remplacé ici.
  if(factors.some(f=>isTotp(f)&&f.status==='verified'))c.fail(409,MSG.verifie);

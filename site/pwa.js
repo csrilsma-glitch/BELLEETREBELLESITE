@@ -1,6 +1,8 @@
 (() => {
   // Installation de B&R APP (manifeste /app/). Sur Android Chrome, le clic déclenche directement la fenêtre native.
   let deferred = null;
+  let waiting = false;
+  let waitTimer = null;
   const button = document.getElementById('install-app');
   const status = document.getElementById('install-status');
   const dialog = document.getElementById('install-dialog');
@@ -25,7 +27,12 @@
     event.preventDefault();
     deferred = event;
     refresh();
-    if (waiting) { waiting = false; launch(); }
+    if (waiting) {
+      waiting = false;
+      clearTimeout(waitTimer);
+      if (status) status.textContent = 'L’installation est prête. Touchez à nouveau Installer B&R APP.';
+      if (instructions) instructions.textContent = 'L’installation est disponible : fermez cette fenêtre puis touchez Installer B&R APP.';
+    }
   });
   window.addEventListener('appinstalled', () => {
     deferred = null;
@@ -44,9 +51,6 @@
   }
 
   if (!button || !dialog || embedded) { refresh(); return; }
-
-  let waiting = false;
-  let waitTimer = null;
 
   // prompt() doit être appelé pendant le geste de l'utilisateur (quelques secondes après le clic).
   function launch() {
@@ -71,7 +75,7 @@
     const ua = navigator.userAgent;
     const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     if (ios) return 'Sur iPhone ou iPad, ouvrez cette page dans Safari, touchez Partager, puis « Sur l’écran d’accueil ».';
-    if (/Android/i.test(ua)) return 'Chrome ne propose pas encore l’installation directe sur cet appareil. Patientez quelques secondes puis touchez à nouveau le bouton.';
+    if (/Android/i.test(ua)) return 'Ouvrez cette page dans Chrome ou Edge. Dans le menu ⋮, choisissez Installer l’application ou Ajouter à l’écran d’accueil. Vérifiez le nom B&R APP. Vous pouvez aussi continuer à utiliser le site sans installation.';
     return 'Sur ordinateur, ouvrez cette page dans Chrome ou Edge, puis cliquez sur l’icône d’installation de la barre d’adresse.';
   }
 

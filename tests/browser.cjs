@@ -63,7 +63,7 @@ for(const [name,width,height]of [['desktop',1440,1000],['tablet',820,1180],['mob
  await page.goto('http://127.0.0.1:8765/reservation.html#booking='+bid+'&token=test-token');await page.locator('#manage-final').waitFor({state:'visible'});assert.equal(await page.locator('#manage-actions').isVisible(),false);
  await page.screenshot({path:'test-results/cancelled-'+name+'.png'});console.log(name,'annulation finale, actions masquées, répétition et réouverture OK');
  await page.locator('#assistant-toggle').click();await page.locator('#assistant-input').fill('Je voudrais réserver');await page.locator('#assistant-form button').click();await page.locator('.assistant-confirm').waitFor();await page.locator('.assistant-msg input[type=checkbox]').check();await page.locator('.assistant-confirm').click();await page.getByText('Gérer mon rendez-vous',{exact:true}).waitFor();console.log(name,'Melba proposition + clic explicite OK');
- manager=false;await page.goto('http://127.0.0.1:8765/manager/');await page.locator('#login-panel').waitFor({state:'visible'});await page.locator('#login [name=email]').fill('manager@example.test');await page.locator('#login [name=password]').fill('fake');await page.locator('#login button').click();await page.locator('#mfa-panel').waitFor({state:'visible'});await page.locator('#mfa input').fill('123456');await page.locator('#mfa button').click();await page.locator('#studio').waitFor({state:'visible'});await page.screenshot({path:'test-results/manager-'+name+'.png',fullPage:false});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' overflow Manager');
+ manager=false;await page.goto('http://127.0.0.1:8765/manager/');await page.locator('#login-panel').waitFor({state:'visible'});await page.locator('#login [name=email]').fill('manager@example.test');await page.locator('#login [name=password]').fill('fake');await page.getByRole('button',{name:'Se connecter',exact:true}).click();await page.locator('#mfa-panel').waitFor({state:'visible'});await page.locator('#mfa input').fill('123456');await page.locator('#mfa button').click();await page.locator('#studio').waitFor({state:'visible'});await page.screenshot({path:'test-results/manager-'+name+'.png',fullPage:false});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' overflow Manager');
  await page.locator('[data-view=catalogue]').click();assert.equal(await page.locator('#service-list details').count(),64);await page.locator('[data-view=settings]').click();await page.locator('#outlook-status').waitFor({state:'visible'});console.log(name,'Manager connexion MFA, agenda, 64 prestations, paramètres OK');await ctx.close();
 }
 const pwa=await browser.newContext({serviceWorkers:'allow'}),pwaPage=await pwa.newPage();
@@ -75,6 +75,21 @@ assert(!(await pwaPage.evaluate(()=>caches.keys())).includes('br-v14-stale-test'
 await pwaPage.evaluate(async()=>{const current=(await caches.keys()).find(k=>k.startsWith('br-v15-'));await(await caches.open(current)).put('/gallery.js',new Response('obsolete'));});
 assert((await pwaPage.evaluate(async()=>await(await fetch('/gallery.js')).text())).includes('function release(video)'));
 const cached=await pwaPage.evaluate(async()=>{const keys=await caches.keys();return(await Promise.all(keys.map(async k=>(await(await caches.open(k)).keys()).map(r=>new URL(r.url).pathname)))).flat();});
-assert(!cached.some(p=>p.endsWith('.mp4')||p.startsWith('/.netlify/')));await pwa.close();
+assert(!cached.some(p=>p.endsWith('.mp4')||p.startsWith('/.netlify/')));
+await pwaPage.goto('http://127.0.0.1:8765/app/');
+await pwaPage.evaluate(()=>navigator.serviceWorker.ready);
+await pwaPage.waitForFunction(()=>navigator.serviceWorker.controller?.scriptURL.endsWith('/app/sw.js'));
+const clientManifest=await pwaPage.evaluate(async()=>await(await fetch(document.querySelector('link[rel=manifest]').href)).json());
+assert.equal(clientManifest.id,'/app/');assert.equal(clientManifest.scope,'/app/');
+await pwaPage.goto('http://127.0.0.1:8765/manager/');
+await pwaPage.waitForFunction(()=>navigator.serviceWorker.controller?.scriptURL.endsWith('/manager/sw.js'));
+const managerManifest=await pwaPage.evaluate(async()=>await(await fetch(document.querySelector('link[rel=manifest]').href)).json());
+assert.equal(managerManifest.id,'/manager/');assert.notEqual(managerManifest.id,clientManifest.id);
+const scopes=await pwaPage.evaluate(async()=>(await navigator.serviceWorker.getRegistrations()).map(r=>new URL(r.scope).pathname));
+assert(scopes.includes('/app/')&&scopes.includes('/manager/'));
+await pwaPage.goto('http://127.0.0.1:8765/app/');
+assert((await pwaPage.evaluate(()=>navigator.serviceWorker.controller.scriptURL)).endsWith('/app/sw.js'));
+console.log('PWA : coexistence réelle des workers /app/ et /manager/, manifests distincts, aucun écrasement');
+await pwa.close();
 console.log('PWA : ancien cache supprimé, JavaScript actualisé, aucune vidéo/API en cache');
 await browser.close();server.close();assert.deepEqual(errors,[]);console.log('TESTS NAVIGATEUR OK : aucune erreur JavaScript. Fournisseurs simulés.');})().catch(e=>{console.error(e);process.exit(1);});

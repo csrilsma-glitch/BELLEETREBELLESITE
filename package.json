@@ -9,7 +9,8 @@
     "test:browser": "node tests/browser.cjs",
     "test:recovery": "node tests/recovery-browser.cjs",
     "test:reminders": "node tests/reminders-lifecycle.test.cjs",
-    "test:manager": "node tests/manager-ui.cjs"
+    "test:manager": "node tests/manager-ui.cjs",
+    "test:mfa-ui": "node tests/mfa-ui.cjs"
   },
   "engines": {
     "node": ">=22"
