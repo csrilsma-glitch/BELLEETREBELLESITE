@@ -18,3 +18,5 @@
 [data-password-toggle][aria-pressed="true"] .password-eye-slash{display:block}
 
 #pwa-network{padding:10px 14px;border:1px solid #74415f;border-radius:8px;color:#ffd4ec}#pwa-update{font:inherit}
+
+.install-help{max-width:700px}.install-help h2{font-size:24px}.install-help li{margin:12px 0}.install-help a{color:#ffd4ec;overflow-wrap:anywhere}

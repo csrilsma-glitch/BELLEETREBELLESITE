@@ -1,7 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 function worker(fetch){
  const events={},saved=[],deleted=[];const cache={addAll:async()=>{},put:async(...args)=>saved.push(args),match:async()=>({offline:true})};
- const context={URL,location:{origin:'https://belleetrebelle-nailstudio.fr'},self:{skipWaiting:async()=>{},clients:{claim:async()=>{}},addEventListener:(k,f)=>events[k]=f},caches:{open:async()=>cache,keys:async()=>['br-manager-v15-5','br-manager-v15-6','other-app'],delete:async k=>deleted.push(k)},fetch};
+ const context={URL,location:{origin:'https://belleetrebelle-nailstudio.fr'},self:{skipWaiting:async()=>{},clients:{claim:async()=>{}},addEventListener:(k,f)=>events[k]=f},caches:{open:async()=>cache,keys:async()=>['br-manager-v15-5','br-manager-v15-7','other-app'],delete:async k=>deleted.push(k)},fetch};
  vm.runInNewContext(fs.readFileSync('site/manager/sw.js','utf8'),context);return {events,saved,deleted};
 }
 test('Manager SW never intercepts APIs, recovery tokens, POSTs or external resources',()=>{

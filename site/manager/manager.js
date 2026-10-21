@@ -1,5 +1,5 @@
 (async()=>{
-'use strict';const $=id=>document.getElementById(id),status=$('status');let data,factorId,installPrompt,createKey=crypto.randomUUID();const notesSaves=new Set();
+'use strict';const $=id=>document.getElementById(id),status=$('status');let data,factorId,createKey=crypto.randomUUID();const notesSaves=new Set();
 const euro=c=>new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(c/100),day=x=>new Intl.DateTimeFormat('fr-CA',{timeZone:'Europe/Paris'}).format(new Date(x)),when=x=>new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',dateStyle:'medium',timeStyle:'short'}).format(new Date(x));
 function note(t,error=false){status.textContent=t;status.className=error?'error':'';}
 // Confirmation ou erreur affichée près de l’action concernée (et non seulement en haut de page).
@@ -68,16 +68,7 @@ $('outlook-connect').onclick=()=>safe(async()=>{const d=await api('outlook-conne
 $('outlook-list').onclick=()=>safe(async()=>{const d=await api('outlook-manager',{action:'calendars'});$('outlook-calendars').replaceChildren();for(const cal of d.calendars.filter(c=>!c.isDefaultCalendar&&c.canEdit)){const o=el('option',cal.name);o.value=cal.id;$('outlook-calendars').append(o);}});
 $('outlook-select').onclick=()=>safe(async()=>{await api('outlook-manager',{action:'select',calendar_id:$('outlook-calendars').value});await load();});
 $('outlook-sync').onclick=()=>safe(async()=>{await api('outlook-manager',{action:'sync'});await load();});$('outlook-disconnect').onclick=()=>safe(async()=>{if(confirm('Déconnecter Outlook ? Les réservations existantes sont conservées.')){await api('outlook-manager',{action:'disconnect'});await load();}});
-// Le bouton disparaît quand l’application est déjà installée (mode autonome) et réapparaît si ce n’est plus le cas.
-let installedHere=false;const installMode=matchMedia('(display-mode: standalone)');
-const installed=()=>installedHere||installMode.matches||navigator.standalone===true;
-const installButton=$('install');
-function refreshInstall(){installButton.hidden=installed();}
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;refreshInstall();});
-window.addEventListener('appinstalled',()=>{installedHere=true;installPrompt=null;refreshInstall();});
-if(installMode.addEventListener)installMode.addEventListener('change',refreshInstall);else if(installMode.addListener)installMode.addListener(refreshInstall);
-refreshInstall();
-installButton.onclick=async()=>{if(installed()){refreshInstall();return;}if(installPrompt){await installPrompt.prompt();installPrompt=null;}else note('Dans le menu du navigateur, choisissez « Installer l’application » ou « Ajouter à l’écran d’accueil ». Installation disponible après mise en ligne en HTTPS.');};
+// Installation indépendante de la connexion dans install.js.
 // Enregistrement et mise à jour du service worker dans pwa-runtime.js.
 // Les données clientes restent uniquement en mémoire ; jamais localStorage ou caches.
 try{await load();}catch(e){locked();if(e.message.includes('deux facteurs')){try{await mfa();}catch{note('Connectez-vous à votre espace privé.');}}else note('Connectez-vous à votre espace privé.');}
