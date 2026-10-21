@@ -52,6 +52,7 @@
     document.getElementById('selection-add').hidden=!selected.length;
   }
   window.addEventListener('br-selection',renderSelection); renderSelection();
+  window.addEventListener('br-catalogue',()=>{selected=validIds(selected);save();renderSelection();});
   const root=document.getElementById('skull');
   if (!root) return;
   const $=id=>document.getElementById(id), stage=$('sk-body'), crumbs=$('sk-crumbs');
@@ -114,5 +115,6 @@
   root.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'&&!e.target.closest('button'))start=[e.clientX,e.clientY];});
   root.addEventListener('pointerup',e=>{if(!start)return;const dx=e.clientX-start[0],dy=e.clientY-start[1];start=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.5)move(dx<0?1:-1);});
   root.addEventListener('pointercancel',()=>{start=null;});
+  window.addEventListener('br-catalogue',()=>{selected=validIds(selected);save();levels=[{node:TREE,index:0}];renderSelection();render();});
   render();
 })();

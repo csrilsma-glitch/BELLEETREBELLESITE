@@ -6,7 +6,7 @@
   window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferred=event;refresh();});
   window.addEventListener('appinstalled',()=>{deferred=null;if(status)status.textContent='Belle & Rebelle est installée sur votre appareil ♡';refresh();});
   if('serviceWorker' in navigator&&window.isSecureContext){
-    window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{if(status)status.textContent='L’installation n’est pas disponible dans ce navigateur. Ouvrez ce lien dans Safari, Chrome ou Edge.';});});
+    window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(registration=>registration.update()).catch(()=>{if(status)status.textContent='L’installation n’est pas disponible dans ce navigateur. Ouvrez ce lien dans Safari, Chrome ou Edge.';});});
   }
   if(!button||!dialog)return;
   button.addEventListener('click',async()=>{

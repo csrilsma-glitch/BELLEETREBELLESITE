@@ -1,0 +1,21 @@
+{
+  "name": "belle-rebelle-v15",
+  "version": "15.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node scripts/check.js",
+    "test:sql": "node tests/sql.test.cjs",
+    "test:browser": "node tests/browser.cjs",
+    "test:recovery": "node tests/recovery-browser.cjs",
+    "test:reminders": "node tests/reminders-lifecycle.test.cjs",
+    "test:manager": "node tests/manager-ui.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.10",
+    "playwright": "1.62.1"
+  }
+}

@@ -1,0 +1,842 @@
+[
+  {
+    "path": ".env.example",
+    "size": 492,
+    "sha256": "044d5ead25f57a15a2549dd0e451176c7dc523471ad81f9014ee69252996eee4"
+  },
+  {
+    "path": ".gitignore",
+    "size": 99,
+    "sha256": "35822c8da41c256781327571021bec431d04855bc49dca800f453700652aaded"
+  },
+  {
+    "path": "README_V15.md",
+    "size": 12723,
+    "sha256": "11bcdb70436f18cb657af6bb75e01017002864e480d202d7b7068a5847c7ebcb"
+  },
+  {
+    "path": "docs/AUDIT_RECETTE.md",
+    "size": 9082,
+    "sha256": "f29bf069ddeccf8653d6c840db808c959c4c6b66cafcf54fb2e029da21f412fe"
+  },
+  {
+    "path": "docs/COMPARAISON_V14.txt",
+    "size": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "docs/ETAT_NUIT_2026-10-19.md",
+    "size": 4464,
+    "sha256": "63699980b28a7cbb211008fe1519a40ce466f174ab37cf6f6529a0f4e7de34db"
+  },
+  {
+    "path": "docs/MANAGER_INSTALLATION.md",
+    "size": 2912,
+    "sha256": "4e5d81464e4b3cf1d3c43f4eb5a18e0a15d397e10edb5308930fb2ba660d3b01"
+  },
+  {
+    "path": "docs/OUTLOOK_PREPROD_TEST.md",
+    "size": 2628,
+    "sha256": "c7ce6a281d2621e544205de62461e084d209b1cdb96e6ffbe8d324df720eac2d"
+  },
+  {
+    "path": "docs/PREPRODUCTION_20261019.md",
+    "size": 9037,
+    "sha256": "32d17a10b762869862b1bf2a37b31e43d7326e06799140a95bb5ffc6368d29ae"
+  },
+  {
+    "path": "docs/send-sms-original.js.txt",
+    "size": 2479,
+    "sha256": "1536550833b03772e284ea1d7db51c1c5a8c8f62c3fb37be888e1538a851f8ce"
+  },
+  {
+    "path": "docs/supabase/REGLAGES_SUPABASE_PREPROD.md",
+    "size": 1738,
+    "sha256": "4872627b33635b76de2e045ffdc392ac58612208b8a729ab3835648e800d4f26"
+  },
+  {
+    "path": "docs/supabase/recuperation-manager-email-fr.html",
+    "size": 788,
+    "sha256": "be8891940958cbcffea19f50a89661319c510358cdcbe051000633e543016ea8"
+  },
+  {
+    "path": "docs/validation/20261020-auth.json",
+    "size": 189,
+    "sha256": "19e6b17aab9b409afbcdb3c62fdf71504eca731f9da8f7388a4d813fb03dd710"
+  },
+  {
+    "path": "docs/validation/20261020-evening.md",
+    "size": 10871,
+    "sha256": "f0bb37cc445cf1ac04deb44983b09552fc72ff40a8c95251ad9eca3b74d5ac2f"
+  },
+  {
+    "path": "docs/validation/20261020-live-bookings.json",
+    "size": 692,
+    "sha256": "fa1b6d8503763d8dfecca0b389166ce236de3171ba541df1279ab193ea5aa662"
+  },
+  {
+    "path": "docs/validation/20261020-preproduction.md",
+    "size": 6365,
+    "sha256": "0c78c4f2d405e9e3d52f4714dc3d05d8d4a42aea114fa3772f43f46b2e3fa330"
+  },
+  {
+    "path": "docs/validation/20261021-abandon-service-externe.md",
+    "size": 1562,
+    "sha256": "5cbd9dd84b72ba98b15c9cf2903cbe69c713823507434665faed876cd0cef8c5"
+  },
+  {
+    "path": "docs/validation/20261021-finalisation.md",
+    "size": 10462,
+    "sha256": "30d5a3e7eaeef35b8ba9994b87d8a37c88acdc109b30d74e33c4b5eecf963e24"
+  },
+  {
+    "path": "docs/validation/20261021-migrations.md",
+    "size": 1144,
+    "sha256": "b4c9111ab3dde74cc3227fbef5dda3dd2adfb76a8828d7189e08fcf88d7453f1"
+  },
+  {
+    "path": "docs/validation/20261021-tarifs-manager.md",
+    "size": 2280,
+    "sha256": "bfe4d8f5eb24d4e31556769a19ec7d5596669c403cb088f9cbc26a88da2ac17c"
+  },
+  {
+    "path": "docs/validation/20261021-work.md",
+    "size": 8685,
+    "sha256": "4f096944047d659db75f033f985c32d53a2817f17f35ea38deee1e1929bffe96"
+  },
+  {
+    "path": "netlify.toml",
+    "size": 1244,
+    "sha256": "2051a1c0a74b307a5873dc18f22d28a7cb40371dca676a831160df043cd629b9"
+  },
+  {
+    "path": "netlify/functions/availability.js",
+    "size": 445,
+    "sha256": "db33dbe73f064082c7abc56e147816afcb03982436a53cb16e5dede07ced6b55"
+  },
+  {
+    "path": "netlify/functions/catalog.js",
+    "size": 440,
+    "sha256": "a3e5d6c3394f0696d453a54b3d7e1f7424bda68c5006baf04d63eb0022fd27b8"
+  },
+  {
+    "path": "netlify/functions/chat.js",
+    "size": 13358,
+    "sha256": "e8f006769634a49ff6179758f0fd08116316bc6646afab4fb84c34543118ce6e"
+  },
+  {
+    "path": "netlify/functions/jobs-scheduled.mjs",
+    "size": 276,
+    "sha256": "37a8942ac4277929f0fdb8c2fb2d360252fc10f1d843d32e4d20eb2aa694928c"
+  },
+  {
+    "path": "netlify/functions/jobs.js",
+    "size": 1182,
+    "sha256": "16c2dbc0674fd556b5a712b54657cfcd7d9133d201c2536087831568fd6a68c7"
+  },
+  {
+    "path": "netlify/functions/lib/booking.js",
+    "size": 2005,
+    "sha256": "7e08df6372da40d4fd87453e3f3330de831fcf3d601580e239d6b07dc9dc40d5"
+  },
+  {
+    "path": "netlify/functions/lib/core.js",
+    "size": 7563,
+    "sha256": "90599f2822db11d66dafb786d2809ebc3b0cfc28a413c01e3744e108b38e457a"
+  },
+  {
+    "path": "netlify/functions/lib/notifications.js",
+    "size": 4579,
+    "sha256": "1db9a149608b75a12d2ca239ae3dea0e9865c16b543f165deb98e0d1ec4fd6c5"
+  },
+  {
+    "path": "netlify/functions/lib/outlook.js",
+    "size": 7820,
+    "sha256": "3ccab77c79a9a36e245c3d904b10bf9a73643b3cddf5363aac45b2686fc35b59"
+  },
+  {
+    "path": "netlify/functions/manager-auth.js",
+    "size": 1569,
+    "sha256": "a02d643cae2ba116870879a85f8e3b07e0cd9e578e5760d9c9b7d830d6551574"
+  },
+  {
+    "path": "netlify/functions/manager-forgot.js",
+    "size": 2027,
+    "sha256": "92b034eb9cc1551054cd80cb5030ea4b3cbc7f76f58e0197ab6774687e3e08a8"
+  },
+  {
+    "path": "netlify/functions/manager-recovery.js",
+    "size": 3413,
+    "sha256": "264fcafe39f178e6520b2278d1a78f6094e716a6013ab7569a63e52b849f6242"
+  },
+  {
+    "path": "netlify/functions/manager.js",
+    "size": 4438,
+    "sha256": "ad5a42e419a6bc9f40d9a7470970e38a23c79cc979346f6f3ecde50b3d6300e7"
+  },
+  {
+    "path": "netlify/functions/notifications.js",
+    "size": 227,
+    "sha256": "f8f468de0f7b06486595707e8d19ca1d14d9deafd61d47568aa5fb7c3a4d2054"
+  },
+  {
+    "path": "netlify/functions/outlook-callback.js",
+    "size": 1529,
+    "sha256": "0ed00934596ffa945c61d73ead70e78939339f642aeb43c11675c17cccec9e62"
+  },
+  {
+    "path": "netlify/functions/outlook-connect.js",
+    "size": 1343,
+    "sha256": "f70728d78f8e161f687ba4e6efe0998d3b0440e723eeef69c04be562e2d23da2"
+  },
+  {
+    "path": "netlify/functions/outlook-manager.js",
+    "size": 1198,
+    "sha256": "ca990fc86a96226ced29975e8b96f68445c7a6a7aae761b0ae5a9caa7009eed2"
+  },
+  {
+    "path": "netlify/functions/reservations.js",
+    "size": 1102,
+    "sha256": "9969ad68ee408391e0e406150ec667e4ea735360d4ee8eb4dd2a77c2fe681ff9"
+  },
+  {
+    "path": "netlify/functions/send-sms.js",
+    "size": 276,
+    "sha256": "0222989d41bb12dac7596fe3db91f39cb0bf412dba29f09c3f04bdcb52948e99"
+  },
+  {
+    "path": "package-lock.json",
+    "size": 2171,
+    "sha256": "00f575c65cc27d84affa99d11fb9c1067daa03577bad28b096d085a54ef40235"
+  },
+  {
+    "path": "package.json",
+    "size": 567,
+    "sha256": "0d547badcf81c4d1e25869ac739fe56b8c99a693882a2954da4456acfbe3d311"
+  },
+  {
+    "path": "scripts/check.js",
+    "size": 582,
+    "sha256": "8a4de6423baf3d849794734e3ee527874956a2b8165d596e70eb1191e3988969"
+  },
+  {
+    "path": "scripts/make-test-webm.sh",
+    "size": 559,
+    "sha256": "b02abfc233b5352b25cc3f49e4d8cc1785f543e0ec21e7ea8c9d677e5c52a731"
+  },
+  {
+    "path": "site/LISEZ-MOI.txt",
+    "size": 79,
+    "sha256": "b60bb6b7e1c5cdb45e6fd18a8f8022c6d36d143a17450ca6fb6eb1472110ed69"
+  },
+  {
+    "path": "site/assets/capsules.jpg",
+    "size": 5264,
+    "sha256": "e5572e9034494defdb01e09e327fab2d61881a97c40342c262fce4d6fe40c227"
+  },
+  {
+    "path": "site/assets/crane-valide.png",
+    "size": 2988046,
+    "sha256": "8a28f10cac09347746630217c0741986d5af8570c6d7bcbbae62275a39b6649a"
+  },
+  {
+    "path": "site/assets/depose-reference.jpg",
+    "size": 10338,
+    "sha256": "291a4294e16e5b5d5bdea37202215926595650616f95b030f2862fdf1e1e0d6a"
+  },
+  {
+    "path": "site/assets/depose.jpg",
+    "size": 4685,
+    "sha256": "26957bfab0040d61196f937b2c0f142626c90fd968479e74bc1ac640f26ef690"
+  },
+  {
+    "path": "site/assets/familles-onglerie.jpg",
+    "size": 56674,
+    "sha256": "76849e75b8b468d61abd12bb320b21fc653189ca88af7e8b24132defc8b3242f"
+  },
+  {
+    "path": "site/assets/familles-principales.jpg",
+    "size": 20335,
+    "sha256": "3f48a26f2998ff6a09f2e5209c89d690f8127bf1276531a272c8010a8af67410"
+  },
+  {
+    "path": "site/assets/favicon.svg",
+    "size": 247,
+    "sha256": "d957bfe38205ebd123a367403fa5f5671f9c9c522ab28f33416c573da2da2856"
+  },
+  {
+    "path": "site/assets/fonts/LISEZ-MOI-october-crow.txt",
+    "size": 921,
+    "sha256": "38645a52af13f0bff316110fcc1977d72fdb806e7090b0ead6c493a9f1219124"
+  },
+  {
+    "path": "site/assets/fonts/october-crow.ttf",
+    "size": 185256,
+    "sha256": "226a140a9559667554d3499fc6e72cf10d1490ee2daa8ca91c3451faa22ece93"
+  },
+  {
+    "path": "site/assets/gallery1.jpg",
+    "size": 4530,
+    "sha256": "e8c8deec81364a626b60419d44368c5c4c1b293af3b7b80b6f7ab4a4d8bb2309"
+  },
+  {
+    "path": "site/assets/gallery2.jpg",
+    "size": 4331,
+    "sha256": "04bdd67e6e51892a345d472a6e0d0ffaf520f1154a2c80b7e430738a4edf9e43"
+  },
+  {
+    "path": "site/assets/gallery3.jpg",
+    "size": 4291,
+    "sha256": "8430ae124a5df4d602847dac3c2d786e126efd378d0bc3c8b3ca0023297827e0"
+  },
+  {
+    "path": "site/assets/gallery4.jpg",
+    "size": 4525,
+    "sha256": "d8f23ec935f46fa28899564dc4d270f3a3e706532b89829374ddaa61158381aa"
+  },
+  {
+    "path": "site/assets/gallery5.jpg",
+    "size": 5097,
+    "sha256": "16cd834baca8c436835398a74bf74207798e1110af509057d8de74ca7896dfdd"
+  },
+  {
+    "path": "site/assets/gallery6.jpg",
+    "size": 4306,
+    "sha256": "7f6d812c8ea674a43fdc8393fd794dd6e9aeb0f16ac485f44df9a28331f0878c"
+  },
+  {
+    "path": "site/assets/gel.jpg",
+    "size": 5654,
+    "sha256": "c91fffec545cba52d82fcbc74ebe52f9a9abad7b9b1d77e758a15421299e5e35"
+  },
+  {
+    "path": "site/assets/hero-art.jpg",
+    "size": 43294,
+    "sha256": "eadb68e9fbddf966f3de319e831584af7de2d2338429dae9a7fc73f3895be550"
+  },
+  {
+    "path": "site/assets/icon-192.png",
+    "size": 4306,
+    "sha256": "45caa05327694434da825c169e1e135c18efde5a02c13e9b128857e38d3962f7"
+  },
+  {
+    "path": "site/assets/icon-512.png",
+    "size": 16037,
+    "sha256": "bb9fe5bfd1f10e482c6fcc7173306ff203fb40770ca2856b5f88353c166ddd25"
+  },
+  {
+    "path": "site/assets/melanie.jpg",
+    "size": 297700,
+    "sha256": "0a0d4c55c4afdf20b9e965c9279ed344ded83b3e857944dd40d360e89d4549d7"
+  },
+  {
+    "path": "site/assets/melba-fond.png",
+    "size": 3676868,
+    "sha256": "065ea6a21f7b76a55049a82920676b413554579bef7db7c2ca9ff3e8044914ed"
+  },
+  {
+    "path": "site/assets/melba.png",
+    "size": 148256,
+    "sha256": "3f4a752c11e11e30f907161f5d5dbf72fc6a33cdbd080540e63f039e7ea38cff"
+  },
+  {
+    "path": "site/assets/musique-fond.mp3",
+    "size": 1440534,
+    "sha256": "a0d9ec73ad4e036e1c2b33acb9954e77f1e7b6c543bbe3b1b0e8189c6cf21118"
+  },
+  {
+    "path": "site/assets/nailart.jpg",
+    "size": 7122,
+    "sha256": "0ed05f51f722a4fd3c45f2c130e158fb48d76198cac0457c05d34af324c83151"
+  },
+  {
+    "path": "site/assets/prestations.json",
+    "size": 13643,
+    "sha256": "e76df46f15a48fb7478ba788ea9627f48836e331f3cfe5428fedb322e345b20e"
+  },
+  {
+    "path": "site/assets/prestations/americaine.jpg",
+    "size": 31797,
+    "sha256": "ed0c0c3acd9b335c243720cc12ab5ab7c046e6c653abf7c0e024866dba5ae6f4"
+  },
+  {
+    "path": "site/assets/prestations/bb.jpg",
+    "size": 36349,
+    "sha256": "a958b0b7d0776b0429804a71e79542d4e579d971562852aa24537d49da3e11cc"
+  },
+  {
+    "path": "site/assets/prestations/capsule.jpg",
+    "size": 34937,
+    "sha256": "203c29110c11f7bfba37697652e187a099caabf18c6d3aae17530298c517dc56"
+  },
+  {
+    "path": "site/assets/prestations/casse.jpg",
+    "size": 31328,
+    "sha256": "82a7e7701f514458e0e202ab14639314571e227ed59fabb76a4e2b8ae19a00d6"
+  },
+  {
+    "path": "site/assets/prestations/deco-elab.jpg",
+    "size": 32971,
+    "sha256": "8319ad30688b51aa0a16f97b1cacbb45f16f3081e82d5797fc93d6dca1468df4"
+  },
+  {
+    "path": "site/assets/prestations/deco-simple.jpg",
+    "size": 30898,
+    "sha256": "60514c447490a25c3575c95282128fbfb24cb94597a3fe33eb0c19d31cec36b1"
+  },
+  {
+    "path": "site/assets/prestations/deco.jpg",
+    "size": 30960,
+    "sha256": "4fb1b5898cb3419e1ece3b41624ca40de7c68f5b34f70d889fdc61374ae43686"
+  },
+  {
+    "path": "site/assets/prestations/deposes.jpg",
+    "size": 29328,
+    "sha256": "f0457218a2da03e59b951c895bf2b9d189898f813a852cfd68ecffeec1dc24b5"
+  },
+  {
+    "path": "site/assets/prestations/dp-complexe.jpg",
+    "size": 30405,
+    "sha256": "e6f59565673198c77fcd0df2cddac99a6ec676e7275c042361937b77668c691b"
+  },
+  {
+    "path": "site/assets/prestations/dp-simple.jpg",
+    "size": 27782,
+    "sha256": "123e4e29510d658c54738c6e23914cf07f5d9d608b2c1acc2e2b816026a4a4fa"
+  },
+  {
+    "path": "site/assets/prestations/dp.jpg",
+    "size": 32249,
+    "sha256": "e5e2b66f3cfc67b505481491425d115ebac7b7742e404d7cf3880195f7b25214"
+  },
+  {
+    "path": "site/assets/prestations/fc.jpg",
+    "size": 33468,
+    "sha256": "b75bc11253c6546903a1a724904e33fe1ed831fbd287675be69ad921b0f4eaaf"
+  },
+  {
+    "path": "site/assets/prestations/fo.jpg",
+    "size": 32875,
+    "sha256": "44be7fe2a65ec76418df4a036eb2a859c1f36c2e63a2a9a5eb110719b2bfcf2d"
+  },
+  {
+    "path": "site/assets/prestations/fr.jpg",
+    "size": 31635,
+    "sha256": "eea00016175766e411f25b3d975cbcc366a0d95ee8ed1b6c65fa20a2f4609409"
+  },
+  {
+    "path": "site/assets/prestations/gel.jpg",
+    "size": 30714,
+    "sha256": "4623ffe58adc9ca71f0cc92bee6afc93dba55f0fd116572619bf2b253bace475"
+  },
+  {
+    "path": "site/assets/prestations/inc.jpg",
+    "size": 34083,
+    "sha256": "d93bfe261482bde61d3d6ee11fb0e076101ebd2840fb3d931125a84dce5774da"
+  },
+  {
+    "path": "site/assets/prestations/onglerie.jpg",
+    "size": 28237,
+    "sha256": "923a1811dabb5478350e4e957f2bad5cf334b395d4a54e43b26056fa36cb2ced"
+  },
+  {
+    "path": "site/assets/prestations/popits.jpg",
+    "size": 40300,
+    "sha256": "c013be5e7d2618527119b9f3d5f2d3c64716fc8e006d7834c5f8f1f80b1ed68a"
+  },
+  {
+    "path": "site/assets/prestations/press.jpg",
+    "size": 30669,
+    "sha256": "d4df39aeed97f88ac2594da9ad5ff0b5ffb236e626a1871ab786644018430a39"
+  },
+  {
+    "path": "site/assets/prestations/relief.jpg",
+    "size": 29405,
+    "sha256": "58602fd31c2f5fd886c502a7b64a490138b3d0b80913f0ba75362efb487f6f98"
+  },
+  {
+    "path": "site/assets/prestations/semi.jpg",
+    "size": 26831,
+    "sha256": "087a2b1dba550b85414e3662e2953132bfe35aacbeb34dddb483aaf46e3eca28"
+  },
+  {
+    "path": "site/assets/prestations/stickers.jpg",
+    "size": 37277,
+    "sha256": "ee68e756ff32700cb6d4a0e2c2c159c1415140df8ad0022d72251926a1321c00"
+  },
+  {
+    "path": "site/assets/semi.jpg",
+    "size": 5824,
+    "sha256": "d1da8844cd46ed004011b228ef00b248aff095c1a99e95e0ec90236660dbb5fb"
+  },
+  {
+    "path": "site/assets/videos/realisation-01.mp4",
+    "size": 807065,
+    "sha256": "c963bc732ac18b61781ff862b2b3f80fde7669dca545762e8eb3bfb2f33a49b0"
+  },
+  {
+    "path": "site/assets/videos/realisation-02.mp4",
+    "size": 2158304,
+    "sha256": "9b33f6be675bd4a850490970fd72009c94f7528cbe15e290d8002d7e07eb90b6"
+  },
+  {
+    "path": "site/assets/videos/realisation-03.mp4",
+    "size": 937641,
+    "sha256": "8688b88b250247de8aadf9213cb1ab6e5d21717447935abf4eea53f6dbca5d4a"
+  },
+  {
+    "path": "site/assets/videos/realisation-04.mp4",
+    "size": 740626,
+    "sha256": "640501eec2c4d57a0e78bba724fe269ac52b822b6711a521bd57495b235ce6fa"
+  },
+  {
+    "path": "site/assets/videos/realisation-05.mp4",
+    "size": 1254876,
+    "sha256": "02596f6fef10300f41d29d7a374003b39c020b3c17b491b0b5458463526f1abb"
+  },
+  {
+    "path": "site/assets/videos/realisation-06.mp4",
+    "size": 1044223,
+    "sha256": "5b5cf82c654d38f4abf2fbe0467b77090d746c9f5733d6186414dd79c7f81e48"
+  },
+  {
+    "path": "site/assets/videos/realisation-07.mp4",
+    "size": 2305455,
+    "sha256": "0ee0e3bb93f659f3c7e5b855ab43baac74473692c0d764660c8943a0bbf313d4"
+  },
+  {
+    "path": "site/assets/videos/realisation-08.mp4",
+    "size": 1408803,
+    "sha256": "702a15fda3c6526cfe5d336e9b124d1d5b5d5c3346cd1afa4a04626e1c037612"
+  },
+  {
+    "path": "site/assets/videos/realisation-09.mp4",
+    "size": 1681856,
+    "sha256": "fd063ad05eed5608a54da67a24c353933eb36f14273b7e9433418c992a34b419"
+  },
+  {
+    "path": "site/assets/videos/realisation-10.mp4",
+    "size": 1052314,
+    "sha256": "cf93e62b323c56d4bbd4c10d084fa041f8057cf19f7ce70a7d14065fba166f2a"
+  },
+  {
+    "path": "site/assets/videos/realisation-11.mp4",
+    "size": 760102,
+    "sha256": "803b254718c8e86b3e0daaf202a2e809aa843aa1d775d80946c406dbcf1c4d61"
+  },
+  {
+    "path": "site/assets/videos/realisation-12.mp4",
+    "size": 1181989,
+    "sha256": "c3493dc194d03a342d686d2bee088163a0535c261f384cface95e3fc0e3ab974"
+  },
+  {
+    "path": "site/assistant.js",
+    "size": 8856,
+    "sha256": "0edffe3860207ff4080677cb96d8ba11706a835a3a13d6bb2e3a7420ddf86ee7"
+  },
+  {
+    "path": "site/catalogue-runtime.js",
+    "size": 1403,
+    "sha256": "f96d308969996257243a10c29ab8a93b612ec8009eb24c0b9f8190ed8b57aadf"
+  },
+  {
+    "path": "site/catalogue.js",
+    "size": 17037,
+    "sha256": "9bbcc70b0b8cc24a4664c936425e28a7ead0a850a100c4461fb5c97ccf5e40a3"
+  },
+  {
+    "path": "site/gallery.js",
+    "size": 2777,
+    "sha256": "d2581411b89266a979304c42964360e6afa44563652e2e8a9605776aad4c744a"
+  },
+  {
+    "path": "site/index.html",
+    "size": 12048,
+    "sha256": "e81a0bc98615b6ba7d05b1db13ce0b9e80dc4000e7f53a57317c8dca7c712614"
+  },
+  {
+    "path": "site/manager/forgot.js",
+    "size": 2097,
+    "sha256": "f86c2a702ac12e686b22a55744f70f293e958f584a9b7d5e967c10dc98f47575"
+  },
+  {
+    "path": "site/manager/index.html",
+    "size": 8315,
+    "sha256": "f1b944aa0ad980af211e3974b82fb81511b857c157c8cb646adad84086714e4c"
+  },
+  {
+    "path": "site/manager/manager.css",
+    "size": 3971,
+    "sha256": "beaa921f2d6dafa101925aff31d406d334b8a8022a86f6e0d0294a45911960ba"
+  },
+  {
+    "path": "site/manager/manager.js",
+    "size": 17925,
+    "sha256": "4c75508dc3e58601f4b1cb1af1ff7a9d1b0b6594c8f9f0ff6cfedda9a39b48fc"
+  },
+  {
+    "path": "site/manager/manifest.webmanifest",
+    "size": 473,
+    "sha256": "94274a725299465c6fff6259cddd2177e6b0b0078ec36b7c6e0f86f295dc4807"
+  },
+  {
+    "path": "site/manager/reset-password.html",
+    "size": 2268,
+    "sha256": "6de4805533671e87dff8a55b44fe48da9ad0571f83bc5018696e72a80064d54e"
+  },
+  {
+    "path": "site/manager/reset-password.js",
+    "size": 3527,
+    "sha256": "f4c7885e4a4b49b8b175a898afb8f189ff415c52b56e06b4809bf0d632d339b2"
+  },
+  {
+    "path": "site/manager/sw.js",
+    "size": 804,
+    "sha256": "02916621d2fbf0a8169c3802fdafb190895405fd85a12aabfd50fe105ff94c62"
+  },
+  {
+    "path": "site/manifest.webmanifest",
+    "size": 561,
+    "sha256": "09de16b031d318e61de081dd35b065d54d08138cd58f510559f462c38699165f"
+  },
+  {
+    "path": "site/melba-transparence-v10-1.css",
+    "size": 2807,
+    "sha256": "ca1a02d07bc3a3a80cedd777924a95554079d0d2c5c8394e8ef0120765a0bc1e"
+  },
+  {
+    "path": "site/mentions-legales.html",
+    "size": 1919,
+    "sha256": "cf69139bfb7be2f54eb02d7d577807f3b55b04eca7c0cbe90df546672bb24c07"
+  },
+  {
+    "path": "site/native.css",
+    "size": 1500,
+    "sha256": "ae8585c263c9f471ac90b67bb0672aed88b324bbe0dd0dde697ef73a966633b8"
+  },
+  {
+    "path": "site/offline.html",
+    "size": 938,
+    "sha256": "8e50e873b3ae42a54d751c33a2a69de9b2155da468aa393df9518046ec265a54"
+  },
+  {
+    "path": "site/pwa.js",
+    "size": 2567,
+    "sha256": "75cac21b8af4ce50d58819e5b8c1d816cf26674e8ca7b408cbb338b66c14e351"
+  },
+  {
+    "path": "site/reservation.html",
+    "size": 8165,
+    "sha256": "f655a020befd8f57e8331dcaabe8d410a0a52b77d5bcd6e76cc0a551137053e0"
+  },
+  {
+    "path": "site/reservation.js",
+    "size": 8501,
+    "sha256": "a6d51d58d21e114193eb1b3d5aa5b54b33be9648226ddbe77aa83f7e2dd91372"
+  },
+  {
+    "path": "site/script.js",
+    "size": 4185,
+    "sha256": "8620aa8a1c48493a8ae3c40eea888cfcaedda564218c4fd552c544732f6e03e8"
+  },
+  {
+    "path": "site/selecteur.js",
+    "size": 8017,
+    "sha256": "5324f06cd70b52682df11ba2a2c871a533ba1507c8246d6b9a680b1ea31317d3"
+  },
+  {
+    "path": "site/styles.css",
+    "size": 20805,
+    "sha256": "f8edfe591ba562fb5139c2128cfb78a1ca1921e5020ace920e912a6a76606c8a"
+  },
+  {
+    "path": "site/sw.js",
+    "size": 2742,
+    "sha256": "418b370711e36267d7185852346118cf0763b287b41c5bd82697c7c92f360f25"
+  },
+  {
+    "path": "site/v10.css",
+    "size": 14045,
+    "sha256": "550b22bdfc9129241ec5fdac3165c0ddbadb4a065afc4caee57a2459db08d8a0"
+  },
+  {
+    "path": "supabase/000_audit.sql",
+    "size": 544,
+    "sha256": "4eaac15e2a57f5cfdc4fcb4a8b8130764368be5ab023322f48907df7ca35702a"
+  },
+  {
+    "path": "supabase/001_v15.sql",
+    "size": 16326,
+    "sha256": "9bf4354343cbe196eb23efd1fef4a3e69d0e6518992b6b4ee608391144cd8615"
+  },
+  {
+    "path": "supabase/002_catalogue.sql",
+    "size": 15338,
+    "sha256": "ddd0110f3f9fb1d336c51a01bde0c7ee2f80e52f858abbbbcc9b7e974bd0ae77"
+  },
+  {
+    "path": "supabase/003_outlook.sql",
+    "size": 643,
+    "sha256": "33b15ada1763b448311cb5af71cbf8822ab7e7a59819c20211943b76088c97a4"
+  },
+  {
+    "path": "supabase/004_privacy.sql",
+    "size": 936,
+    "sha256": "a22db7a9d7eaa56b82cc204e7dff1a5dbfdeb029ef1659e74a10dbf303689810"
+  },
+  {
+    "path": "supabase/migrations/20261019185534_v15_schema.sql",
+    "size": 16326,
+    "sha256": "9bf4354343cbe196eb23efd1fef4a3e69d0e6518992b6b4ee608391144cd8615"
+  },
+  {
+    "path": "supabase/migrations/20261019185541_v15_catalogue.sql",
+    "size": 15338,
+    "sha256": "ddd0110f3f9fb1d336c51a01bde0c7ee2f80e52f858abbbbcc9b7e974bd0ae77"
+  },
+  {
+    "path": "supabase/migrations/20261019185629_v15_outlook.sql",
+    "size": 643,
+    "sha256": "33b15ada1763b448311cb5af71cbf8822ab7e7a59819c20211943b76088c97a4"
+  },
+  {
+    "path": "supabase/migrations/20261019185635_v15_privacy.sql",
+    "size": 936,
+    "sha256": "a22db7a9d7eaa56b82cc204e7dff1a5dbfdeb029ef1659e74a10dbf303689810"
+  },
+  {
+    "path": "supabase/migrations/20261019185911_email_reminders.sql",
+    "size": 2063,
+    "sha256": "416d6c5aa910ba9ea86e743920fb8a7850e260fe73bb07a39433c3cfac70fd63"
+  },
+  {
+    "path": "supabase/migrations/20261020171558_no_completion_notice.sql",
+    "size": 2268,
+    "sha256": "69dfd580deb3315bcfe47aa0f348784bdd069ada05d30875fc165d28973341b7"
+  },
+  {
+    "path": "supabase/migrations/20261020182713_realtest_flag.sql",
+    "size": 469,
+    "sha256": "80942b06f470171ed39d9894017466e46907c57d3a01866f4a3381946c3b6765"
+  },
+  {
+    "path": "supabase/migrations/20261021061311_move_btree_gist_to_extensions.sql",
+    "size": 271,
+    "sha256": "40b845cb8fb152a28d68ed0ff1e99702f4351612dc4c9370efbe8d6b16a3a2ba"
+  },
+  {
+    "path": "supabase/migrations/20261021063959_admin_json_results.sql",
+    "size": 2895,
+    "sha256": "c783fa241b5a0d1e6eaaa7e4e257fc8e2e6cf26cddb06e7c97332892d98dabb1"
+  },
+  {
+    "path": "supabase/migrations/20261021064110_diagnose_hours_save_test_only.sql",
+    "size": 2877,
+    "sha256": "fef2b7a7ddf807d40f21fa49f3aae0e41ad5c38ac516c61dff435d7d1258b9e7"
+  },
+  {
+    "path": "supabase/migrations/20261021064201_admin_hours_safe_update_compatible.sql",
+    "size": 2946,
+    "sha256": "c04729039ddb1b38c4f52655e9c03c56324a857ced335f2db8575c85ab37d698"
+  },
+  {
+    "path": "tests/browser.cjs",
+    "size": 12667,
+    "sha256": "5b9aa755918aed28546d23acc40bef7ccd31109a03f3952b2dd44ebb68c7fc69"
+  },
+  {
+    "path": "tests/client-management.test.js",
+    "size": 740,
+    "sha256": "32b330225aa4cb88633a6b90776ea352be2844c6ec7e650ce41773cd7da062ab"
+  },
+  {
+    "path": "tests/core.test.js",
+    "size": 4975,
+    "sha256": "70dd310dc74dadadd7cddd6cdc257c45f3e61b55c857cca0d9a10a03bf2f2588"
+  },
+  {
+    "path": "tests/forgot.test.js",
+    "size": 7871,
+    "sha256": "cee46968b2159901de4ae98d571ecc9f3664a305860214deeef157b5b8cdaaf7"
+  },
+  {
+    "path": "tests/jobs-runner.test.js",
+    "size": 902,
+    "sha256": "86d178735db47000db595dc848e923217f3263c9ac019cc4996e8d70d14ca976"
+  },
+  {
+    "path": "tests/live-auth/index.ts",
+    "size": 4062,
+    "sha256": "47d31fcffa586d0baa6c6efdad957d570728b6d6d023d5bb94cbe2022fcabe50"
+  },
+  {
+    "path": "tests/manager-routing.test.js",
+    "size": 7748,
+    "sha256": "a73e828640291cee142966caabf99baa533e090ce9baded2e4d41c5f17272a56"
+  },
+  {
+    "path": "tests/manager-ui.cjs",
+    "size": 8282,
+    "sha256": "21fee3987ec512e89e8b134d7464c028a5fffda64b0b9221ddbd07ac0dd1a38d"
+  },
+  {
+    "path": "tests/melba-business.test.js",
+    "size": 1665,
+    "sha256": "5d0a4326e58cd180ff5c9f8504955988042d2685e57f9d2fbc654177a2b8f138"
+  },
+  {
+    "path": "tests/outlook-preprod.test.js",
+    "size": 10797,
+    "sha256": "050d562699557d82556a02cc5e786553ceb17ea34f9be84258967284953fcabb"
+  },
+  {
+    "path": "tests/outlook-simulation.test.js",
+    "size": 10028,
+    "sha256": "fffc3e37b55dd77a982c8dc107a5d71b3360b91551932275d283b10684ee1a40"
+  },
+  {
+    "path": "tests/outlook-write.test.js",
+    "size": 5269,
+    "sha256": "6bd733d9d87500e274a04fda78d594f6343b59685a4230467c65751d191ce1ff"
+  },
+  {
+    "path": "tests/preprod-no-real-send.test.js",
+    "size": 2803,
+    "sha256": "a8bd26b31944657189bc43ac03005e1476834666c3a952de91495e73d49ffc62"
+  },
+  {
+    "path": "tests/preproduction.test.js",
+    "size": 9018,
+    "sha256": "7fb9a6e9d38bbc004e5a868cfa057bcd04c8c3e9738d8d8f86acc72fd13bdfe8"
+  },
+  {
+    "path": "tests/recovery-browser.cjs",
+    "size": 8241,
+    "sha256": "bf8eaf37115442efdbab57e9567c37398706f7fce47695153b190f40b7968b87"
+  },
+  {
+    "path": "tests/recovery.test.js",
+    "size": 5987,
+    "sha256": "c49d69e7776251131b62f2cc6dacab3cf16c2a0750ffc9b3d7ef80a144cb23d0"
+  },
+  {
+    "path": "tests/reminders-lifecycle.test.cjs",
+    "size": 3795,
+    "sha256": "dffcfecc4dc45e25094c4ad1ac26b43bee45c543100bbab8b82cd958fc581afa"
+  },
+  {
+    "path": "tests/remote-preproduction.sql",
+    "size": 3079,
+    "sha256": "6b815cdae0e6ab8997dd83e7e5f5b625bba4acf39a04432997383e5594c65586"
+  },
+  {
+    "path": "tests/security-final.test.js",
+    "size": 2444,
+    "sha256": "8bc47f1c555dff2248a1cf7118861b5c7acef6ef2cf2950a9908e9b1078af457"
+  },
+  {
+    "path": "tests/sql.test.cjs",
+    "size": 7824,
+    "sha256": "591c4566e59d0db8a08e50d82e9490c10d1a135b2ad0667cd5f0e8ba51e02243"
+  }
+]

@@ -1,14 +1,1 @@
-BELLE & REBELLE — SITE DE DEMONSTRATION
-
-1. Dans Netlify, choisir l'option de deploiement manuel (glisser-deposer).
-2. Glisser le fichier ZIP si l'interface l'accepte, ou decompresser le ZIP et glisser le dossier belleetrebelle_site contenant index.html.
-3. Tester le site avec l'adresse provisoire .netlify.app.
-4. Connecter belleetrebelle-nailstudio.fr dans Domain management quand le domaine OVH est actif.
-
-IMPORTANT AVANT LA MISE EN PRODUCTION :
-- Remplacer les images de prestations et de galerie provenant de la maquette par les vraies photos du salon, avec son accord.
-- Verifier et completer les mentions legales et la politique de confidentialite.
-- Valider les horaires, les prestations, les prix et les coordonnees.
-- Installer et tester SimplyBook.me pour activer la reservation en ligne ; actuellement les boutons ouvrent l'appel ou l'e-mail.
-- Verifier les conditions de l'acompte avec Melanie.
-- Ce site n'inclut pas encore de PWA ni de module de reservation actif.
+Belle & Rebelle V15 : réservations exclusivement natives. Voir README_V15.md.

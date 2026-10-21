@@ -1,0 +1,32 @@
+[
+  {
+    "services": 1,
+    "minutes": 90,
+    "cents": 5200,
+    "id": "db4ccbcd-cdae-468e-bd06-acf3c17f8807",
+    "created_cancelled": true,
+    "moved": false,
+    "repeat_cancel": false,
+    "notifications_disabled": true
+  },
+  {
+    "services": 2,
+    "minutes": 105,
+    "cents": 5400,
+    "id": "18c94960-5d67-4a72-8bd6-ca24f4420b15",
+    "created_cancelled": true,
+    "moved": false,
+    "repeat_cancel": false,
+    "notifications_disabled": true
+  },
+  {
+    "services": 3,
+    "minutes": 110,
+    "cents": 5800,
+    "id": "4bcf7642-fad1-4494-ba13-c9e604724c24",
+    "created_cancelled": true,
+    "moved": true,
+    "repeat_cancel": true,
+    "notifications_disabled": true
+  }
+]

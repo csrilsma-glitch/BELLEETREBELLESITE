@@ -24,7 +24,7 @@
   label(false);
   if(read('br-music')!=='off'){start();document.addEventListener('pointerdown',firstGesture);document.addEventListener('keydown',firstGesture);}
   window.addEventListener('pagehide',()=>write('br-music-position',String(audio.currentTime||0)));
-  document.querySelectorAll('.video-showcase video').forEach(video=>video.addEventListener('play',()=>{document.querySelectorAll('.video-showcase video').forEach(other=>{if(other!==video)other.pause();});if(!audio.paused){audio.pause();write('br-music','off');}}));
+  document.querySelectorAll('.video-showcase').forEach(gallery=>gallery.addEventListener('play',event=>{const video=event.target;if(video.tagName!=='VIDEO')return;document.querySelectorAll('.video-showcase video').forEach(other=>{if(other!==video)other.pause();});if(!audio.paused){audio.pause();write('br-music','off');}},true));
 })();
 
 /* v14 : page d'accueil de bienvenue, une fois par visite. Le clic sur « Entrer » autorise la musique. */
