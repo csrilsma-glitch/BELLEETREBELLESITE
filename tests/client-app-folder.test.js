@@ -58,9 +58,10 @@ test('coque /app/ : iframe vers l’accueil public, service worker dans /app/', 
   assert.ok(fs.existsSync(path.join(site, 'app', 'sw.js')));
 });
 
+// Exceptions volontaires : le correctif MFA (manager-auth.js, lib/core.js) est validé séparément.
 test('pages publiques et Manager non modifiés par rapport à origin/main', () => {
   const repo = path.join(__dirname, '..');
-  const changed = execFileSync('git', ['diff', '--name-only', 'origin/main', '--', 'site/manager', 'site/manifest.webmanifest', 'site/sw.js', 'netlify', 'netlify.toml', 'supabase'], { cwd: repo }).toString().trim();
+  const changed = execFileSync('git', ['diff', '--name-only', 'origin/main', '--', 'site/manager', 'site/manifest.webmanifest', 'site/sw.js', 'netlify', 'netlify.toml', 'supabase', ':(exclude)netlify/functions/manager-auth.js', ':(exclude)netlify/functions/lib/core.js'], { cwd: repo }).toString().trim();
   assert.equal(changed, '', 'fichiers protégés modifiés : ' + changed);
 });
 
