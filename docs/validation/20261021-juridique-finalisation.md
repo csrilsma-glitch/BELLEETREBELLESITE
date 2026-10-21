@@ -56,3 +56,11 @@ Les 106 tests Node précédents ne sont pas revendiqués comme relancés pour ce
 ## Conclusion de préparation
 
 Pages complétées avec les données autorisées et réserves explicites. **Ne pas annoncer « conformité complète » ou « prête au lancement »** tant que les réserves réellement applicables ci-dessus et l'accès personnel Manager ne sont pas résolus. La décision sur la médiation ne vaut pas autorisation de production ni validation des autres inconnues.
+
+## Preuves après déploiement
+
+Premier commit : a1d51819288125b93f90b08e1d10b65742e33eb1. Déploiement Netlify 6ad8fee1400299f55e05c580, ready, publié 2026-10-21T18:05:35.924Z (20h05 Paris). Comparaison GitHub : exactement six fichiers du lot juridique ; aucun changement fonctionnel.
+
+HTTP 200 et contenu à jour pour les quatre pages et legal.css. Aucun en-tête Set-Cookie dans ces réponses. Navigation vérifiée dans le navigateur cloud entre mentions, confidentialité, conditions et cookies, sans connexion. Pas de débordement horizontal constaté sur mentions/confidentialité/conditions au viewport de bureau 1363 px. Une navigation enchaînée trop rapidement vers Cookies n'a pas abouti au premier essai ; le lien a ensuite été cliqué et la bonne page confirmée. Pas de test Android physique prétendu.
+
+Le DOM réel montre le script /.netlify/scripts/hud?variant=public et l'iframe srcdoc nl-badge-frame. Le script téléchargé (35 727 caractères à la date du contrôle) comporte trois références à localStorage : préférence nl-hud:public:v1, valeurs mini/hidden/hidden:<timestamp>, masquage public sept jours. Aucun document.cookie, sendBeacon, fetch, gtag ou Google Analytics trouvé dans ce script par le contrôle ciblé ; cela ne prouve pas l'absence de tout traitement chez Netlify. La politique cookies est complétée par cet inventaire. Aucun bandeau ajouté par supposition.
