@@ -17,8 +17,6 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
   included_files = ["site/assets/prestations.json"]
-[functions.jobs]
-  schedule = "*/5 * * * *"
 
 [[headers]]
   for = "/manager/*"

@@ -166,33 +166,7 @@ async function legacyRunTool(name, input) {
   }
 
   if (name === 'book_appointment') {
-    const services = pickServices(input.service_ids);
-    if (services.some(s => !s.sb)) return { ok: false, message: NOT_ONLINE };
-    // Vérification juste avant d'enregistrer
-    const starts = await sequenceStarts(input.date, services);
-    if (!starts.includes(input.start)) {
-      return { ok: false, message: 'Ce créneau n\'est plus disponible. Proposez un autre horaire.' };
-    }
-
-    const client = { name: input.client_name, phone: input.client_phone, email: input.client_email };
-    let offset = 0;
-    const booked = [];
-    for (const s of services) {
-      const at = toHHMM(toMinutes(input.start) + offset);
-      try {
-        await bookOne({ eventId: s.sb, dateISO: input.date, time: at, client });
-        booked.push({ service: s.name, start: at });
-      } catch (err) {
-        console.error('Échec réservation', s.id, err.message);
-        return {
-          ok: false,
-          message: 'La réservation n\'a pas pu être finalisée complètement. Demandez à la cliente d\'appeler Mélanie au 06 62 28 75 45.',
-          booked_before_error: booked,
-        };
-      }
-      offset += s.duration;
-    }
-    return { ok: true, booked, end: toHHMM(toMinutes(input.start) + offset) };
+    return {ok:false,requires_confirmation:true,message:'Réservation à confirmer personnellement sur la page de réservation.',reservation_url:'/reservation.html'};
   }
 
   throw new Error('Outil inconnu');
@@ -222,7 +196,7 @@ async function nativeRunTool(name,input,context) {
 function cleanMessages(input) {
   if (!Array.isArray(input)) return null;
   const cleaned = input
-    .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+    .filter(m => m && typeof m.content === 'string' && (m.role === 'user' || (m.role === 'assistant' && typeof m.signature === 'string' && require('./lib/core').safeEqual(m.signature,require('./lib/core').sign('melba-reply:'+m.content)))))
     .map(m => ({ role: m.role, content: m.content.slice(0, MAX_CHARS) }))
     .slice(-MAX_MESSAGES);
   while (cleaned.length && cleaned[0].role !== 'user') cleaned.shift();
@@ -239,6 +213,9 @@ async function callClaude(apiKey, messages) {
     const schedule=days.map((day,dow)=>{const spans=hours.filter(h=>h.dow===dow);return day+' : '+(spans.length?spans.map(h=>h.opens.slice(0,5)+'–'+h.closes.slice(0,5)).join(', '):'fermé');}).join(' ; ');
     liveCatalogue+='\nHoraires habituels du studio en heure de Paris, lus dans le Manager : '+schedule+'. Ces horaires ne garantissent pas un créneau libre : les absences et rendez-vous doivent être vérifiés avec check_availability.';
   }
+  // Réserve une unité AVANT chaque appel : plafond global partagé et atomique.
+  const budget=require('./lib/core');
+  if(!await budget.rpc('limit',{p_key:'melba-global:'+new Date().toISOString().slice(0,10),p_max:100,p_seconds:86400}))budget.fail(429,'Melba a atteint sa limite quotidienne. Contactez Mélanie.');
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -263,7 +240,7 @@ exports.handler = async (event) => {
 
   let payload;
   try {
-    payload = JSON.parse(event.body || '{}');
+    payload = core.body(event);
   } catch {
     return json(400, { error: 'Requête invalide' });
   }
@@ -297,10 +274,11 @@ exports.handler = async (event) => {
       const retry=await callClaude(apiKey,[...messages,{role:'user',content:'Merci de répondre directement à la dernière question de la cliente, en français et sans utiliser d’outil si ce n’est pas nécessaire.'}]);
       reply=(retry.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
     }
-    return json(200, { pendingBooking:context.pending, reply: reply || 'Je rencontre un souci pour formuler ma réponse. Peux-tu reformuler ta question ?' });
+    const finalReply=reply || 'Je rencontre un souci pour formuler ma réponse. Peux-tu reformuler ta question ?';
+    return json(200, {pendingBooking:context.pending,reply:finalReply,signature:core.sign('melba-reply:'+finalReply)});
   } catch (err) {
     console.error('Erreur', err.message);
-    return json(502, { error: 'Réponse indisponible, réessayez ou appelez Mélanie.' });
+    return json(err.status===429?429:502, {error:err.status===429?err.message:'Réponse indisponible, réessayez ou appelez Mélanie.'});
   }
 };
 

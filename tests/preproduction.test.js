@@ -10,7 +10,7 @@ test('préproduction : anciens envois et Outlook bloqués même avec des clés c
  global.fetch=async()=>{calls++;throw Error('unexpected external call');};
  try{
   const sms=await require('../netlify/functions/send-sms').handler({httpMethod:'POST',headers:{authorization:'Bearer test'},body:'{}'});
-  assert.equal(sms.statusCode,503);
+  assert.equal(sms.statusCode,410);
   const mail=await require('../netlify/functions/chat')._test.nativeRunTool('notify_melanie',{subject:'test',summary:'test'},{});
   assert.equal(mail.ok,false);
   await assert.rejects(require('../netlify/functions/simplybook').startTimesFor('test','2026-10-26'),/préproduction/);
@@ -66,7 +66,7 @@ test('préproduction : /jobs traite la file sans passer par Outlook',async()=>{
  process.env.APP_ENV='preproduction';
  c.rpc=async()=>[];c.db=async()=>{outlookCalls++;throw Error('base non attendue');};
  try{
-  const result=await require('../netlify/functions/jobs').handler({body:'{"next_run":"test"}'});
+  const result=await require('../netlify/functions/jobs').run();
   assert.equal(result.statusCode,200);
   assert.equal(JSON.parse(result.body).simulated,true);
  }finally{process.env=previous;c.rpc=rpc;c.db=db;}

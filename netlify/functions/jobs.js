@@ -1,10 +1,9 @@
 const c=require('./lib/core');
 // Erreur journalisée sans secret : statut, type d'erreur et message court (les messages internes sont fixes).
 function logFailure(stage,err){console.error('BR15 jobs',stage,err?.status||500,err?.name||'Error',String(err?.message||'').slice(0,160));}
-exports.handler=async e=>{
- // Netlify Scheduled Functions vérifie l’invocation planifiée ; ne jamais exposer un cron par URL publique.
- let p;try{p=JSON.parse(e.body||'{}');}catch{return c.json(403,{error:'Invocation planifiée requise'});}
- if(!p.next_run)return c.json(403,{error:'Invocation planifiée requise'});
+// Aucun corps HTTP ni en-tête client ne constitue une preuve de planification.
+exports.handler=async()=>c.json(403,{error:'Invocation HTTP interdite'});
+exports.run=async()=>{
  const o=require('./lib/outlook');
  // Synchronisation Outlook entrante : production, ou préproduction avec écriture Outlook explicitement autorisée.
  try{

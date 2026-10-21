@@ -57,7 +57,7 @@
       if(!res.ok)throw new Error('indisponible');
       const data=await res.json();
       if(!data.reply)throw new Error('vide');
-      history.push({role:'assistant',content:data.reply});
+      history.push({role:'assistant',content:data.reply,signature:data.signature});
       message('bot',data.reply);
       if(data.pendingBooking) proposal(data.pendingBooking);
 
