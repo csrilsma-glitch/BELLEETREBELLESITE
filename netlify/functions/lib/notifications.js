@@ -13,7 +13,7 @@ async function deliver(j){
  if(j.kind.startsWith('sms-')&&!['confirmation','rappel'].includes(event))return {obsolete:true};
  if(j.kind.endsWith('-reminder')&&(b.status!=='confirme'||Date.parse(b.starts)<Date.now()))return {obsolete:true};
  // Outlook : en préproduction, écriture seulement si le compte désigné est confirmé (outlook.testWriteAllowed).
- if(j.kind==='outlook'){if(simulated&&process.env.OUTLOOK_PREPROD_BLOCK_ID)return {provider_id:'preprod-simulated'};if(simulated&&!(await o.testWriteAllowed()))return {provider_id:'preprod-simulated'};return {provider_id:await o.push(b)};}
+ if(j.kind==='outlook'){if(simulated)return {provider_id:'preprod-simulated'};if(simulated&&!(await o.testWriteAllowed()))return {provider_id:'preprod-simulated'};return {provider_id:await o.push(b)};}
  if(simulated)return {provider_id:'preprod-simulated'};
  const client=(await c.db('br15_clients?id=eq.'+b.client_id))[0];
  const when=c.localTime(b.starts);
