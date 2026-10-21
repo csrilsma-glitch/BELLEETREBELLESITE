@@ -1,3 +1,5 @@
+> Archive historique. Décision du propriétaire le 21 octobre 2026 : aucun rendez-vous dans l’ancien service ; aucune exportation, importation ou reprise nécessaire. Les recommandations antérieures correspondantes sont caduques. Voir validation/20261021-abandon-service-externe.md.
+
 # Validation du 20 octobre 2026 (Europe/Paris)
 
 Base Git : v15-claude, 0ecc64768e4a50b60bc47f3657bb7c1cf36c5e15. Les seules différences de ce commit par rapport à 221e4a1 sont le script WebM et son branchement dans le test navigateur ; aucun correctif applicatif n’était donc absent du déploiement 6ad67b4d5d1c9a3490f09810.

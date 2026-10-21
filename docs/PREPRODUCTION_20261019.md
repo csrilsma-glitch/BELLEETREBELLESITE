@@ -1,3 +1,5 @@
+> Archive historique. Décision du propriétaire le 21 octobre 2026 : aucun rendez-vous dans l’ancien service ; aucune exportation, importation ou reprise nécessaire. Les recommandations antérieures correspondantes sont caduques. Voir validation/20261021-abandon-service-externe.md.
+
 # V15 — Préproduction isolée et validation du 19 octobre 2026
 
 Base de reprise : `v15-claude`, commit `46c4e29c40345b0be9e40eb059a995774bf6116e`, dernier état vérifié. Branche de travail : `dev/v15-work-20261019`.

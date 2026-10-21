@@ -3,7 +3,6 @@
 // La clé API Anthropic reste ici (variable ANTHROPIC_API_KEY).
 // La variable doit être présente au moment du déploiement Netlify des Functions.
 
-// SimplyBook retiré après validation de migration.
 
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5';
 const MAX_MESSAGES = 20;
