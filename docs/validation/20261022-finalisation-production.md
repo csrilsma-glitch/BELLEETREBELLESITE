@@ -35,7 +35,7 @@ Les deux rapports Word transmis ont été lus intégralement. Point de départ v
 - Cyril : facteur TOTP non vérifié, créé à 22:29 UTC le 21/10. Aucune validation MFA personnelle réussie démontrée. Son scan et son code personnel restent indispensables, sans intervention de l'agent sur le secret.
 - Outlook : connecté, calendrier sélectionné, dernière synchronisation 21/10 23:00:20 UTC sans erreur au contrôle initial. Deux tâches Outlook acceptées. Aucun événement créé/modifié pour les tests de cette intervention.
 - Resend : les quatre confirmations récentes (deux clientes et deux Manager) indiquées livrées par le fournisseur. Aucun renvoi effectué.
-- File SMS : un accepté, un incertain ; aucune relance du SMS incertain afin d'éviter un doublon et des frais. Les journaux Brevo détaillés ne sont pas disponibles via les connecteurs de cette session.
+- File SMS : la session navigateur Brevo était réutilisable. Le journal fournisseur confirme la livraison du SMS resté incertain (rapprochement exact par tag de tâche). Son statut est corrigé en sent, avec identifiant fournisseur et tentative inchangée à 1. Aucun renvoi ni crédit consommé. Le second SMS est également indiqué livré.
 - Deux rappels email futurs en attente ; pas déclenchés artificiellement.
 - Conseiller Supabase : tables privées RLS sans policy (INFO attendu pour accès uniquement serveur) ; protection des mots de passe divulgués désactivée (WARN existant). Aucun assouplissement de protection effectué.
 
@@ -43,8 +43,19 @@ Les deux rapports Word transmis ont été lus intégralement. Point de départ v
 - Cyril doit scanner son QR personnel puis valider son propre code pour terminer l'enrôlement. L'agent ne peut pas valider la possession du téléphone à sa place.
 - Mélanie doit utiliser l'entrée Authenticator correspondant à son propre compte ; aucune réinitialisation justifiée par les seules erreurs de code observées.
 - Installation native sur Android/iPhone physiques non exécutée par l'agent. Les scopes, workers, manifestes, boutons et comportements dégradés sont testés techniquement ; cela ne constitue pas une preuve d'installation physique.
-- Le SMS incertain doit être rapproché du journal Brevo avant toute relance. Les rappels SMS restent volontairement dans leur état initial désactivé.
+- Le SMS incertain est désormais rapproché et clôturé, sans relance. Les rappels SMS restent dans leur état initial désactivé.
 - Réserves juridiques antérieures conservées, notamment médiation à régulariser. Aucun contenu juridique modifié.
 
 ## Publication
-Les correctifs sont destinés à main et à un seul déploiement Git de production. Le SHA final et l'identifiant de déploiement sont fournis dans le compte rendu après vérification Netlify. En cas de régression : revert Git ciblé puis publication corrective ; aucune restauration de données nécessaire pour ces changements sans migration.
+Correctifs publiés sur main : `b136865776a9aedf83303b6c74b339f96ec743d5`. Déploiement production `6ad9466333fe9d8f2372c80d`, ready/published le 21/10/2026 à 23:10:44 UTC (22/10 à 01:10 Paris), 15 fonctions, aucun secret détecté par le scanner Netlify. Un seul déploiement effectué. En cas de régression : revert Git ciblé puis publication corrective ; aucune restauration de données nécessaire pour ces changements sans migration.
+
+## Vérifications après publication
+- /app/ et /manager/ : HTTP 200 ; manifestes JSON et périmètres distincts corrects.
+- Les deux workers, manager.js et pwa.js servis correspondent octet pour octet au commit publié ; headers de cache attendus.
+- Catalogue production HTTP 200 : 64 prestations, enabled=true, test_mode=false.
+- Devis réel pour deux prestations : 210 minutes et 11 200 centimes, égaux à la somme du catalogue ; 67 créneaux proposés. Aucune réservation créée.
+- Accès anonyme refusé : Manager 401, facteurs MFA 401, exécution HTTP jobs 403.
+- Outlook encore synchronisé après le contrôle initial, sans erreur ; aucun événement de test écrit.
+- B&R APP chargée dans le navigateur cloud officiel avec son site intégré ; aide d'installation Manager réactive. Installation physique non exécutée.
+- Melba testée en direct après publication : réponse correcte sur absence d’acompte et paiement exclusivement sur place, sans proposition de réservation exécutée.
+
