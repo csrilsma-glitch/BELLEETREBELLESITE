@@ -1,5 +1,8 @@
 (() => {
   let deferred=null;
+  // Dans la coque B&R APP (iframe /app/), aucune proposition d'installation n'est affichée.
+  const embedded=window.self!==window.top||/[?&]source=pwa(&|$)/.test(location.search);
+  if(embedded){const section=document.querySelector('.installation');if(section)section.hidden=true;const d=document.getElementById('install-dialog');if(d)d.hidden=true;}
   const button=document.getElementById('install-app'),status=document.getElementById('install-status'),dialog=document.getElementById('install-dialog');
   const installed=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
   function refresh(){if(!button)return;button.textContent=installed()?'Application déjà installée':'Installer B&R APP';}
@@ -8,7 +11,7 @@
   if('serviceWorker' in navigator&&window.isSecureContext){
     window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(registration=>registration.update()).catch(()=>{if(status)status.textContent='L’installation n’est pas disponible dans ce navigateur. Ouvrez ce lien dans Safari, Chrome ou Edge.';});});
   }
-  if(!button||!dialog)return;
+  if(embedded||!button||!dialog)return;
   button.addEventListener('click',async()=>{
     if(installed()){status.textContent='Retrouvez Belle & Rebelle depuis l’icône de votre écran d’accueil.';return;}
     if(deferred){const prompt=deferred;deferred=null;await prompt.prompt();const choice=await prompt.userChoice;status.textContent=choice.outcome==='accepted'?'Installation demandée. Retrouvez Belle & Rebelle sur votre appareil.':'Vous pourrez installer l’application plus tard.';return;}

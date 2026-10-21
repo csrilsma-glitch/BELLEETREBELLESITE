@@ -31,6 +31,26 @@ test('accueil : bouton « Installer B&R APP » et manifeste /app/', () => {
   assert.match(read('pwa.js'), /'Installer B&R APP'/);
 });
 
+test('réservation : même manifeste B&R APP, aucun manifeste racine', () => {
+  const res = read('reservation.html');
+  assert.match(res, /<link rel="manifest" href="app\/manifest\.webmanifest">/);
+  assert.doesNotMatch(res, /<link rel="manifest" href="manifest\.webmanifest">/);
+  assert.match(res, /id="install-app"[^>]*>Installer B&amp;R APP</);
+});
+
+test('pages publiques : aucun manifeste ne pointe vers la racine du site', () => {
+  for (const f of ['index.html', 'reservation.html', 'conditions-reservation.html', 'mentions-legales.html', 'confidentialite.html', 'cookies.html']) {
+    assert.doesNotMatch(read(f), /<link rel="manifest" href="manifest\.webmanifest">/, f);
+  }
+});
+
+test('installation masquée dans la coque B&R APP (iframe ou ?source=pwa)', () => {
+  const js = read('pwa.js');
+  assert.match(js, /window\.self!==window\.top/);
+  assert.match(js, /source=pwa/);
+  assert.match(js, /section\.hidden=true/);
+});
+
 test('coque /app/ : iframe vers l’accueil public, service worker dans /app/', () => {
   const shell = read('app/index.html');
   assert.match(shell, /<iframe[^>]*src="\.\.\/\?source=pwa"/);
