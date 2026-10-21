@@ -43,6 +43,10 @@ async function authFetch(url,opt){try{return await request(url,opt);}catch(err){
 async function authRequest(path,{method='GET',data,token}={}){isolation();const r=await authFetch(env('SUPABASE_URL')+'/auth/v1/'+path,{method,headers:{apikey:env('SUPABASE_PUBLISHABLE_KEY'),...(token?{Authorization:'Bearer '+token}:{}),'Content-Type':'application/json'},...(data?{body:JSON.stringify(data)}:{})});const d=await r.json().catch(()=>({}));if(!r.ok){if(path==='user'||path.startsWith('token'))fail(401,'Authentification refusée');console.error('BR15 auth',path.split('/')[0],path.endsWith('/verify')?'verify':'',r.status,d.error_code||d.code||'');if(path.endsWith('/verify'))fail(400,'Code incorrect ou expiré. Réessayez avec le code affiché dans votre application.');fail(400,'Configuration de sécurité refusée. Réessayez ; si le problème continue, prévenez l’administrateur.');}return d;}
 // Appel brut vers Auth : renvoie le statut et le code d’erreur Supabase, sans message générique.
 async function authRaw(path,{method='GET',data,token}={}){isolation();const r=await authFetch(env('SUPABASE_URL')+'/auth/v1/'+path,{method,headers:{apikey:env('SUPABASE_PUBLISHABLE_KEY'),...(token?{Authorization:'Bearer '+token}:{}),'Content-Type':'application/json'},...(data?{body:JSON.stringify(data)}:{})});const d=await r.json().catch(()=>({}));return{ok:r.ok,status:r.status,data:d};}
+// Décision temporaire du propriétaire : mot de passe seul pour ces deux comptes existants.
+// Identifiants immuables vérifiés côté Auth ; aucun rôle ni métadonnée fourni par le navigateur.
+const PASSWORD_ONLY_MANAGERS=new Set(['54713825-4afd-4aa4-a763-8423a286831a','09bc28e7-8f02-4cb1-a8ac-29b04cd47185']);
+const mfaRequired=user=>!PASSWORD_ONLY_MANAGERS.has(user?.id);
 async function manager(e,{mfa=true}={}){
  const token=cookies(e).br15_session;if(!token)fail(401,'Connexion requise');
  const user=await authRequest('user',{token});
@@ -50,11 +54,11 @@ async function manager(e,{mfa=true}={}){
  if(!rows.length)fail(403,'Accès Manager refusé');
  // L’Auth server a authentifié CE jeton avant lecture de son assurance MFA.
  let claims;try{claims=JSON.parse(Buffer.from(token.split('.')[1],'base64url').toString());}catch{fail(401,'Session invalide');}
- if(mfa&&claims.aal!=='aal2')fail(403,'Validation à deux facteurs requise');
+ if(mfa&&mfaRequired(user)&&claims.aal!=='aal2')fail(403,'Validation à deux facteurs requise');
  return {user,token};
 }
 function seal(value){const key=Buffer.from(env('TOKEN_ENCRYPTION_KEY'),'base64');if(key.length!==32)fail(503,'Clé de chiffrement invalide');const iv=crypto.randomBytes(12),cipher=crypto.createCipheriv('aes-256-gcm',key,iv);const enc=Buffer.concat([cipher.update(JSON.stringify(value)),cipher.final()]);return Buffer.concat([iv,cipher.getAuthTag(),enc]).toString('base64');}
 function unseal(value){const b=Buffer.from(value,'base64'),d=crypto.createDecipheriv('aes-256-gcm',Buffer.from(env('TOKEN_ENCRYPTION_KEY'),'base64'),b.subarray(0,12));d.setAuthTag(b.subarray(12,28));return JSON.parse(Buffer.concat([d.update(b.subarray(28)),d.final()]).toString());}
 const localTime=x=>new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',dateStyle:'full',timeStyle:'short'}).format(new Date(x));
 function ics(b){const fmt=x=>new Date(x).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Belle Rebelle//V15//FR','METHOD:PUBLISH','BEGIN:VEVENT','UID:'+b.id+'@belleetrebelle-nailstudio.fr','DTSTAMP:'+fmt(b.created_at),'SEQUENCE:'+b.revision,'DTSTART:'+fmt(b.starts),'DTEND:'+fmt(b.ends),'SUMMARY:Belle & Rebelle - Rendez-vous','LOCATION:28 rue de Messei 61100 Flers','STATUS:'+(b.status==='annule'?'CANCELLED':'CONFIRMED'),'END:VEVENT','END:VCALENDAR',''].join('\r\n');}
-module.exports={PUBLIC,PREPROD_SITE,siteUrl,Failure,fail,env,json,body,origin,wrap,request,db,rpc,sha,sign,safeEqual,tokenFor,uuid,ids,date,instant,phone,rate,cookies,cookie,authRequest,authRaw,manager,seal,unseal,localTime,ics};
+module.exports={PUBLIC,PREPROD_SITE,siteUrl,Failure,fail,env,json,body,origin,wrap,request,db,rpc,sha,sign,safeEqual,tokenFor,uuid,ids,date,instant,phone,rate,cookies,cookie,authRequest,authRaw,mfaRequired,manager,seal,unseal,localTime,ics};

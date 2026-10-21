@@ -16,7 +16,7 @@ exports.handler=e=>c.wrap(e,async()=>{
  await c.rate(e,'login',10);
  const a=await c.authRequest('token?grant_type=password',{method:'POST',data:{email:d.email,password:d.password}});
  const rows=await c.db('br15_managers?user_id=eq.'+a.user.id+'&active=eq.true');if(!rows.length)c.fail(403,'Accès refusé');
- return c.json(200,{ok:true,mfa_required:true},{'Set-Cookie':c.cookie('br15_session',a.access_token,a.expires_in||3600)});
+ return c.json(200,{ok:true,mfa_required:c.mfaRequired(a.user)},{'Set-Cookie':c.cookie('br15_session',a.access_token,a.expires_in||3600)});
  }
  const {user,token}=await c.manager(e,{mfa:false});
  const factors=user.factors||[];
