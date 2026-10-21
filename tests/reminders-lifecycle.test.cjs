@@ -1,7 +1,7 @@
 // Exécuté séparément avec PGlite : aucune connexion réseau, aucun fournisseur.
 const {PGlite}=require('@electric-sql/pglite'),{btree_gist}=require('@electric-sql/pglite/contrib/btree_gist');
 const fs=require('fs'),assert=require('node:assert/strict');
-(async()=>{const db=new PGlite({extensions:{btree_gist}});await db.exec('create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);');
+(async()=>{const db=new PGlite({extensions:{btree_gist}});await db.exec('create role anon;create role authenticated;create role service_role;create schema extensions;create schema auth;create table auth.users(id uuid primary key);');
 for(const f of ['001_v15.sql','002_catalogue.sql','003_outlook.sql','004_privacy.sql'])await db.exec(fs.readFileSync('supabase/'+f,'utf8'));
 for(const f of fs.readdirSync('supabase/migrations').filter(x=>x.endsWith('.sql')).sort())await db.exec(fs.readFileSync('supabase/migrations/'+f,'utf8'));
 await db.exec("insert into br15_hours(dow,opens,closes) select n,'10:00','19:00' from generate_series(0,6)n;update br15_settings set enabled=true,lead_minutes=0,email_enabled=true,sms_reminder=true,cancel_hours=24");

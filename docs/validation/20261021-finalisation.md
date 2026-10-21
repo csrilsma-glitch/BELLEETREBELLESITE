@@ -47,3 +47,15 @@ Avant bascule : exporter les rendez-vous futurs confirmés avec identifiant orig
 7. Rapprochement SimplyBook, notifications réelles et lancement officiel soumis à accord distinct.
 
 Verdict : nette progression, code prêt pour recette Android après publication du correctif horaire ; pas de bascule officielle tant que les points ci-dessus restent ouverts. Une lenteur Auth transitoire a été observée et doit rester surveillée.
+
+## Complément final après publication
+- Correctif Melba publié et vérifié réellement : commit 770b0cd7856d076cd91d7998e6118e80222aec26, deploy 6ad85d2010043f3ea47dc488, ready à 08h35m28s Paris. Réponse réelle correcte pour lundi-jeudi, vendredi, week-end fermé et aucun acompte.
+- Deux déploiements seulement : 5766b25 puis 770b0cd. Les migrations SQL suivantes ne nécessitent pas de build Netlify.
+- Préférences inchangées réenregistrées : confirmation visible. Horaires initialement refusés : diagnostic serveur « DELETE requires a WHERE clause », dû à Safe Updates en contexte API (les essais SQL directs postgres seuls ne reproduisaient pas la protection).
+- Correction br15_admin : DELETE FROM br15_hours WHERE id IS NOT NULL, remplacement atomique des plages conservé. Réponses JSON construites par jsonb_build_object. Tentative de fiabilisation JSON seule insuffisante, puis diagnostic temporaire et correction Safe Updates ; le diagnostic détaillé a été retiré de la fonction finale.
+- Sauvegarde réelle depuis le Manager réussie après migration, message Horaires enregistrés ; les 5 horaires et 64 prestations relus inchangés. Aucun changement de préférence/horaire métier recherché.
+- Migration finale et tests SQL sauvegardés avec ce rapport. PGlite émule désormais le schéma extensions de Supabase ; un test fonctionnel supplémentaire vérifie la sauvegarde des horaires/pauses sans altération. Suite SQL entière réussie.
+- Test HTTP réel concurrent : réponses 201 et 409 pour deux réservations du même créneau, un seul gagnant ; annulation du gagnant deux fois, deux réponses 200. Endpoints Manager non authentifiés : 401. Données clairement fictives, réservations annulées conservées comme preuves ; aucun événement ni notification réelle.
+- Catalogue publié : 200, test_mode=true, 64 services. Manifest Manager : 200 application/manifest+json. Service worker : 200 et cache br-manager-v15-4.
+- File du rendez-vous multi-prestations : versions précédentes obsolètes ; tâches courantes e-mail cliente, e-mail Manager et Outlook marquées preprod-simulated. Zéro rappel actif et zéro événement Outlook pour cet essai.
+- Aucun état failed/uncertain dans la file à la dernière lecture. Une lenteur Auth ponctuelle reste observée ; ne pas annoncer une absence universelle d'erreurs.

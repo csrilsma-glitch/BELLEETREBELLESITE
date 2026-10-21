@@ -1,5 +1,5 @@
 const {PGlite}=require('@electric-sql/pglite');const {btree_gist}=require('@electric-sql/pglite/contrib/btree_gist');const fs=require('fs'),assert=require('node:assert/strict');
-(async()=>{const db=new PGlite({extensions:{btree_gist}});await db.exec(`set timezone='UTC';create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);`);
+(async()=>{const db=new PGlite({extensions:{btree_gist}});await db.exec(`set timezone='UTC';create role anon;create role authenticated;create role service_role;create schema extensions;create schema auth;create table auth.users(id uuid primary key);`);
 for(const f of ['001_v15.sql','002_catalogue.sql','003_outlook.sql','004_privacy.sql']){await db.exec(fs.readFileSync('supabase/'+f,'utf8'));console.log('Migration OK',f);}
 for(const f of fs.readdirSync('supabase/migrations').filter(f=>f.endsWith('.sql')).sort()){await db.exec(fs.readFileSync('supabase/migrations/'+f,'utf8'));console.log('Migration OK',f);}
 const query=(s,args=[])=>db.query(s,args),scalar=async(s,args)=>(await query(s,args)).rows[0].v;
@@ -9,6 +9,8 @@ const services=(await query('select id,minutes,cents from br15_services order by
 const quote=await scalar('select br15_quote($1) v',[ids]);assert.equal(quote.minutes,105);assert.equal(quote.cents,5400);console.log('OK tarif/durée cumulés');
 await assert.rejects(query('select br15_quote($1)',[[ids[0],ids[0]]]));console.log('OK doublons sélection refusés');
 await db.exec("insert into br15_hours(dow,opens,closes) select n,'09:00','12:00' from generate_series(0,6)n;insert into br15_hours(dow,opens,closes) select n,'14:00','18:00' from generate_series(0,6)n;update br15_settings set enabled=true,privacy_text='Test',lead_minutes=0;");
+const hoursBefore=(await query('select dow,opens,closes from br15_hours order by dow,opens')).rows;
+const hoursSaved=await scalar("select br15_admin('hours',jsonb_build_object('hours',$1::jsonb)) v",[JSON.stringify(hoursBefore)]);assert.equal(hoursSaved.ok,true);assert.deepEqual((await query('select dow,opens,closes from br15_hours order by dow,opens')).rows,hoursBefore);console.log('OK sauvegarde Manager des horaires et pauses avec données conservées');
 const date=await scalar("select ((now() at time zone 'Europe/Paris')::date+2)::text v");
 const slots=(await query('select * from br15_slots($1,$2)',[date,ids])).rows;assert(slots.length);assert(slots.every(s=>{const h=new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',hour:'numeric',hourCycle:'h23'}).formatToParts(new Date(s.starts)).find(x=>x.type==='hour').value;return +h<12||+h>=14;}));console.log('OK horaires, pause et durée cumulée');
 const start=slots[0].starts,key='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
