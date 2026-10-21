@@ -7,3 +7,12 @@
 .block-row .grow{flex:1 1 180px;overflow-wrap:anywhere}
 .block-row button{margin:0}
 @media(max-width:600px){#block-form button,#hours-form button,#settings-form button,#create button,.block-row button{width:100%;min-height:44px}.block-row .grow{flex-basis:100%}}
+
+/* Affichage local du mot de passe, compatible avec le remplissage Chrome. */
+.password-field{position:relative;margin:15px 0}
+.password-field label{margin:0}
+.password-field input{padding-right:60px}
+.password-field #password-toggle{position:absolute;right:3px;bottom:3px;display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:8px;margin:0;background:transparent;border:0;color:#f1b4d8}
+.password-field #password-toggle:hover{background:#61334f}
+.password-eye-slash{display:none}
+#password-toggle[aria-pressed="true"] .password-eye-slash{display:block}
