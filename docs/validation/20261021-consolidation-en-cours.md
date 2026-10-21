@@ -36,3 +36,13 @@ Informations indispensables : identité/statut et adresse professionnelle autori
 5. Activer l'identité personnelle de Mélanie avec MFA ; finaliser informations juridiques.
 
 La V15 n'est pas déclarée prête pour la production.
+
+## Mise à jour après consolidation
+
+Migration appliquée exclusivement au projet test, version canonique 20261021085503_manager_blocks_outlook.sql. Table RLS active, lecture anon/authenticated refusée. 64 prestations toujours présentes. Un bloc existant rattrapé en file avec délai initial de 10 minutes ; aucune écriture Graph par la migration. OUTLOOK_PREPROD_TEST reste faux.
+
+Dépendances de tests restaurées via npm ci. Tests SQL et rappels relancés : tous réussis. Le lot est sauvegardé sur GitHub ; le checkpoint 321b61f ne déclenche pas de build. Le commit suivant déclenche uniquement la préproduction.
+
+Conseillers sécurité : pas d'erreur RLS ; informations « RLS sans politique » attendues pour tables exclusivement serveur, et avertissement protection contre mots de passe compromis désactivée. Ne pas ouvrir de politiques publiques pour supprimer ces informations.
+
+Le drapeau historique PREPROD_REAL_TEST existe encore ; le code de notifications ignore ce drapeau et impose la simulation en préproduction. Une tentative de nettoyage via connecteur n'a pas réussi ; aucun changement de ce paramètre revendiqué.

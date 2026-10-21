@@ -35,5 +35,6 @@ revoke all on function public.br15_queue_block_outlook(),public.br15_block_lease
 grant execute on function public.br15_block_lease(uuid,int,uuid,boolean),public.br15_update_block(uuid,timestamptz,timestamptz,text) to service_role;
 -- Rattrapage des pauses existantes sans changement de dates, ni appel Microsoft.
 insert into br15_block_outlook(block_id,desired) select id,jsonb_build_object('starts',starts,'ends',ends,'label',label) from br15_blocks where source='manager';
-insert into br15_jobs(kind,dedupe,payload) select 'outlook-block',block_id||':block:'||revision,jsonb_build_object('block_id',block_id,'revision',revision) from br15_block_outlook;
+-- Laisser le temps de déployer le worker compatible avant le rattrapage initial.
+insert into br15_jobs(kind,dedupe,payload,run_at) select 'outlook-block',block_id||':block:'||revision,jsonb_build_object('block_id',block_id,'revision',revision),now()+interval '10 minutes' from br15_block_outlook;
 commit;
