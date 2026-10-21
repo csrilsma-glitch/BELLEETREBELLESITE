@@ -1,5 +1,5 @@
 {
- "note": "Catalogue des prestations. sb = identifiant du service dans SimplyBook. Ne pas y mettre de clé secrète.",
+ "note": "Catalogue des prestations. Les tarifs actualisés proviennent du moteur natif.",
  "services": [
   {
    "id": "gel-gainage",

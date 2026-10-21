@@ -1,9 +1,9 @@
 // Fonction serveur : relaie la conversation vers Claude, qui peut consulter
-// et réserver dans le calendrier SimplyBook de Mélanie via des outils.
+// et réserver dans le calendrier natif de Mélanie via des outils.
 // La clé API Anthropic reste ici (variable ANTHROPIC_API_KEY).
 // La variable doit être présente au moment du déploiement Netlify des Functions.
 
-const { startTimesFor, bookOne } = require('./simplybook');
+// SimplyBook retiré après validation de migration.
 
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5';
 const MAX_MESSAGES = 20;
@@ -11,7 +11,7 @@ const MAX_CHARS = 1000;
 const MAX_TOOL_ROUNDS = 5;
 
 // Catalogue : même fichier que le sélecteur du site (site/assets/prestations.json).
-// sb = identifiant du service dans SimplyBook (à compléter dans ce fichier, ce n'est pas une clé secrète).
+// Le catalogue serveur est prioritaire pour les tarifs et durées.
 const CATALOGUE = require('../../site/assets/prestations.json').services;
 
 function toMinutes_(dur) {
@@ -28,7 +28,6 @@ const SERVICES = CATALOGUE.map(s => ({
   name: s.path,
   duration: toMinutes_(s.dur),
   price: s.price,
-  sb: s.sb,
 }));
 
 const SYSTEM_PROMPT = `Tu es Melba, l'assistante de Belle & Rebelle, nail studio de Mélanie à Flers (28 rue de Messei, 61100 Flers).
@@ -82,7 +81,7 @@ const TOOLS = [
   },
   {
     name: 'book_appointment',
-    description: 'Réserve dans le calendrier SimplyBook les prestations enchaînées, à partir de l\'heure donnée. À utiliser seulement après accord de la cliente.',
+    description: 'Réserve dans le calendrier natif les prestations enchaînées, à partir de l\'heure donnée. À utiliser seulement après accord de la cliente.',
     input_schema: {
       type: 'object',
       properties: {
@@ -120,23 +119,6 @@ function pickServices(ids) {
 const NOT_ONLINE = 'Cette prestation ne peut pas être réservée en ligne pour le moment. Demandez à la cliente d\'appeler Mélanie au 06 62 28 75 45.';
 
 // Heures de début où toutes les prestations, enchaînées, sont disponibles.
-async function sequenceStarts(dateISO, services) {
-  const cache = {};
-  for (const s of services) cache[s.id] = new Set(await startTimesFor(s.sb, dateISO));
-
-  const first = services[0];
-  const candidates = [...cache[first.id]];
-  return candidates.filter(time => {
-    let offset = 0;
-    for (const s of services) {
-      const at = toHHMM(toMinutes(time) + offset);
-      if (!cache[s.id].has(at)) return false;
-      offset += s.duration;
-    }
-    return true;
-  }).sort();
-}
-
 async function sendMailToMelanie({ subject, summary, client_contact }) {
   if (process.env.APP_ENV === 'preproduction') return { ok: false, message: 'Envoi d\'e-mail désactivé en préproduction.' };
   const key = process.env.RESEND_API_KEY;
@@ -153,23 +135,6 @@ async function sendMailToMelanie({ subject, summary, client_contact }) {
   });
   if (!res.ok) return { ok: false, message: 'Le message n\'a pas pu être envoyé.' };
   return { ok: true, message: 'Message transmis à Mélanie.' };
-}
-
-async function legacyRunTool(name, input) {
-  if (name === 'notify_melanie') return sendMailToMelanie(input);
-  if (name === 'check_availability') {
-    const services = pickServices(input.service_ids);
-    if (services.some(s => !s.sb)) return { error: NOT_ONLINE };
-    const starts = await sequenceStarts(input.date, services);
-    const total = services.reduce((n, s) => n + s.duration, 0);
-    return { date: input.date, total_minutes: total, available_starts: starts };
-  }
-
-  if (name === 'book_appointment') {
-    return {ok:false,requires_confirmation:true,message:'Réservation à confirmer personnellement sur la page de réservation.',reservation_url:'/reservation.html'};
-  }
-
-  throw new Error('Outil inconnu');
 }
 
 // V15 : le prompt et la boucle Claude d'origine sont conservés.
@@ -205,7 +170,7 @@ function cleanMessages(input) {
 
 async function callClaude(apiKey, messages) {
   let liveCatalogue='';
-  if(process.env.NATIVE_BOOKING_ENABLED==='true'){
+  {
     const core=require('./lib/core');
     const [current,hours]=await Promise.all([core.db('br15_services?active=eq.true&order=position.asc'),core.db('br15_hours?order=dow.asc,opens.asc')]);
     liveCatalogue='\nCatalogue serveur à jour, prioritaire pour les noms, prix et durées :\n'+current.map(s=>s.id+' : '+s.path+' — '+s.minutes+' min — '+(s.cents/100)+' €').join('\n');
@@ -223,7 +188,7 @@ async function callClaude(apiKey, messages) {
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ model: MODEL, max_tokens: 1100, system: SYSTEM_PROMPT + liveCatalogue + (process.env.NATIVE_BOOKING_ENABLED === 'true' ? '\nRègles commerciales confirmées par Mélanie : paiement exclusivement sur place, aucun acompte ni paiement en ligne, y compris lors de la première visite. Plusieurs prestations sont regroupées dans un seul rendez-vous avec prix et durée cumulés.\nMode natif V15 : le clic sur le bouton de confirmation affiché à la cliente crée le rendez-vous. Avant cela, il s’agit uniquement d’une proposition. Ne dis jamais que le rendez-vous est confirmé avant ce clic et son résultat serveur.' : ''), tools: TOOLS, messages }),
+    body: JSON.stringify({ model: MODEL, max_tokens: 1100, system: SYSTEM_PROMPT + liveCatalogue + ('\nRègles commerciales confirmées par Mélanie : paiement exclusivement sur place, aucun acompte ni paiement en ligne, y compris lors de la première visite. Plusieurs prestations sont regroupées dans un seul rendez-vous avec prix et durée cumulés.\nMode natif V15 : le clic sur le bouton de confirmation affiché à la cliente crée le rendez-vous. Avant cela, il s’agit uniquement d’une proposition. Ne dis jamais que le rendez-vous est confirmé avant ce clic et son résultat serveur.'), tools: TOOLS, messages }),
   });
   if (!res.ok) throw new Error('API Claude ' + res.status);
   return res.json();
@@ -257,7 +222,7 @@ exports.handler = async (event) => {
       for (const block of data.content.filter(b => b.type === 'tool_use')) {
         let output;
         try {
-          output = process.env.NATIVE_BOOKING_ENABLED === 'true' ? await nativeRunTool(block.name, block.input,context) : await legacyRunTool(block.name, block.input);
+          output = await nativeRunTool(block.name, block.input,context);
         } catch (err) {
           console.error('Outil en erreur', block.name, err.message);
           output = { error: 'Service de réservation momentanément indisponible. Demandez à la cliente d\'appeler Mélanie.' };

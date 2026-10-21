@@ -30,7 +30,7 @@ try{
  if(bookingId&&token){await showManaged();}else{
  const d=await api('catalog');catalogue=d.services;testMode=d.test_mode===true;$('privacy-text').textContent=d.privacy_text||'';
  for(const s of catalogue){const o=document.createElement('option');o.value=s.id;o.textContent=s.path+' · '+s.minutes+' min · '+euro(s.cents);$('service-add').append(o);}
- if(!d.enabled){note('Le nouveau calendrier n’est pas encore ouvert. Appelez Mélanie au 06 62 28 75 45.');const a=document.createElement('a');a.href='reservation-legacy.html'+location.search;a.textContent='Accéder au calendrier précédent pendant la transition';status.append(document.createElement('br'),a);return;}
+ if(!d.enabled){note('Le nouveau calendrier n’est pas encore ouvert. Appelez Mélanie au 06 62 28 75 45.');return;}
  $('native-create').hidden=false;render();note('Heures affichées dans le fuseau de Paris.');
  $('booking-date').min=new Intl.DateTimeFormat('fr-CA',{timeZone:'Europe/Paris'}).format(new Date());
  }

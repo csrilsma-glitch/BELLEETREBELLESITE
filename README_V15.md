@@ -87,7 +87,7 @@ npm run test:sql
 
 Avant mise en production, conserver un ZIP/commit exact de l’ancienne production et un export chiffré de la base. Tant que le natif n’a pas accepté de vrais RDV, remettre ce ZIP et les variables précédentes suffit pour le site. Après réception de vraies réservations natives, ne pas rouvrir SimplyBook avant rapprochement des rendez-vous et blocage des plages : restaurer des fichiers n’annule ni SMS, ni e-mails, ni événements Outlook. Ne jamais supprimer les tables `br15_*` pour revenir en arrière ; les fermer avec `enabled=false`, arrêter le traitement des tâches concernées et préserver les données pour reprise.
 
-Les fichiers originaux `chat.js`, `send-sms.js` et `simplybook.js` sont archivés en texte dans `docs/`. L’ancien `send-sms.js` reste un endpoint de test manuel protégé par `SMS_ADMIN_TOKEN`, aucun envoi n’est lancé par sa présence. Éviter de l’invoquer par automatisme.
+Les fichiers originaux `chat.js`, `send-sms.js` et `simplybook.js` sont archivés en texte dans `docs/`. L’ancien endpoint send-sms est retiré (HTTP 410), les SMS transactionnels passent par la file. SimplyBook est absent du code actif de V15 ; les données de son compte restent à exporter et rapprocher avant bascule officielle.
 
 Tests navigateur reproductibles, avec réponses fournisseurs simulées :
 

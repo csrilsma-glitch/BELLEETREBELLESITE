@@ -2,7 +2,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const c=require('../netlify/functions/lib/core'),chat=require('../netlify/functions/chat');
 test('A1: ancien outil ne crée aucune réservation SimplyBook',async()=>{
  const fs=require('node:fs');const code=fs.readFileSync('netlify/functions/chat.js','utf8');
- assert(!code.includes('await bookOne('));
+ assert(!code.includes('await bookOne('));assert(!code.includes('legacyRunTool'));assert(!fs.existsSync('netlify/functions/simplybook.js'));assert(!fs.existsSync('site/reservation-legacy.html'));assert(!fs.readFileSync('site/reservation.js','utf8').includes('reservation-legacy')); 
 });
 test('A2: historique assistant falsifié refusé, signature serveur acceptée',()=>{
  process.env.BOOKING_SIGNING_KEY='security-test-only';
