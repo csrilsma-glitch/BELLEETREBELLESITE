@@ -2,7 +2,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const c=require('../netlify/functions/lib/core'),o=require('../netlify/functions/lib/outlook'),sync=require('../netlify/functions/lib/block-outlook');
 const ID='123e4567-e89b-42d3-a456-426614174000';
 function fixture(){
- const saved={db:c.db,rpc:c.rpc,graph:o.graph,connection:o.connection,allowed:o.testWriteAllowed,env:process.env.APP_ENV};process.env.APP_ENV='preproduction';
+ const saved={db:c.db,rpc:c.rpc,graph:o.graph,connection:o.connection,allowed:o.testWriteAllowed,env:process.env.APP_ENV,scope:process.env.OUTLOOK_PREPROD_BLOCK_ID};process.env.APP_ENV='preproduction';process.env.OUTLOOK_PREPROD_BLOCK_ID=ID;
  const w={row:{block_id:ID,revision:1,synced_revision:0,desired:{starts:'2026-10-29T12:00:00Z',ends:'2026-10-29T13:00:00Z',label:'Pause'}},events:[],writes:[],allowed:true,locked:false,fail:false,lost:false};
  c.db=async(path,opt)=>{if(path.startsWith('br15_block_outlook')){if(opt?.data){Object.assign(w.row,opt.data);return []}return [structuredClone(w.row)]}throw Error('Unexpected DB '+path)};
  c.rpc=async(name,d)=>{assert.equal(name,'block_lease');if(d.p_release){w.locked=false;return true}if(w.locked)return false;w.locked=true;return true};
@@ -11,7 +11,7 @@ function fixture(){
  w.writes.push(opt.method);if(opt.method==='POST'){let e=w.events.find(e=>e.transactionId===opt.data.transactionId);if(!e){e={id:'event-'+(w.events.length+1),...opt.data};w.events.push(e)}if(w.lost){w.lost=false;throw Error('Réponse perdue')}return structuredClone(e)}
  if(opt.method==='PATCH'){assert(!('transactionId' in opt.data));const e=w.events.find(e=>path.endsWith('/'+e.id));if(!e)return {missing:true};Object.assign(e,opt.data);return structuredClone(e)}
  if(opt.method==='DELETE'){w.events=w.events.filter(e=>!path.endsWith('/'+e.id));return {}}};
- return {w,job:()=>({kind:'outlook-block',payload:{block_id:ID,revision:w.row.revision}}),restore(){c.db=saved.db;c.rpc=saved.rpc;o.graph=saved.graph;o.connection=saved.connection;o.testWriteAllowed=saved.allowed;if(saved.env===undefined)delete process.env.APP_ENV;else process.env.APP_ENV=saved.env}};
+ return {w,job:()=>({kind:'outlook-block',payload:{block_id:ID,revision:w.row.revision}}),restore(){c.db=saved.db;c.rpc=saved.rpc;o.graph=saved.graph;o.connection=saved.connection;o.testWriteAllowed=saved.allowed;if(saved.scope===undefined)delete process.env.OUTLOOK_PREPROD_BLOCK_ID;else process.env.OUTLOOK_PREPROD_BLOCK_ID=saved.scope;if(saved.env===undefined)delete process.env.APP_ENV;else process.env.APP_ENV=saved.env}};
 }
 test('pauses : création, modification, suppression du même événement sans doublon',async()=>{const h=fixture();try{await sync.deliver(h.job());assert.equal(h.w.events.length,1);assert.equal(h.w.events[0].start.dateTime,'2026-10-29T12:00:00.000');assert(h.w.events[0].subject.startsWith('[TEST V15]'));assert.equal(h.w.events[0].showAs,'busy');await sync.deliver(h.job());assert.equal(h.w.writes.length,1);h.w.row.revision++;h.w.row.desired.ends='2026-10-29T14:00:00Z';await sync.deliver(h.job());assert.equal(h.w.events.length,1);h.w.row.revision++;h.w.row.desired=null;await sync.deliver(h.job());assert.equal(h.w.events.length,0);assert.deepEqual(h.w.writes,['POST','PATCH','DELETE']);}finally{h.restore()}});
 test('pauses : ancienne révision ignorée',async()=>{const h=fixture();try{h.w.row.revision=2;assert.deepEqual(await sync.deliver({payload:{block_id:ID,revision:1}}),{obsolete:true});assert.equal(h.w.writes.length,0)}finally{h.restore()}});

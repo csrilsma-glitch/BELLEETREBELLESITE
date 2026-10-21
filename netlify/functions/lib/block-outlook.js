@@ -3,7 +3,7 @@ async function deliver(j){
  const id=j.payload.block_id,revision=j.payload.revision;
  if(!c.uuid(id)||!Number.isInteger(revision))return {obsolete:true};
  // Essai réel temporaire : une seule pause explicitement autorisée, sans rattrapage des anciennes.
- if(process.env.APP_ENV==='preproduction'&&id!==(process.env.OUTLOOK_PREPROD_BLOCK_ID||'ba49b590-3130-4396-b7c8-0c5e8043f5ea'))return {deferred:true};
+ if(process.env.APP_ENV==='preproduction'&&id!==process.env.OUTLOOK_PREPROD_BLOCK_ID)return {deferred:true};
  let row=(await c.db('br15_block_outlook?block_id=eq.'+id))[0];
  if(!row||row.revision!==revision||row.synced_revision>=revision)return {obsolete:true};
  // Ne pas solder une simulation : la tâche attend l'autorisation et reste relançable.
