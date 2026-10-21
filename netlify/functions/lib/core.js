@@ -10,7 +10,8 @@ function env(key){return process.env[key]||fail(503,'Configuration serveur manqu
 function headers(){return {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};}
 function json(statusCode,body,extra={}){return {statusCode,headers:{...headers(),...extra},body:JSON.stringify(body)};}
 function body(e){if((e.body||'').length>24000)fail(413,'Requête trop volumineuse');try{return JSON.parse(e.body||'{}');}catch{fail(400,'JSON invalide');}}
-function origin(e){const o=e.headers?.origin;if(o&&o!==(process.env.SITE_URL||PUBLIC))fail(403,'Origine refusée');}
+// Origines exactes autorisées : le site principal, et le sous-domaine Manager si MANAGER_SITE_URL est défini (second site Netlify uniquement).
+function origin(e){const o=e.headers?.origin;const allowed=[process.env.SITE_URL||PUBLIC,process.env.MANAGER_SITE_URL].filter(Boolean);if(o&&!allowed.includes(o))fail(403,'Origine refusée');}
 async function wrap(e,fn){try{origin(e);return await fn();}catch(err){console.error('BR15',err.status||500,err.name);return json(err.status||503,{error:err.status?err.message:'Service indisponible. Réessayez ou appelez Mélanie.'});}}
 async function request(url,opt={}){return fetch(url,{...opt,signal:opt.signal||AbortSignal.timeout(15000)});}
 function isolation(){

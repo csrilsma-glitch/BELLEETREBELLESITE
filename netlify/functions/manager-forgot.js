@@ -7,7 +7,8 @@ const c=require('./lib/core');
 const GENERIC='Si un accès Manager existe pour cette adresse, un lien de récupération vient d’être envoyé. Pensez à vérifier vos indésirables.';
 const normalize=x=>String(x||'').trim().toLowerCase();
 const valid=x=>x.length>=5&&x.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x);
-const resetUrl=()=>c.siteUrl()+'/manager/reset-password.html';
+// Sur le second site Netlify, le lien pointe vers le sous-domaine Manager ; ailleurs, comportement inchangé.
+const resetUrl=()=>(process.env.MANAGER_SITE_URL||c.siteUrl())+'/manager/reset-password.html';
 // Vrai si un e-mail réel peut partir pour cette adresse.
 function mayEmail(){return process.env.APP_ENV!=='preproduction';}
 const SIMULATED='Préproduction : aucun e-mail de récupération n’a été envoyé. Utilisez la procédure administrateur pour votre accès de test.';
