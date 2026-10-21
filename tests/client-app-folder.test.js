@@ -46,9 +46,9 @@ test('pages publiques : aucun manifeste ne pointe vers la racine du site', () =>
 
 test('installation masquée dans la coque B&R APP (iframe ou ?source=pwa)', () => {
   const js = read('pwa.js');
-  assert.match(js, /window\.self!==window\.top/);
+  assert.match(js, /window\.self\s*!==\s*window\.top/);
   assert.match(js, /source=pwa/);
-  assert.match(js, /section\.hidden=true/);
+  assert.match(js, /section\.hidden\s*=\s*true/);
 });
 
 test('coque /app/ : iframe vers l’accueil public, service worker dans /app/', () => {
@@ -62,4 +62,31 @@ test('pages publiques et Manager non modifiés par rapport à origin/main', () =
   const repo = path.join(__dirname, '..');
   const changed = execFileSync('git', ['diff', '--name-only', 'origin/main', '--', 'site/manager', 'site/manifest.webmanifest', 'site/sw.js', 'netlify', 'netlify.toml', 'supabase'], { cwd: repo }).toString().trim();
   assert.equal(changed, '', 'fichiers protégés modifiés : ' + changed);
+});
+
+test('bouton d’installation : prompt() appelé depuis le clic, sans attendre', () => {
+  const js = read('pwa.js');
+  assert.match(js, /addEventListener\('beforeinstallprompt'/);
+  assert.match(js, /event\.prompt\(\)/);
+  assert.doesNotMatch(js, /await prompt/);
+  assert.match(js, /register\('app\/sw\.js', \{ scope: 'app\/'/);
+});
+
+test('fenêtre de secours : titre B&R APP, jamais « Installer Belle & Rebelle »', () => {
+  for (const f of ['index.html', 'reservation.html']) {
+    const html = read(f);
+    assert.match(html, /<h2 id="install-dialog-title">Installer B&amp;R APP<\/h2>/, f);
+    assert.doesNotMatch(html, /Installer Belle &amp; Rebelle/, f);
+  }
+});
+
+test('manifeste B&R APP : icônes 192 et 512 « any » et « maskable » séparées', () => {
+  const m = JSON.parse(read('app/manifest.webmanifest'));
+  assert.ok(m.icons.some(i => i.sizes === '192x192' && i.purpose === 'any'));
+  assert.ok(m.icons.some(i => i.sizes === '512x512' && i.purpose === 'any'));
+  assert.ok(m.icons.some(i => i.sizes === '512x512' && i.purpose === 'maskable'));
+});
+
+test('coque /app/ : titre iOS « B&R APP » pour l’écran d’accueil', () => {
+  assert.match(read('app/index.html'), /apple-mobile-web-app-title" content="B&amp;R APP"/);
 });
