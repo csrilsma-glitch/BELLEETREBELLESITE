@@ -21,9 +21,20 @@ assert.equal(await scalar("select count(*)::int v from br15_jobs where booking_i
 assert.equal((await book(key)).id,booking.id);assert.equal(await scalar('select count(*)::int v from br15_bookings'),1);console.log('OK double clic idempotent');
 await assert.rejects(book(key,start,'wrong'));console.log('OK idempotence inaccessible sans secret');
 await assert.rejects(query("select br15_change($1,'wrong','cancel')",[booking.id]));console.log('OK lien d’annulation forgé refusé');
+// Le Manager change le catalogue, jamais le montant déjà accepté par la cliente.
+const priceSnapshot=(await query('select cents,services from br15_bookings where id=$1',[booking.id])).rows[0];
+const originalService=(await query('select * from br15_services where id=$1',[ids[0]])).rows[0];
+const changedService={...originalService,cents:originalService.cents+125};
+await query("select br15_admin('service',$1)",[JSON.stringify(changedService)]);
+assert.equal((await scalar('select br15_quote($1) v',[ids])).cents,quote.cents+125);
+assert.deepEqual((await query('select cents,services from br15_bookings where id=$1',[booking.id])).rows[0],priceSnapshot);
+console.log('OK tarif Manager propagé aux nouveaux devis sans effet rétroactif');
 await db.exec('update br15_settings set cancel_hours=0');
 const moved=(await query('select * from br15_slots($1,$2,$3)',[date,ids,booking.id])).rows.find(s=>new Date(s.starts).getTime()>new Date(start).getTime()+4*3600000);
 assert(moved);await query("select br15_change($1,'abc','move',$2)",[booking.id,moved.starts]);console.log('OK déplacement atomique');
+assert.deepEqual((await query('select cents,services from br15_bookings where id=$1',[booking.id])).rows[0],priceSnapshot);
+await query("select br15_admin('service',$1)",[JSON.stringify(originalService)]);
+console.log('OK déplacement conserve le tarif historique après modification du catalogue');
 await query("select br15_change($1,'abc','cancel')",[booking.id]);
 assert.equal(await scalar("select count(*)::int v from br15_jobs where booking_id=$1 and kind='email-reminder' and state='pending'",[booking.id]),0);console.log('OK aucun rappel e-mail après annulation');
 assert((await query('select * from br15_slots($1,$2)',[date,ids])).rows.some(s=>new Date(s.starts).getTime()===new Date(moved.starts).getTime()));console.log('OK annulation libère le créneau');
