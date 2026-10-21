@@ -46,3 +46,15 @@ Dépendances de tests restaurées via npm ci. Tests SQL et rappels relancés : t
 Conseillers sécurité : pas d'erreur RLS ; informations « RLS sans politique » attendues pour tables exclusivement serveur, et avertissement protection contre mots de passe compromis désactivée. Ne pas ouvrir de politiques publiques pour supprimer ces informations.
 
 Le drapeau historique PREPROD_REAL_TEST existe encore ; le code de notifications ignore ce drapeau et impose la simulation en préproduction. Une tentative de nettoyage via connecteur n'a pas réussi ; aucun changement de ce paramètre revendiqué.
+
+## Preuves du déploiement et contrôles finaux
+
+- Commit applicatif : e3443576a67e9b82e38cd1ed4f8f986b8bb64394.
+- Déploiement préproduction : 6ad87e11ce4d981b465ab3cf, ready, publié 2026-10-21T08:56:02.300Z. Correspondance commit vérifiée par connecteur Netlify.
+- HTTP 200 : mentions-legales.html, confidentialite.html, conditions-reservation.html, cookies.html et manager/. Brouillons visibles. Mentions légales et confidentialité ouvertes dans le vrai navigateur cloud ; confidentialité sans débordement horizontal sur viewport 1363 px. Pas de nouvelle validation Android revendiquée.
+- Contrôle transactionnel sur la vraie base TEST : insert pause fictive année 2099 → version 1 ; RPC modification → version 2 ; suppression → version 3 tombstone ; un seul job pending ; assertions réussies puis ROLLBACK intégral. Aucun appel Outlook.
+- Permissions RPC réelles : anon ne peut pas modifier ; authenticated ne peut pas acquérir le verrou ; service_role autorisé.
+- Recette automatisée Manager relancée : bloquée au lancement car Chromium absent. Aucun test d'interface Manager supplémentaire déclaré réussi. Sélecteurs du test adaptés au nouveau bouton de réinitialisation.
+- Un premier contrôle HTTP du catalogue a utilisé le mauvais nom /catalogue et reçu 404 ; le chemin réel du code est /catalog. Ce 404 n'est pas une régression du serveur.
+
+Bilan : développement et migration des pauses déployés, synchronisation réelle Outlook NON activée (flag false). Compte Mélanie NON activé. Informations juridiques et politique de conservation à finaliser, alerte mots de passe compromis à traiter selon disponibilité du plan. Aucune certification « prête production ». Aucun changement production ni envoi réel.

@@ -62,12 +62,12 @@ function dashboard(state){return {settings:{enabled:false,lead_minutes:120,horiz
   await page.fill('#block-form [name=starts]','2026-10-29T12:00');
   await page.fill('#block-form [name=ends]','2026-10-21T13:00');
   await page.fill('#block-form [name=label]','Teste. Pause');
-  await page.locator('#block-form button').click();
+  await page.locator('#block-form button:not([type=reset])').click();
   assert.match(await page.locator('#block-msg').textContent(),/postérieure/,name+' : message période invalide');
   assert.equal(sent.filter(x=>x==='block').length,0,name+' : aucune requête pour une période invalide');
   // Période valide : confirmation visible.
   await page.fill('#block-form [name=ends]','2026-10-29T13:00');
-  await page.locator('#block-form button').click();
+  await page.locator('#block-form button:not([type=reset])').click();
   await page.waitForFunction(()=>document.getElementById('block-msg').textContent.includes('Période bloquée'));
   assert.equal(sent.filter(x=>x==='block').length,1,name+' : une requête pour la période valide');
   // Retirer : bouton visible et cliquable sur la ligne de la période.
