@@ -1,6 +1,5 @@
 const {PGlite}=require('@electric-sql/pglite');const {btree_gist}=require('@electric-sql/pglite/contrib/btree_gist');const fs=require('fs'),assert=require('node:assert/strict');
 (async()=>{const db=new PGlite({extensions:{btree_gist}});await db.exec(`set timezone='UTC';create role anon;create role authenticated;create role service_role;create schema extensions;create schema auth;create table auth.users(id uuid primary key);`);
-for(const f of ['001_v15.sql','002_catalogue.sql','003_outlook.sql','004_privacy.sql']){await db.exec(fs.readFileSync('supabase/'+f,'utf8'));console.log('Migration OK',f);}
 for(const f of fs.readdirSync('supabase/migrations').filter(f=>f.endsWith('.sql')).sort()){await db.exec(fs.readFileSync('supabase/migrations/'+f,'utf8'));console.log('Migration OK',f);}
 const query=(s,args=[])=>db.query(s,args),scalar=async(s,args)=>(await query(s,args)).rows[0].v;
 assert.equal(await scalar('select count(*)::int v from br15_services'),64);
