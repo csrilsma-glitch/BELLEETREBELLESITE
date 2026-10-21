@@ -232,8 +232,12 @@ function cleanMessages(input) {
 async function callClaude(apiKey, messages) {
   let liveCatalogue='';
   if(process.env.NATIVE_BOOKING_ENABLED==='true'){
-    const current=await require('./lib/core').db('br15_services?active=eq.true&order=position.asc');
+    const core=require('./lib/core');
+    const [current,hours]=await Promise.all([core.db('br15_services?active=eq.true&order=position.asc'),core.db('br15_hours?order=dow.asc,opens.asc')]);
     liveCatalogue='\nCatalogue serveur à jour, prioritaire pour les noms, prix et durées :\n'+current.map(s=>s.id+' : '+s.path+' — '+s.minutes+' min — '+(s.cents/100)+' €').join('\n');
+    const days=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+    const schedule=days.map((day,dow)=>{const spans=hours.filter(h=>h.dow===dow);return day+' : '+(spans.length?spans.map(h=>h.opens.slice(0,5)+'–'+h.closes.slice(0,5)).join(', '):'fermé');}).join(' ; ');
+    liveCatalogue+='\nHoraires habituels du studio en heure de Paris, lus dans le Manager : '+schedule+'. Ces horaires ne garantissent pas un créneau libre : les absences et rendez-vous doivent être vérifiés avec check_availability.';
   }
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
