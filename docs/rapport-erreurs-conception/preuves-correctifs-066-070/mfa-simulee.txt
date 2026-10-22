@@ -1,0 +1,9 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> belle-rebelle-v15@15.0.0 test:mfa-ui
+> node tests/mfa-ui.cjs
+
+MFA navigateur OK : premier enrôlement, erreur récupérable, AAL2, déconnexion
+MFA navigateur OK : facteur vérifié préservé, erreur récupérable, AAL2, déconnexion
+Connexion navigateur mot de passe seul OK : [compte autorisé A] ; aucun QR, facteur ou code demandé.
+Connexion navigateur mot de passe seul OK : [compte autorisé B] ; aucun QR, facteur ou code demandé.

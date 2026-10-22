@@ -9,7 +9,7 @@
 - sélection courante du crâne transmise au serveur et identifiants validés, puis fournie explicitement au modèle pour éviter une perte de contexte ;
 - préférence matin/après-midi demandée avant proposition ; conserver une préférence déjà donnée ;
 - restitution des créneaux construite à partir des résultats réels de l’outil courant, au maximum quatre propositions espacées ;
-- zéro créneau : recherche bornée à sept jours suivants, sans inventer une alternative ; si aucune alternative n’est trouvée, demander une autre date ;
+- zéro créneau : recherche bornée à trois jours suivants, avec quatre consultations maximum partagées par requête, sans inventer une alternative ; si aucune alternative n’est trouvée, demander une autre date ;
 - contexte minimal signé (date et préférence, sans coordonnées) pour conserver une alternative ; contexte falsifié ignoré ;
 - panne technique : message prudent, aucune disponibilité inventée ;
 - proposition revérifiée avec toutes les prestations, les durées et la préférence ; seul le résultat positif du serveur après clic confirme l’enregistrement ;
@@ -37,3 +37,7 @@ Caches publics et Manager versionnés pour une future livraison. Manifestes, pé
 - Manager, prestations multiples : liste native de hauteur bornée à sept lignes — conservée ; remplacer cet outil serait une évolution distincte.
 
 Aucune migration SQL, variable Netlify, clé, donnée réelle ou configuration d’authentification modifiée. Aucune nouvelle dépendance.
+
+## Complément après contre-audit
+
+Voir `06_REPONSE_CONTRE_AUDIT_066_070.md` pour les corrections supplémentaires, les nouvelles preuves et les limites. Le verdict initial Claude était défavorable ; son nouveau contrôle reste attendu.

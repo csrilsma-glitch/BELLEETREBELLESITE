@@ -1,0 +1,2 @@
+Cas A  date demandée par le modèle : 2026-10-30 (vendredi) ; date interrogée : 2026-10-24
+Cas B  appels fournisseur pour une demande sans créneau : 8 (plafond attendu ~8) ; résultat alternative : false

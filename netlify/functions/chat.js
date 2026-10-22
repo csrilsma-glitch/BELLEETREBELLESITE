@@ -142,35 +142,49 @@ async function sendMailToMelanie({ subject, summary, client_contact }) {
   return { ok: true, message: 'Message transmis à Mélanie.' };
 }
 
+// Budget partagé par toute une requête HTTP, y compris les tours d'outils et la proposition.
+const MAX_CALENDAR_CALLS=4,MAX_ALTERNATIVE_DAYS=3;
+async function calendarAvailability(date,ids,context){
+  if((context.calendarCalls||0)>=MAX_CALENDAR_CALLS){context.calendarBudgetReached=true;require('./lib/core').fail(429,'Budget de recherche du calendrier atteint');}
+  context.calendarCalls=(context.calendarCalls||0)+1;
+  return require('./lib/booking').availability(date,ids);
+}
+function toolDate(input,context){
+  // Seul un contexte résolu par le serveur peut imposer une date. Une ancienne
+  // valeur requestedDate seule ne doit pas écraser un nouveau jour demandé.
+  return context.dateSource?context.requestedDate||input.date:input.date;
+}
+
 // V15 : le prompt et la boucle Claude d'origine sont conservés.
 // La création native demande un clic explicite côté cliente, jamais une décision du modèle.
 async function nativeRunTool(name,input,context) {
   const c=require('./lib/core'),b=require('./lib/booking');
+  if(name!=='notify_melanie'&&context.invalidDate)return {ok:false,date_invalid:true};
   if(name==='notify_melanie')return sendMailToMelanie(input);
   if(name==='check_availability'){
-    input={...input,date:context.requestedDate||input.date};
+    input={...input,date:toolDate(input,context)};
     c.date(input.date);
     if(input.date<policy.today()){context.availability={date:input.date,past:true};return context.availability;}
     if(!context.preference){context.availability={date:input.date,requires_preference:true};return context.availability;}
-    const slots=await b.availability(input.date,input.service_ids);
+    const slots=await calendarAvailability(input.date,input.service_ids,context);
     const q=await c.rpc('quote',{p_ids:c.ids(input.service_ids)});
     context.availability={date:input.date,total_minutes:q.minutes,total_cents:q.cents,available_starts:policy.choose(slots,context.preference).map(x=>policy.time(x.starts))};
     if(!context.availability.available_starts.length){
       // Alternative vérifiée, jamais une date devinée par le modèle.
       const day=new Date(input.date+'T12:00:00Z');
-      for(let i=1;i<=7;i++){
+      for(let i=1;i<=MAX_ALTERNATIVE_DAYS;i++){
         day.setUTCDate(day.getUTCDate()+1);const date=day.toISOString().slice(0,10);
-        const alternatives=policy.choose(await b.availability(date,input.service_ids),context.preference);
+        const alternatives=policy.choose(await calendarAvailability(date,input.service_ids,context),context.preference);
         if(alternatives.length){context.requestedDate=date;context.availability={...context.availability,requested_date:input.date,date,alternative:true,available_starts:alternatives.map(x=>policy.time(x.starts))};break;}
       }
     }
     return context.availability;
   }
   if(name==='book_appointment'){
-    input={...input,date:context.requestedDate||input.date};
+    input={...input,date:toolDate(input,context)};
     if(!context.preference){context.availability={date:input.date,requires_preference:true};return context.availability;}
     if(input.date<policy.today())return {ok:false,message:'Cette date est passée.'};
-    const slots=await b.availability(input.date,input.service_ids);
+    const slots=await calendarAvailability(input.date,input.service_ids,context);
     const slot=slots.filter(x=>context.preference==='any'||(Number(policy.time(x.starts).slice(0,2))<12)===(context.preference==='morning')).find(x=>new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit'}).format(new Date(x.starts))===input.start);
     if(!slot){context.bookingRejected=true;return {ok:false,message:'Ce créneau n’est plus disponible pour cette préférence.'};}
     const q=await c.rpc('quote',{p_ids:c.ids(input.service_ids)});
@@ -244,7 +258,11 @@ exports.handler = async (event) => {
   try{context.siteSelection=Array.isArray(payload.selected_service_ids)&&payload.selected_service_ids.length?core.ids(payload.selected_service_ids):[];}catch{return json(400,{error:'Sélection de prestations invalide'});}
   const last=[messages.at(-1)];
   context.openingQuestion=/horaires? (?:d['’]ouverture|du studio)|heures? d['’]ouverture|quels sont vos horaires|ouvrez.vous/i.test(last[0].content);
-  context.requestedDate=policy.requestedDate(last)||previous?.date||policy.requestedDate(messages);
+  const latestDate=policy.requestedDate(last);
+  const latestDateMention=policy.hasDateExpression(last[0].content);
+  context.invalidDate=latestDateMention&&!latestDate;
+  context.dateSource=latestDateMention?'latest':previous?.date?'memory':'history';
+  context.requestedDate=latestDateMention?latestDate:previous?.date||policy.requestedDate(messages);
   context.preference=policy.preference(last)||previous?.preference||policy.preference(messages);
   const direct=policy.directReply(messages.at(-1).content);
   if(direct)return json(200,{pendingBooking:null,reply:direct,signature:core.sign('melba-reply:'+direct)});

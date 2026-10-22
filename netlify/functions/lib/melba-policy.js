@@ -4,30 +4,43 @@ const months=['janvier','fevrier','mars','avril','mai','juin','juillet','aout','
 const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const today=(now=new Date())=>new Intl.DateTimeFormat('fr-CA',{timeZone:ZONE}).format(now);
 function validDate(s){if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T12:00:00Z');return Number.isFinite(+d)&&d.toISOString().slice(0,10)===s;}
+// La dernière expression temporelle explicite du dernier message pertinent prime.
 function requestedDate(messages,now=new Date()){
  const current=today(now),year=Number(current.slice(0,4));
+ const weekdays=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
  for(const m of [...messages].reverse().filter(m=>m.role==='user'&&typeof m.content==='string')){
-  const text=norm(m.content);
-  const relative=/\bapres[- ]?demain\b/.test(text)?2:/\bdemain\b/.test(text)?1:/aujourd['’]hui/.test(text)?0:null;
-  if(relative!==null){const d=new Date(current+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+relative);return d.toISOString().slice(0,10);}
-  const iso=text.match(/\b(\d{4}-\d{2}-\d{2})\b/);
-  if(iso)return validDate(iso[1])?iso[1]:null;
-  const re=new RegExp('\\b(\\d{1,2})(?:er)?\\s+('+months.join('|')+')(?:\\s+(\\d{4}))?\\b');
-  const match=text.match(re);if(!match)continue;
-  const month=months.indexOf(match[2])+1,day=Number(match[1]);
-  for(let y=match[3]?Number(match[3]):year;y<=(match[3]?Number(match[3]):year+8);y++){
-   const date=`${y}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-   if(validDate(date)&&(match[3]||date>=current))return date;
+  const text=norm(m.content),candidates=[];
+  for(const match of text.matchAll(/\b(\d{4}-\d{2}-\d{2})\b/g))candidates.push({index:match.index,date:validDate(match[1])?match[1]:null});
+  const named=new RegExp('\\b(\\d{1,2})(?:er)?\\s+('+months.join('|')+')(?:\\s+(\\d{4}))?\\b','g');
+  for(const match of text.matchAll(named)){
+   const month=months.indexOf(match[2])+1,day=Number(match[1]);let date=null;
+   for(let y=match[3]?Number(match[3]):year;y<=(match[3]?Number(match[3]):year+8);y++){
+    const candidate=`${y}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    if(validDate(candidate)&&(match[3]||candidate>=current)){date=candidate;break;}
+   }
+   candidates.push({index:match.index,date});
   }
-  return null;
+  for(const match of text.matchAll(/\b(apres[- ]?demain|demain|aujourd['’]hui)\b/g)){
+   const offset=match[1].startsWith('apres')?2:match[1]==='demain'?1:0,d=new Date(current+'T12:00:00Z');
+   d.setUTCDate(d.getUTCDate()+offset);candidates.push({index:match.index,date:d.toISOString().slice(0,10)});
+  }
+  const dayPattern=new RegExp('\\b('+weekdays.join('|')+')(?:\\s+(prochain|suivant))?\\b','g');
+  for(const match of text.matchAll(dayPattern)){
+   // Dans « lundi 26 octobre », la date chiffrée qui suit reste prioritaire.
+   const d=new Date(current+'T12:00:00Z');let offset=(weekdays.indexOf(match[1])-d.getUTCDay()+7)%7;
+   if(!offset&&match[2])offset=7;d.setUTCDate(d.getUTCDate()+offset);
+   candidates.push({index:match.index,date:d.toISOString().slice(0,10)});
+  }
+  if(candidates.length)return candidates.sort((a,b)=>b.index-a.index)[0].date;
  }
  return null;
 }
+function hasDateExpression(text){return /\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}(?:er)?\s+(?:janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre)\b|\b(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|demain)\b|aujourd['’]hui/.test(norm(text));}
 function preference(messages){
  for(const m of [...messages].reverse().filter(m=>m.role==='user'&&typeof m.content==='string')){
   const t=norm(m.content);if(/peu importe|indifferent|n'importe|toute la journee/.test(t))return 'any';
   if(/apres[- ]?midi|soir/.test(t))return 'afternoon';if(/matin/.test(t))return 'morning';
-  const h=t.match(/\b([01]?\d|2[0-3])(?:h(?:[0-5]\d)?|:[0-5]\d)\b/);if(h)return +h[1]<12?'morning':'afternoon';
+  const h=t.match(/\b(?:a|vers|entre|de)\s+([01]?\d|2[0-3])\s*(?:h(?:[0-5]\d)?|:[0-5]\d)\b/);if(h&&!/^(?:\s*(?:de\s+)?(?:soin|prestation|duree|travail|pose))\b/.test(t.slice(h.index+h[0].length)))return +h[1]<12?'morning':'afternoon';
  }
  return null;
 }
@@ -40,15 +53,25 @@ function choose(slots,period){
 }
 function directReply(text){
  const t=norm(text).trim();
- if(/erreur|faux horaire|horaire incorrect|mauvais horaire|pas disponible/.test(t))return null;
- if(/(?:annuler|annule|supprimer|deplacer|modifier)\s+(?:mon|notre|le|un)\s+(?:rendez[- ]?vous|rdv|reservation)/.test(t))return 'Pour modifier ou annuler un rendez-vous déjà enregistré, utilisez le lien sécurisé de votre e-mail de confirmation. Si vous ne le retrouvez pas, contactez Mélanie au 06 62 28 75 45. Aucune annulation n’a été effectuée ici.';
- if(/^(?:(?:non|merci|finalement)[ ,!.]*)?(?:je change d['’]avis|j['’]ai change d['’]avis|je laisse tomber|laisse(?:z)? tomber|je ne veux plus reserver|je ne souhaite plus reserver|on arrete|arretons|pas maintenant|au revoir|stop|j['’]abandonne)(?:[ ,.!]|$)/.test(t))return 'Pas de souci ! 😊 N’hésitez pas à revenir quand vous voulez, je reste à votre disposition. 💕';
+ // Ces raccourcis sont des messages complets, jamais le préfixe d'une nouvelle demande.
+ if(/^(?:je (?:veux|souhaite) )?(?:annuler|annule|supprimer|deplacer|modifier)\s+(?:mon|notre|le|un)\s+(?:rendez[- ]?vous|rdv|reservation)(?:\s*(?:svp|s['’]il vous plait|merci))?[ .!?,]*$/.test(t))return 'Pour modifier ou annuler un rendez-vous déjà enregistré, utilisez le lien sécurisé de votre e-mail de confirmation. Si vous ne le retrouvez pas, contactez Mélanie au 06 62 28 75 45. Aucune annulation n’a été effectuée ici.';
+ if(/^(?:(?:non|merci|finalement)[ ,!.]*)*(?:je change d['’]avis|j['’]ai change d['’]avis|je laisse tomber|laisse(?:z)? tomber|je ne veux plus reserver|je ne souhaite plus reserver|on arrete|arretons|pas maintenant|au revoir|stop|j['’]abandonne)(?:[ ,!.]*(?:merci|bonne journee|a bientot))?[ ,.!?😊💕♡]*$/.test(t))return 'Pas de souci ! 😊 N’hésitez pas à revenir quand vous voulez, je reste à votre disposition. 💕';
  return null;
 }
+function needsCalendarEvidence(reply){
+ const t=norm(reply).replace(/[’‘]/g,"'").replace(/\bsur place\b/g,'sur le lieu');
+ // Pas de déduction de disponibilité depuis du texte libre : heures, jours et assertions métier.
+ const hours=/\b(?:[01]?\d|2[0-3])\s*(?:h(?:\s*[0-5]\d)?|:[0-5]\d)\b|\b(?:une?|deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze|douze|treize|quatorze|quinze|seize|dix[- ]sept|dix[- ]huit|dix[- ]neuf|vingt(?:[- ](?:et[- ])?(?:une?|deux|trois))?|\d{1,2})\s+heures?\b|\b(?:midi|minuit)\b/;
+ const days=/\b(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)s?\b/;
+ const claims=/\b(?:disponib\w*|libres?|creneaux?|places?)\b|je (?:vous )?(?:reserve|inscris|attends|accueille|bloque)|vous (?:etes|voila) (?:bien )?(?:inscrit\w*|reserve\w*|attendu\w*)|(?:rendez[- ]?vous|reservation|rdv).{0,60}(?:confirm|enregistr|annul|valid)|(?:confirme|annule|enregistre|valide).{0,40}(?:rendez[- ]?vous|reservation|rdv)/;
+ return hours.test(t)||days.test(t)||claims.test(t);
+}
 function guardedReply(reply,context){
+ if(context.invalidDate)return 'Cette date n’est pas valide. Pouvez-vous préciser une date du calendrier ? ♡';
  if(context.openingQuestion&&context.openingHours&&!context.availability&&!context.pending)return 'Les horaires habituels du studio, en heure de Paris, sont : '+context.openingHours+'. Les rendez-vous et absences peuvent réduire les créneaux : leur disponibilité doit être vérifiée dans le calendrier. ♡';
  if(context.pending)return 'Voici votre proposition, à relire ci-dessous. Aucun rendez-vous n’est encore enregistré : cochez la case puis cliquez sur Confirmer si tout vous convient. ♡';
  if(context.bookingRejected&&!context.pending)return 'Ce créneau ne convient plus à votre demande. Je peux rechercher d’autres disponibilités pour vos prestations. Aucun rendez-vous n’a été enregistré. ♡';
+ if(context.calendarBudgetReached)return 'J’ai atteint la limite de recherche pour cette demande. Souhaitez-vous essayer une autre date ? Aucun rendez-vous n’a été enregistré. ♡';
  if(context.toolError)return 'Je ne peux pas vérifier le calendrier pour le moment. Je ne peux donc pas vous proposer de créneau fiable. Réessayez un peu plus tard ou contactez Mélanie au 06 62 28 75 45. 💕';
  const a=context.availability;
  if(!a&&context.requestedDate&&context.requestedDate<today())return 'Cette date est passée. Quelle date à venir vous conviendrait ? ♡';
@@ -60,9 +83,14 @@ function guardedReply(reply,context){
   if(!a.available_starts.length)return 'Je n’ai trouvé aucun créneau compatible le '+label(a.date)+(context.preference==='morning'?' le matin':context.preference==='afternoon'?' l’après-midi':'')+'. Souhaitez-vous essayer une autre date ou une autre partie de la journée ? ♡';
   return 'Pour '+label(a.date)+', les créneaux vérifiés pour vos prestations ('+a.total_minutes+' min au total) sont : '+a.available_starts.join(', ')+'. Lequel préférez-vous ? Ils seront revérifiés lors de la confirmation. ♡';
  }
- // Les heures et les assertions de disponibilité du texte libre ne font jamais autorité.
- if(/\b(?:[01]?\d|2[0-3])\s*(?:h(?:\s*[0-5]\d)?|:[0-5]\d)\b|(?:creneau|horaire|place).{0,40}(?:disponible|libre)|(?:disponible|libre).{0,40}(?:creneau|horaire|place)|je (?:peux vous (?:prendre|accueillir)|vous propose).{0,50}(?:matin|apres.midi|demain)|(?:vous etes|c'est|tout est).{0,20}(?:reserve|confirme)|\b(?:dix|onze|douze|treize|quatorze|quinze|seize|dix.sept|dix.huit|dix.neuf|vingt|\d{1,2}) heures?\b|\b(?:venez|passez) (?:demain|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)/i.test(norm(reply)))return 'Je dois vérifier le calendrier pour vous proposer un horaire. Quelles prestations et quelle date souhaitez-vous, plutôt le matin ou l’après-midi ? ♡';
- if(/(?:rendez[- ]?vous|reservation|rdv).{0,60}(?:confirm|enregistr|annul)|(?:confirme|annule).{0,40}(?:rendez[- ]?vous|reservation|rdv)/i.test(norm(reply)))return 'Un rendez-vous est enregistré uniquement après votre clic sur Confirmer et le message de réussite du site. Pour gérer un rendez-vous existant, utilisez son lien sécurisé. ♡';
+ // Sans preuve d'outil, les informations déjà connues ne sont pas redemandées.
+ if(needsCalendarEvidence(reply)){
+  const missing=[];
+  if(!context.siteSelection?.length)missing.push('quelles prestations vous souhaitez');
+  if(!context.requestedDate)missing.push('quelle date vous conviendrait');
+  if(!context.preference)missing.push('si vous préférez le matin ou l’après-midi');
+  return 'Je dois vérifier le calendrier avant de proposer ou confirmer un créneau. '+(missing.length?'Pouvez-vous me préciser '+missing.join(', puis ')+' ?':'Je peux rechercher les disponibilités pour votre sélection et votre préférence. Aucun rendez-vous n’est confirmé ici.')+' ♡';
+ }
  return reply;
 }
-module.exports={today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply};
+module.exports={today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression};

@@ -1,0 +1,17 @@
+abandon + nouvelle demande (doit être null)                    null
+abandon pur (doit répondre)                                    "Pas de souci ! 😊 N’hésitez pas à revenir quand vous voulez, je reste à votre disposition. 💕"
+annulation + demande (doit être null)                          null
+"1h30" comme préférence (attendu: null ou ignoré)              null
+"matin" explicite                                              "morning"
+"après-midi" explicite                                         "afternoon"
+"demain" (date du jour 2026-10-23 -> 2026-10-24)               "2026-10-24"
+"jeudi" (jour de semaine seul : attendu date ou null)          "2026-10-29"
+"le 5 octobre" sans année le 23/10/2026 (prochaine = 2027)     "2027-10-05"
+"2026-02-30" invalide (attendu null)                           null
+garde-fou sur: Parfait, je vous réserve neuf heures mardi.     "BLOQUÉ"
+garde-fou sur: Il reste une place à midi demain.               "BLOQUÉ"
+garde-fou sur: Votre créneau est bon, je vous attends mardi.   "BLOQUÉ"
+garde-fou sur: Je vous propose une place à neuf heures.        "BLOQUÉ"
+garde-fou sur: Vous êtes inscrite pour mardi, à bientôt.       "BLOQUÉ"
+garde-fou sur: C’est fait, votre rendez-vous est enregistré.   "BLOQUÉ"
+date passée avec année                                         "Cette date est passée. Quelle date à venir vous conviendrait ? ♡"

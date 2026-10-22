@@ -21,7 +21,7 @@ test('abandon ne prétend pas annuler ; vraie annulation exige un lien sécuris�
 });
 test('garde-fous : heures inventées et confirmations bloquées, panne fermée, texte chaleureux conservé',()=>{
  assert.match(p.guardedReply('Je suis disponible à 13h30',{}),/vérifier le calendrier/);
- assert.match(p.guardedReply('Votre rendez-vous est confirmé !',{}),/uniquement après votre clic/);
+ assert.match(p.guardedReply('Votre rendez-vous est confirmé !',{}),/vérifier le calendrier/);
  assert.match(p.guardedReply('13h est libre',{toolError:true}),/ne peux pas vérifier/);
  assert.equal(p.guardedReply('Avec plaisir 💕',{}),'Avec plaisir 💕');
  const ctx={availability:{date:'2026-10-26',total_minutes:105,available_starts:['10:00','11:00']}};assert.match(p.guardedReply('17h est libre',ctx),/10:00, 11:00/);assert.doesNotMatch(p.guardedReply('17h est libre',ctx),/17/);
@@ -29,7 +29,7 @@ test('garde-fous : heures inventées et confirmations bloquées, panne fermée, 
 async function fixture(run){const saved={availability:b.availability,rpc:c.rpc,rate:c.rate,db:c.db,fetch:global.fetch,env:{...process.env}};try{c.rpc=async()=>({minutes:105,cents:5400});await run();}finally{b.availability=saved.availability;c.rpc=saved.rpc;c.rate=saved.rate;c.db=saved.db;global.fetch=saved.fetch;process.env=saved.env;}}
 test('outil : toutes les prestations, date corrigée, préférence et durée cumulée',()=>fixture(async()=>{
  let calls=[];b.availability=async(date,ids)=>{calls.push([date,ids]);return [{starts:'2030-10-26T08:00:00Z'},{starts:'2030-10-26T13:00:00Z'}]};
- const context={requestedDate:'2030-10-26',preference:'morning'};
+ const context={requestedDate:'2030-10-26',dateSource:'latest',preference:'morning'};
  const out=await chat._test.nativeRunTool('check_availability',{date:'2025-10-26',service_ids:['a','b']},context);
  assert.deepEqual(calls,[['2030-10-26',['a','b']]]);assert.equal(out.total_minutes,105);assert.deepEqual(out.available_starts,['10:00']);
  calls=[];const noPreference=await chat._test.nativeRunTool('check_availability',{date:'2030-10-26',service_ids:['a','b']},{});assert(noPreference.requires_preference);assert.equal(calls.length,0);

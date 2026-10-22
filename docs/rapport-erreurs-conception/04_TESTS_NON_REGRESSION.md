@@ -31,3 +31,7 @@ Les assertions existantes de navigateur sont adaptées au nouveau select sans su
 ## Avant fusion, pour Claude
 
 Relire les conditions de garde-fou, tester les paraphrases adversariales et la mémoire des dates/préférences. Contrôler les réponses tardives. Confirmer que `lib/booking.js`, les migrations et les intégrations n’ont pas changé. La fusion et le déploiement nécessitent une nouvelle validation explicite du responsable.
+
+## Nouvelle exécution après HTN-ERR-066 à 070
+
+168/168 tests Node et toutes les suites ci-dessus relancées avec succès, plus MFA navigateur et récupération. Les sorties actuelles sont dans `preuves-correctifs-066-070/` ; les anciennes sorties `preuves/` documentent exclusivement la première version PR #3. Voir `06_REPONSE_CONTRE_AUDIT_066_070.md`.

@@ -1,0 +1,39 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> belle-rebelle-v15@15.0.0 test:sql
+> node tests/sql.test.cjs
+
+Migration OK 20261019185534_v15_schema.sql
+Migration OK 20261019185541_v15_catalogue.sql
+Migration OK 20261019185629_v15_outlook.sql
+Migration OK 20261019185635_v15_privacy.sql
+Migration OK 20261019185911_email_reminders.sql
+Migration OK 20261020171558_no_completion_notice.sql
+Migration OK 20261020182713_realtest_flag.sql
+Migration OK 20261021061311_move_btree_gist_to_extensions.sql
+Migration OK 20261021063959_admin_json_results.sql
+Migration OK 20261021064110_diagnose_hours_save_test_only.sql
+Migration OK 20261021064201_admin_hours_safe_update_compatible.sql
+Migration OK 20261021085503_manager_blocks_outlook.sql
+OK tarif/durée cumulés
+OK doublons sélection refusés
+OK sauvegarde Manager des horaires et pauses avec données conservées
+OK horaires, pause et durée cumulée
+OK deux demandes concurrentes : une seule réservation
+OK rappel e-mail 24 h
+OK double clic idempotent
+OK idempotence inaccessible sans secret
+OK lien d’annulation forgé refusé
+OK tarif Manager propagé aux nouveaux devis sans effet rétroactif
+OK déplacement atomique
+OK déplacement conserve le tarif historique après modification du catalogue
+OK aucun rappel e-mail après annulation
+OK annulation libère le créneau
+OK congés bloquants
+OK pause Manager : réservation et déplacement refusés, aucun chevauchement multiple, import Outlook préserve la pause
+OK incompatibilités configurables
+OK RLS et RPC refusés aux anonymes
+OK fuseau Paris été/hiver
+OK prestation terminée sans notification cliente
+OK file pauses : versions, modification, suppression durable, déduplication et verrou concurrent, RPC privées
+TOUS LES TESTS SQL PASSENT
