@@ -4,7 +4,7 @@
   if(!toggle||!panel||!log||!form||!input)return;
   const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   function message(role,text,action){
-    const div=document.createElement('div');div.className='assistant-msg assistant-'+role;div.textContent=text;
+    const div=document.createElement('div');div.className='assistant-msg assistant-'+role;div.textContent=role==='bot'?text.replace(/\*\*([^*]+)\*\*/g,'$1'):text;
     if(action){const a=document.createElement('a');a.textContent=action.label;a.href=action.href;div.append(a);}
     log.append(div);log.scrollTop=log.scrollHeight;
   }
@@ -34,8 +34,8 @@
   const quick=document.createElement('div');quick.className='assistant-quick';
   // Melba répond via le serveur (netlify/functions/chat.js) quand il est disponible ;
   // sinon (version statique), on garde les réponses locales ci-dessous.
-  const history=[];
-  function proposal(draft){
+  const history=[];let bookingContext=null,contextSignature=null,requestSequence=0;
+  function proposal(draft,sequence){
     const card=document.createElement('div');card.className='assistant-msg assistant-bot';
     const text=document.createElement('p');
     text.textContent=draft.quote.services.map(s=>s.path).join(' + ')+' — '+new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',dateStyle:'full',timeStyle:'short'}).format(new Date(draft.starts))+' — '+draft.quote.minutes+' min — '+new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(draft.quote.cents/100)+' — '+draft.client_name+' · '+draft.client_phone+' · '+draft.client_email;
@@ -43,25 +43,30 @@
     const label=document.createElement('label'),consent=document.createElement('input');consent.type='checkbox';label.append(consent,document.createTextNode(' J’ai lu les informations relatives à mes données.'));
     const button=document.createElement('button');button.type='button';button.className='assistant-confirm';button.textContent='Confirmer ce rendez-vous sans acompte';button.disabled=true;
     const key=crypto.randomUUID();
-    fetch('/.netlify/functions/catalog',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(c=>{privacy.textContent=c.privacy_text||'Réservations non ouvertes.';button.disabled=!c.enabled||!c.privacy_text;}).catch(()=>{privacy.textContent='Informations indisponibles. Passez par la page Réservation.';});
-    button.onclick=async()=>{if(!consent.checked){privacy.textContent+=' Merci de cocher la case après lecture.';return;}button.disabled=true;
+    fetch('/.netlify/functions/catalog',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(c=>{if(sequence!==requestSequence)return;privacy.textContent=c.privacy_text||'Réservations non ouvertes.';button.disabled=!c.enabled||!c.privacy_text;}).catch(()=>{privacy.textContent='Informations indisponibles. Passez par la page Réservation.';});
+    button.onclick=async()=>{if(sequence!==requestSequence)return;if(!consent.checked){privacy.textContent+=' Merci de cocher la case après lecture.';return;}button.disabled=true;
       try{const r=await fetch('/.netlify/functions/reservations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...draft,request_key:key,consent:true,confirmed:true})});const d=await r.json();if(!r.ok)throw Error(d.error||'Réservation refusée');button.remove();consent.disabled=true;message('bot',d.notifications_disabled?'Rendez-vous fictif enregistré. Aucun e-mail ni SMS envoyé en préproduction.':'Votre rendez-vous est enregistré. Les notifications sont en cours de traitement.',{label:'Gérer mon rendez-vous',href:d.manage_url});history.push({role:'user',content:'Le bouton de confirmation a créé le rendez-vous '+d.booking.id+'.'});
       }catch(e){message('bot',e.message);button.disabled=false;}
     };
     card.append(text,privacy,label,button);log.append(card);log.scrollTop=log.scrollHeight;
   }
   async function ask(text){
-    history.push({role:'user',content:text});
+    const sequence=++requestSequence;
+    // Une proposition ancienne ne reste pas actionnable après un nouveau message.
+    log.querySelectorAll('.assistant-confirm').forEach(b=>{b.disabled=true;b.textContent='Proposition remplacée — demandez un nouveau créneau';});
+    const userMessage={role:'user',content:text};history.push(userMessage);
     try{
-      const res=await fetch('/.netlify/functions/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history.slice(-20)})});
+      const res=await fetch('/.netlify/functions/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history.slice(-20),bookingContext,contextSignature,selected_service_ids:window.BR_SELECTION?.get()||[]})});
       if(!res.ok)throw new Error('indisponible');
       const data=await res.json();
+      if(sequence!==requestSequence)return;
       if(!data.reply)throw new Error('vide');
+      bookingContext=data.bookingContext||null;contextSignature=data.contextSignature||null;
       history.push({role:'assistant',content:data.reply,signature:data.signature});
       message('bot',data.reply);
-      if(data.pendingBooking) proposal(data.pendingBooking);
+      if(data.pendingBooking) proposal(data.pendingBooking,sequence);
 
-    }catch(err){history.pop();message('bot','Je ne peux pas joindre mon service pour le moment. Aucun rendez-vous ni message n’a été envoyé par cette tentative. Réessayez ou appelez Mélanie au 06 62 28 75 45.');}
+    }catch(err){if(sequence!==requestSequence)return;const index=history.indexOf(userMessage);if(index>=0)history.splice(index,1);message('bot','Je ne peux pas joindre mon service pour le moment. Aucun rendez-vous ni message n’a été envoyé par cette tentative. Réessayez ou appelez Mélanie au 06 62 28 75 45.');}
   }
   ['Sans acompte ?','Plusieurs prestations','Un problème'].forEach(label=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>{message('user',label);ask(label);});quick.append(b);});
   panel.insertBefore(quick,form);

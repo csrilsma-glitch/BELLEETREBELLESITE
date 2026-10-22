@@ -1,0 +1,7 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> belle-rebelle-v15@15.0.0 check
+> node scripts/check.js
+
+38 fichiers JavaScript valides
+64 prestations conservées

@@ -16,7 +16,7 @@ test('Manager : authentification vérifiée, allowlist et MFA indispensables',as
 test('Melba native propose sans écrire un rendez-vous',async()=>{
  const b=require('../netlify/functions/lib/booking'),oldA=b.availability,oldRpc=c.rpc;let writes=0;
  b.availability=async()=>[{starts:'2026-11-03T09:00:00Z',ends:'2026-11-03T10:30:00Z'}];c.rpc=async name=>{if(name==='book')writes++;return {services:[{id:'gel-gainage',path:'Gel'}],minutes:90,cents:5200};};
- try{const context={};const out=await require('../netlify/functions/chat')._test.nativeRunTool('book_appointment',{date:'2026-11-03',start:'10:00',service_ids:['gel-gainage'],client_name:'Test',client_phone:'+33600000000',client_email:'test@example.test'},context);assert(out.requires_confirmation);assert(context.pending);assert.equal(writes,0);}finally{b.availability=oldA;c.rpc=oldRpc;}
+ try{const context={preference:'morning'};const out=await require('../netlify/functions/chat')._test.nativeRunTool('book_appointment',{date:'2026-11-03',start:'10:00',service_ids:['gel-gainage'],client_name:'Test',client_phone:'+33600000000',client_email:'test@example.test'},context);assert(out.requires_confirmation);assert(context.pending);assert.equal(writes,0);}finally{b.availability=oldA;c.rpc=oldRpc;}
 });
 test('SMS ambigu : pas de renvoi automatique après timeout fournisseur',async()=>{
  const n=require('../netlify/functions/lib/notifications'),oldRpc=c.rpc,oldDb=c.db,oldRequest=c.request,states=[];process.env.BREVO_API_KEY='test';let calls=0;

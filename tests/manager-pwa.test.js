@@ -15,7 +15,7 @@ test('Manager SW refreshes public shell and falls back offline, deletes only its
  let response;const e={request:{url:'https://belleetrebelle-nailstudio.fr/manager/manager.js',method:'GET'},respondWith:p=>response=p};
  w.events.fetch(e);await response;assert.equal(w.saved.length,1);
  down=true;w.events.fetch(e);assert.equal((await response).offline,true);
- let activation;w.events.activate({waitUntil:p=>activation=p});await activation;assert.deepEqual(w.deleted,['br-manager-v15-8']);
+ let activation;w.events.activate({waitUntil:p=>activation=p});await activation;assert.deepEqual(w.deleted,['br-manager-v15-8','br-manager-v15-9']);
 });
 test('Manager starts installed at private scope and recovery is not cached',()=>{
  const m=JSON.parse(fs.readFileSync('site/manager/manifest.webmanifest','utf8'));assert.equal(m.start_url,'/manager/');assert.equal(m.scope,'/manager/');assert.equal(m.display,'standalone');
