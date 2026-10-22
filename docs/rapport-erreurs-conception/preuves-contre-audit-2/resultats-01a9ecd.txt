@@ -1,0 +1,17 @@
+Second contre-audit — PR #3, commit 01a9ecd (23/10/2026)
+Worktree isolé ; npm ci --ignore-scripts ; BROWSER_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+node --test tests/*.test.js                       -> 168 pass / 0 fail
+node tests/sql.test.cjs                           -> TOUS LES TESTS SQL PASSENT
+node tests/reminders-lifecycle.test.cjs           -> OK
+node scripts/check.js                             -> 38 fichiers valides, 64 prestations
+node tests/targeted-ui.cjs                        -> OK (820 et 1440 px)
+node tests/manager-ui.cjs                         -> OK
+node tests/mfa-ui.cjs                             -> OK
+node tests/recovery-browser.cjs                   -> OK (9 parcours)
+VIDEO_SHIM_DIR=<12 WebM générés par ffmpeg depuis site/assets/videos/*.mp4>
+node tests/browser.cjs                            -> TESTS NAVIGATEUR OK (sans décodage H.264 natif, HTN-ERR-017)
+PR_DIR=<worktree> node preuves-pr3/adversarial-policy.cjs -> voir sondes ; 069 "un soin de 1h30" -> morning (ÉCHEC)
+PR_DIR=<worktree> node preuves-pr3/adversarial-tools.cjs  -> cas A non représentatif (dateSource absent)
+sondes-dates-preference-garde.cjs                 -> "vendredi" un vendredi -> 2026-10-23 (HTN-ERR-074)
+sondes-duree-et-reservation.cjs                   -> "un soin de 1h30" -> morning ; "C'est réservé pour vous." -> garde false

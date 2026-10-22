@@ -83,7 +83,7 @@ Les corrections de cette catégorie ont été faites **sans modifier le prompt d
 - **Réparation :** partielle dans la PR (M01 de Work). **Refusée en l'état.** Correction demandée : sans résultat d'outil, toute mention d'heure (chiffres ou lettres), de jour lié à un créneau, ou de disponibilité est remplacée par une demande de précision.
 - **Prévention :** le texte libre du modèle ne porte jamais d'information métier ; les créneaux viennent d'un contrat structuré.
 - **Test :** les phrases adversariales ajoutées à `tests/melba-reliability.test.js`, avec attendu « aucune affirmation ».
-- **Statut :** partiellement corrigé — contournements confirmés. **Non résolu.**
+- **Statut :** partiellement corrigé en `01a9ecd` — les six phrases adversariales sont bloquées, mais « C'est réservé pour vous » et « Parfait, c'est noté » ne le sont pas. **Non résolu.**
 - **Traçabilité :** PR #3, commit `a27f935` ; `netlify/functions/lib/melba-policy.js` (`guardedReply`) ; `contre-audit-pr3.md`.
 
 ## HTN-ERR-067 — Changement d'avis avec nouvelle demande traité comme un abandon
@@ -107,5 +107,5 @@ Les corrections de cette catégorie ont été faites **sans modifier le prompt d
 - **Réparation :** interpréter HHhMM comme heure seulement après « à », « vers », « entre » ou « de » ; sinon demander. **À corriger.**
 - **Prévention :** distinguer dans le texte les durées des heures avant toute extraction.
 - **Test :** « 1h30 de soin » → pas de préférence ; « à 10h » → matin ; « vers 15h » → après-midi.
-- **Statut :** confirmé, non corrigé.
-- **Traçabilité :** `melba-policy.js` (`preference`) ; `contre-audit-pr3.md`.
+- **Statut :** confirmé, **non corrigé en `01a9ecd`** (second contre-audit). « je voudrais 1h30 de soin » est bien traité, mais « un soin de 1h30 » ou « soin de 2h, de 10h à 12h » donne « matin » : la préposition « de » reste ambiguë.
+- **Traçabilité :** `melba-policy.js` (`preference`) ; `contre-audit-pr3.md` ; `contre-audit-2-01a9ecd.md`.

@@ -47,5 +47,17 @@ Règle de référence : l'établissement travaille en **Europe/Paris**. Les date
 - **Réparation :** résoudre les jours de semaine côté serveur (prochaine occurrence) ; ne jamais remplacer la date du modèle par une date mémorisée quand le dernier message en contient une autre. **Correction à faire avant fusion.**
 - **Prévention :** une seule source de vérité pour la date : le dernier message, puis le serveur.
 - **Test :** « demain » puis « vendredi » → vendredi interrogé ; « jeudi matin » seul → jeudi de la semaine suivante si passé.
-- **Statut :** confirmé, non corrigé. **Non résolu.**
-- **Traçabilité :** `netlify/functions/chat.js` (`nativeRunTool`) ; `melba-policy.js` (`requestedDate`) ; `contre-audit-pr3.md`.
+- **Statut :** corrigé dans le code en `01a9ecd` (`toolDate`, `dateSource`). **Preuve à refaire** : le cas A de `adversarial-tools.cjs` n'initialise pas `dateSource` et ne teste pas le chemin réel. **Non résolu tant que la preuve n'est pas faite.**
+- **Traçabilité :** `netlify/functions/chat.js` (`nativeRunTool`) ; `melba-policy.js` (`requestedDate`) ; `contre-audit-pr3.md` ; `contre-audit-2-01a9ecd.md`.
+
+## HTN-ERR-074 — Jour de la semaine identique au jour courant résolu à aujourd'hui
+
+- **Symptôme :** un vendredi, la cliente écrit « vendredi » (ou « plutôt vendredi » après « demain ») ; la date interrogée est aujourd'hui, pas le vendredi suivant.
+- **Cause :** démontrée par test (`requestedDate`) : l'écart calculé vaut 0 quand le jour demandé est le jour courant, et ce cas n'est pas traité comme « semaine suivante ».
+- **Impact :** créneaux du jour même proposés à la place du vendredi suivant. Gravité moyenne.
+- **Détection :** appeler la résolution de date un jour de la semaine égal au jour courant.
+- **Réparation :** résoudre vers la semaine suivante, ou demander confirmation. **À corriger avant fusion.**
+- **Prévention :** une date relative ne peut jamais égaler « aujourd'hui » sans que le message le dise.
+- **Test :** « vendredi » un vendredi → pas la date du jour.
+- **Statut :** confirmé en `01a9ecd`, non corrigé. **Non résolu.**
+- **Traçabilité :** `melba-policy.js` (`requestedDate`) ; `contre-audit-2-01a9ecd.md`.
