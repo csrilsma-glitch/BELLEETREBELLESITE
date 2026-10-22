@@ -71,11 +71,19 @@ Légende : **C** corrigé · **T** testé · **S** à surveiller · **N** non r�
 | HTN-ERR-063 | Informations juridiques à compléter | Sécurité | N (bloquant public) | 20261021-juridique |
 | HTN-ERR-064 | Script tiers injecté par l'hébergeur | Sécurité | S | 20261021-juridique |
 | HTN-ERR-065 | Données sensibles dans des rapports | Sécurité | S (règle en place) | 20261021-finalisation |
+| HTN-ERR-066 | Affirmation d'heure ou de disponibilité sans consultation | IA | N (partiellement corrigé ; contournements confirmés) | PR #3 `a27f935` |
+| HTN-ERR-067 | Changement d'avis avec nouvelle demande traité comme abandon | IA | N (confirmé, correction à faire) | PR #3 `melba-policy.js` |
+| HTN-ERR-068 | Date mémorisée écrasant un changement de jour | Dates | N (confirmé, correction à faire) | PR #3 `chat.js` |
+| HTN-ERR-069 | Durée prise pour une préférence horaire | IA | N (confirmé, correction à faire) | PR #3 `melba-policy.js` |
+| HTN-ERR-070 | Recherches de disponibilité en cascade | Réservations | N (confirmé, correction à faire) | PR #3 `chat.js` |
+| HTN-ERR-071 | Markdown affiché brut | Interface | C dans la PR, à relancer sur navigateur | PR #3 `assistant.js` |
+| HTN-ERR-072 | Grille de créneaux démesurée | Interface | C dans la PR, à relancer sur navigateur | PR #3 `reservation.js`, `manager.js` |
+| HTN-ERR-073 | Réponse ou proposition tardive actionnable | Interface | C dans la PR (lecture), à relancer | PR #3 `assistant.js` |
 
 ## Bilan au 23 octobre 2026
 
-- **65 entrées**.
-- **Non résolues** (statut N) : 9 entrées — 025, 034, 035, 040, 042, 052, 061, 062, 063. Parmi elles, 063 bloque un lancement public, 061 est un risque de sécurité accepté, 040 et 034 attendent une décision.
+- **73 entrées** (065 au 23 octobre, puis 066–073 issues du contre-audit de la PR #3).
+- **Non résolues** (statut N) : 14 entrées — 025, 034, 035, 040, 042, 052, 061, 062, 063, 066, 067, 068, 069, 070. Parmi elles, 063 bloque un lancement public, 061 est un risque de sécurité accepté, 040 et 034 attendent une décision.
 - **Risque en place à résorber** : 029 (exception MFA pour deux comptes), présente sur `main`.
 - **À surveiller** (statut S ou H) : 004, 009, 010 (non vérifié), 013, 016, 019, 023, 024, 031, 036, 043, 045, 047, 048, 050, 051, 055 (production), 064, 065.
 - **Non-défauts** : 060 (comportement attendu), 017 (environnement de test).

@@ -47,3 +47,15 @@
 - **Test :** insérer plus de 1 000 fiches fictives en base de test, puis vérifier la recherche et la pagination.
 - **Statut :** à surveiller (non résolu, faible volume actuel).
 - **Traçabilité :** `docs/AUDIT_RECETTE.md` (constat du 19 octobre 2026).
+
+## HTN-ERR-070 — Recherches de disponibilité en cascade
+
+- **Symptôme :** une demande sans créneau l'après-midi déclenche huit interrogations du calendrier, à chaque appel d'outil.
+- **Cause :** démontrée par test. Quand aucun créneau ne convient, la fonction parcourt les sept jours suivants en appelant la disponibilité pour chacun. Aucun cache ni plafond de coût par requête.
+- **Impact :** coût API et Netlify, délai de réponse ; contraire à l'exigence de sobriété d'AutoDiag. Gravité moyenne.
+- **Détection :** compter les appels à `availability` par requête (`preuves-pr3/adversarial-tools.cjs`, cas B).
+- **Réparation :** limiter la recherche à trois jours, et ne la lancer que si la préférence est connue. **À corriger.**
+- **Prévention :** budget d'appels par requête, compté et testé.
+- **Test :** compteur d'appels ≤ 3 pour une demande sans créneau.
+- **Statut :** confirmé, non corrigé.
+- **Traçabilité :** `netlify/functions/chat.js` ; `contre-audit-pr3.md`.

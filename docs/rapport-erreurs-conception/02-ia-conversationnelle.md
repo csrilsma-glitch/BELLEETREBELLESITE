@@ -73,3 +73,39 @@ Les corrections de cette catégorie ont été faites **sans modifier le prompt d
 - **Test :** scénarios fictifs à rédiger dans le contre-audit (mission A).
 - **Statut :** à confirmer (non vérifié).
 - **Traçabilité :** mission de Belle & Rebelle transmise le 23 octobre 2026.
+
+## HTN-ERR-066 — Affirmation d'heure ou de disponibilité sans consultation du calendrier
+
+- **Symptôme :** Melba affirme un créneau sans l'avoir vérifié : « je vous réserve neuf heures mardi », « il reste une place à midi demain », « votre créneau est bon, je vous attends mardi ».
+- **Cause :** démontrée par test adversarial (PR #3, 23 octobre). Le garde-fou textuel `guardedReply` ne reconnaît que les heures en chiffres (« 9 h », « 10:00 ») et quelques formules. Les heures en lettres (« neuf heures », « midi »), les formules « votre créneau est bon » et « je vous réserve » passent.
+- **Impact :** information fausse ; une cliente peut croire son rendez-vous pris. Aucune écriture n'est faite sans clic. Gravité élevée.
+- **Détection :** envoyer au garde-fou les phrases de `preuves-pr3/adversarial-policy.cjs`, sans résultat d'outil.
+- **Réparation :** partielle dans la PR (M01 de Work). **Refusée en l'état.** Correction demandée : sans résultat d'outil, toute mention d'heure (chiffres ou lettres), de jour lié à un créneau, ou de disponibilité est remplacée par une demande de précision.
+- **Prévention :** le texte libre du modèle ne porte jamais d'information métier ; les créneaux viennent d'un contrat structuré.
+- **Test :** les phrases adversariales ajoutées à `tests/melba-reliability.test.js`, avec attendu « aucune affirmation ».
+- **Statut :** partiellement corrigé — contournements confirmés. **Non résolu.**
+- **Traçabilité :** PR #3, commit `a27f935` ; `netlify/functions/lib/melba-policy.js` (`guardedReply`) ; `contre-audit-pr3.md`.
+
+## HTN-ERR-067 — Changement d'avis avec nouvelle demande traité comme un abandon
+
+- **Symptôme :** « je change d'avis, plutôt demain matin » reçoit « Pas de souci ! à bientôt » ; la demande est perdue.
+- **Cause :** démontrée par test. La règle `directReply` accepte la formule d'abandon suivie de n'importe quel séparateur, sans vérifier l'absence d'une nouvelle demande, et court-circuite le modèle.
+- **Impact :** cliente qui doit répéter sa demande ; aucune écriture. Gravité moyenne (commerciale).
+- **Détection :** message contenant une formule d'abandon et une date, une heure ou une préférence.
+- **Réparation :** raccourci accepté seulement si le message se limite à la formule d'abandon. Sinon, transmission au modèle. **Correction à faire avant fusion.**
+- **Prévention :** un raccourci ne couvre jamais un message porteur d'une intention métier.
+- **Test :** « non merci, je change d'avis » → abandon ; « je change d'avis, plutôt demain matin » → transmis au modèle.
+- **Statut :** confirmé, non corrigé. **Non résolu.**
+- **Traçabilité :** `melba-policy.js` (`directReply`) ; `contre-audit-pr3.md`.
+
+## HTN-ERR-069 — Durée prise pour une préférence horaire
+
+- **Symptôme :** « je voudrais 1h30 de soin » enregistre une préférence « matin ».
+- **Cause :** démontrée par test. La fonction `preference` traite tout motif HHhMM comme une heure de début.
+- **Impact :** créneaux filtrés à tort, préférence imposée. Gravité faible à moyenne.
+- **Détection :** phrases contenant une durée au format HHhMM.
+- **Réparation :** interpréter HHhMM comme heure seulement après « à », « vers », « entre » ou « de » ; sinon demander. **À corriger.**
+- **Prévention :** distinguer dans le texte les durées des heures avant toute extraction.
+- **Test :** « 1h30 de soin » → pas de préférence ; « à 10h » → matin ; « vers 15h » → après-midi.
+- **Statut :** confirmé, non corrigé.
+- **Traçabilité :** `melba-policy.js` (`preference`) ; `contre-audit-pr3.md`.

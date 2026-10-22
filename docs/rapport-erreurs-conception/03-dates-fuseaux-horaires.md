@@ -37,3 +37,15 @@ Règle de référence : l'établissement travaille en **Europe/Paris**. Les date
 - **Test :** saisie depuis un appareil réglé sur un autre fuseau ; contrôle de la valeur enregistrée.
 - **Statut :** à surveiller (contournement documenté, correction non faite).
 - **Traçabilité :** `docs/MANAGER_INSTALLATION.md`.
+
+## HTN-ERR-068 — Date mémorisée écrasant un changement de jour de semaine
+
+- **Symptôme :** la cliente écrit « demain », puis « plutôt vendredi » ; les disponibilités sont interrogées pour demain.
+- **Cause :** démontrée par test. Les outils `check_availability` et `book_appointment` remplacent la date du modèle par `context.requestedDate` dès qu'elle existe. Et `requestedDate` ne sait pas lire un jour de la semaine (« jeudi » → null).
+- **Impact :** le modèle reçoit des créneaux pour le mauvais jour ; la date affichée reste celle du calcul, mais la cliente peut ne pas la voir. Gravité élevée.
+- **Détection :** deux messages successifs avec dates différentes ; contrôler la date interrogée (`preuves-pr3/adversarial-tools.cjs`, cas A).
+- **Réparation :** résoudre les jours de semaine côté serveur (prochaine occurrence) ; ne jamais remplacer la date du modèle par une date mémorisée quand le dernier message en contient une autre. **Correction à faire avant fusion.**
+- **Prévention :** une seule source de vérité pour la date : le dernier message, puis le serveur.
+- **Test :** « demain » puis « vendredi » → vendredi interrogé ; « jeudi matin » seul → jeudi de la semaine suivante si passé.
+- **Statut :** confirmé, non corrigé. **Non résolu.**
+- **Traçabilité :** `netlify/functions/chat.js` (`nativeRunTool`) ; `melba-policy.js` (`requestedDate`) ; `contre-audit-pr3.md`.

@@ -61,3 +61,36 @@ Formats testés en navigation automatisée : ordinateur 1440 × 1000, tablette 8
 - **Test :** annulation client dans le navigateur, dialogue confirmé, état « annulé » vérifié en SQL.
 - **Statut :** corrigé côté test ; testé.
 - **Traçabilité :** `docs/validation/20261020-preproduction.md` ; `docs/validation/20261020-evening.md`.
+
+## HTN-ERR-071 — Markdown affiché brut dans l'assistant
+
+- **Symptôme :** les doubles astérisques de Melba s'affichent (« **Mardi** »).
+- **Cause :** démontrée avant la PR : affichage en texte brut sans traitement.
+- **Impact :** lisibilité. Gravité faible.
+- **Réparation :** dans la PR, seuls les marqueurs gras appariés sont retirés ; l'affichage reste en `textContent`, donc sans HTML.
+- **Prévention :** tout texte d'agent est affiché comme texte ; tout formatage est explicite.
+- **Test :** réponse avec gras et balise `<script>` : pas de marqueur, rien d'exécuté. Preuve annoncée par Work, **non reproduite ici** (navigateur indisponible).
+- **Statut :** corrigé dans la PR ; à relancer sur navigateur.
+- **Traçabilité :** `site/assistant.js` ; `contre-audit-pr3.md`.
+
+## HTN-ERR-072 — Grille de créneaux démesurée
+
+- **Symptôme :** une longue liste de boutons de créneaux, pénible sur téléphone.
+- **Cause :** démontrée avant la PR : un bouton par créneau, dans la réservation, le déplacement client et le déplacement Manager.
+- **Impact :** ergonomie mobile. Gravité moyenne.
+- **Réparation :** dans la PR, menu `<select>` natif avec libellé et groupes Matin / Après-midi, choix initial obligatoire. Les créneaux serveur ne changent pas.
+- **Prévention :** tout choix de plus de quelques créneaux est un menu natif.
+- **Test :** 0, 1 et 96 créneaux sur 390, 820 et 1440 px. Preuve annoncée par Work (96 options), **non reproduite ici**.
+- **Statut :** corrigé dans la PR ; à relancer sur navigateur.
+- **Traçabilité :** `site/reservation.js`, `site/manager/manager.js`, `site/native.css` ; `contre-audit-pr3.md`.
+
+## HTN-ERR-073 — Réponse ou proposition tardive encore actionnable
+
+- **Symptôme :** une réponse réseau arrivée après un changement de date, ou une proposition précédente, pouvait rester cliquable ou remplacer le résultat courant.
+- **Cause :** démontrée avant la PR par lecture : aucune génération de requête côté assistant ni côté réservation.
+- **Impact :** horaire d'une autre date proposé ; confirmation d'une proposition obsolète. Gravité moyenne.
+- **Réparation :** dans la PR, génération de requête (`requestSequence`), boutons de proposition désactivés au message suivant, réponses tardives ignorées, `requestKey` réinitialisé dans `clearSlot` (vérifié par lecture).
+- **Prévention :** toute réponse asynchrone est rattachée à sa génération de requête.
+- **Test :** inverser l'ordre des réponses réseau ; changer de date pendant une recherche. Preuve annoncée par Work, **non reproduite ici**.
+- **Statut :** corrigé dans la PR par lecture de code ; à relancer sur navigateur.
+- **Traçabilité :** `site/assistant.js`, `site/reservation.js`, `site/manager/manager.js` ; `contre-audit-pr3.md`.

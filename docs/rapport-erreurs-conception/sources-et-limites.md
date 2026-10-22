@@ -47,7 +47,14 @@ Le dépôt a été cloné en lecture seule (`csrilsma-glitch/belleetrebellesite`
 
 ## Règles d'enrichissement
 
-- Une nouvelle entrée reçoit le numéro suivant (`HTN-ERR-066` et suivants) ; une entrée n'est jamais supprimée.
+- Une nouvelle entrée reçoit le numéro suivant (`HTN-ERR-074` et suivants) ; une entrée n'est jamais supprimée.
 - Chaque entrée cite au moins une source (document, commit, migration) et ne contient aucune donnée réelle.
 - Le statut est mis à jour quand une vérification change la situation ; l'ancien statut reste visible dans l'historique du fichier Git.
-- Les entrées issues de la mission A (contre-audit de Work) sont marquées avec la référence de la Pull Request ou de la branche, dès qu'elles seront accessibles.
+- Les entrées issues de la PR #3 (contre-audit de Work, 23 octobre) portent la référence de la PR et du commit.
+
+## Revue de la PR #3 (23 octobre 2026)
+
+- Branche `fix/20261023-melba-creneaux`, commit `a27f935`, base `bb4bf6f` : diff vérifié (28 fichiers).
+- `node --test tests/*.test.js` : 158/158. `scripts/check.js`, `tests/sql.test.cjs`, `tests/reminders-lifecycle.test.cjs` : réussis.
+- Navigateur (`test:browser`, `test:manager`, `test:targeted-ui`, `test:mfa-ui`) : non reproduit, Chromium indisponible dans cette session ; sorties de Work conservées dans `preuves-pr3/`.
+- Cas adversariaux : `preuves-pr3/adversarial-policy.cjs` et `adversarial-tools.cjs` (usage : `PR_DIR=<checkout> node …`).
