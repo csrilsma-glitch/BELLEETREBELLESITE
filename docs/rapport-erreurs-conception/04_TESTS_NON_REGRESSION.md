@@ -65,3 +65,7 @@ Limites : un nom donné seul, sans formule introductive, n’est pas détecté ;
 - Défaut reproduit par Work : la collecte se refermait dès qu’une réponse n’avait plus de mot-clé ; un nom en minuscules était alors persisté. Correction : collecte collante (`nextCollecting`) jusqu’à purge après réservation ou expiration de session.
 - Tests : `tests/melba-session.test.js` 17/17 ; `npm test` 210/210. Reproduction Work rejouée en navigateur simulé sur `index.html` et `app/index.html` : nom absent du stockage.
 - Limite : tant que la collecte est ouverte, les messages suivants ne sont pas restaurés après rafraîchissement (choix de minimisation).
+
+
+## MELBA-FLOW-001 — questions groupées / reconstruction fragile
+Cause vérifiée : coordonnées extraites de l'historique et transitions confiées au texte du modèle. Correction : état déterministe signé, collecte en cookie chiffré séparé de la mémoire ; nom/prénom séparés, périodes/horaires vérifiés, bouton explicite. 224tests Node, SQL et trois parcours HTTP/Chromium isolés avec confirmation et annulation locale. Reprise visuelle initialement décalée reproduite en production : PR17 réaffiche la question non personnelle courante et propose Revoir mon récapitulatif. Régression contexte prérempli sans historique public couverte. Production6ad1ec0 vérifiée jusqu'au récapitulatif sans écriture réelle. Voir docs/validation/20261024-melba-parcours-sequentiel.md pour commandes/preuves/limites.

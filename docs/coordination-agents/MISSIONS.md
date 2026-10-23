@@ -53,3 +53,7 @@ Revue df568b4 : 210/210 Node et navigateur fictif accueil/réservation/PWA, conf
 
 ## Clôture finale CW3-T07 — 23/10/2026, 23:19 Paris
 CW-003-R1 TERMINÉE, prolongation propriétaire jusqu'à23h30 respectée. Claude df568b4 ; Work intégration27f560e, fusion PR14 SHA6790096, production Netlify6adbce1f79c773577ebfd797 ready. 210Node + SQL/rappels isolés + trois pages Chromium, parcours réel jusqu'au récapitulatif et restauration privée. Aucun rendez-vous ou notification réel. Rapport clôture-pr14-deployee. PROPRIÉTAIRE reprend la balle ; arrêt.
+
+
+## MELBA-FLOW-001 — mission directe Work,24octobre2026 — TERMINÉE
+Autorisation expresse du propriétaire : développement/test/fusion/production sans validation intermédiaire ni relaisClaude/CW. Étapes strictes et privé, PR16/17 ; production6ad1ec023cd1fd6c047f31d039d60930fbd13cc2/Netlify6adbdb70a378c9c715fa1954. 224Node + SQL/rappels +3parcours navigateur avec insertions locales ; production jusqu'au récapitulatif sans envoi ni réservation de test. Rapport docs/validation/20261024-melba-parcours-sequentiel.md. Fin de mission ; pas de mission suivante automatique.
