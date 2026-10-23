@@ -14,18 +14,34 @@
 
   // Une valeur stockée n'est jamais rendue ni renvoyée au serveur sans ces contrôles.
   // Un nom annoncé est retenu : tout message qui le répète (y compris une réponse de Melba) est écarté.
+  // ANO-CW10-001 (reliquat) : une réponse courte et majuscule donnée juste après une demande de nom ou de
+  // coordonnées, ou juste après un message contenant un téléphone ou un e-mail, est traitée comme un nom seul.
+  const ASKS_CONTACT = /\b(?:nom|pr[ée]nom|coordonn[ée]es?|t[ée]l[ée]phone|e-?mail|mail)\b/i;
+  function isBareName(m, prev) {
+    if (!m || m.role !== 'user') return false;
+    const words = m.content.trim().split(/\s+/).filter(Boolean);
+    if (!words.length || words.length > 4 || !/\p{Lu}/u.test(m.content)) return false;
+    if (!prev) return false;
+    return CONTACT.test(prev.content) || (prev.role === 'assistant' && ASKS_CONTACT.test(prev.content));
+  }
+
+  // Une valeur stockée n'est jamais rendue ni renvoyée au serveur sans ces contrôles.
+  // Un nom annoncé ou un nom seul est retenu : tout message qui le répète (y compris une réponse de Melba) est écarté.
   function cleanHistory(list) {
     if (!Array.isArray(list)) return [];
     const valid = list.filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string');
     const names = new Set();
+    const addNames = t => t.split(/\s+/).map(norm).filter(w => w.length >= 3).forEach(w => names.add(w));
     valid.forEach(m => {
       for (const hit of m.content.matchAll(new RegExp(NAME_CUE.source, 'giu'))) {
-        if (hit[1]) hit[1].split(/\s+/).map(norm).filter(w => w.length >= 3).forEach(w => names.add(w));
+        if (hit[1]) addNames(hit[1]);
       }
     });
+    const bare = new Set();
+    valid.forEach((m, i) => { if (isBareName(m, valid[i - 1])) { bare.add(m); addNames(m.content); } });
     const repeatsName = t => { const n = norm(t); return [...names].some(w => n.includes(w)); };
     return valid
-      .filter(m => !CONTACT.test(m.content) && !NAME_CUE.test(m.content) && !repeatsName(m.content))
+      .filter(m => !bare.has(m) && !CONTACT.test(m.content) && !NAME_CUE.test(m.content) && !repeatsName(m.content))
       .map(m => ({ role: m.role, content: m.content.slice(0, MAX_CHARS), ...(typeof m.signature === 'string' ? { signature: m.signature } : {}) }))
       .slice(-MAX_MESSAGES);
   }

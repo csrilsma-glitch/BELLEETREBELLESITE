@@ -112,3 +112,28 @@ test('ANO-CW10-002 : après réservation, historique et contextes en mémoire so
  assert.match(ok[0],/history\.length=0;bookingContext=null;contextSignature=null;window\.BRMelbaSession\?\.clear\(\);/);
  assert.doesNotMatch(ok[0],/history\.push/,'aucun message de réservation ne doit être réinjecté dans l’historique');
 });
+
+// CW-003-R1 (reliquat, revue Work) : nom seul après une demande de coordonnées, ou après téléphone/e-mail.
+test('ANO-CW10-001 reliquat : nom seul après la demande de nom est écarté, et sa répétition aussi',()=>{
+ const h=[
+   {role:'user',content:'babyboomer 2 doigts'},
+   {role:'assistant',content:'Quel est votre nom pour la réservation ?'},
+   {role:'user',content:'Cliente Fictive'},
+   {role:'assistant',content:'Merci Cliente Fictive, je vérifie le créneau.'},
+   {role:'user',content:'mardi 10h'}
+ ];
+ const out=S.cleanHistory(h).map(m=>m.content);
+ assert.deepEqual(out,['babyboomer 2 doigts','Quel est votre nom pour la réservation ?','mardi 10h']);
+ assert.ok(!JSON.stringify(out).includes('Fictive'));
+});
+
+test('ANO-CW10-001 reliquat : nom seul après un téléphone déjà donné est écarté',()=>{
+ const h=[
+   {role:'user',content:'06 12 34 56 78'},
+   {role:'assistant',content:'Merci. Et votre nom ?'},
+   {role:'user',content:'Client Fictif'},
+   {role:'user',content:'Je voudrais un créneau mardi'}
+ ];
+ const out=S.cleanHistory(h).map(m=>m.content);
+ assert.deepEqual(out,['Merci. Et votre nom ?','Je voudrais un créneau mardi']);
+});
