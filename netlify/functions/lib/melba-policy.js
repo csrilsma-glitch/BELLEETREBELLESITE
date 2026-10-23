@@ -37,6 +37,19 @@ function requestedDate(messages,now=new Date()){
  return null;
 }
 function hasDateExpression(text){return /\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}(?:er)?\s+(?:janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre)\b|\b(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|demain)\b|aujourd['’]hui/.test(norm(text));}
+// Réponse courte qui désigne un créneau proposé : « 10h40 », « 10:40 », « celui de 10h40 ».
+// Une simple durée (« 1h30 ») n'est pas un choix : elle doit contenir la forme HHhMM ou HH:MM complète,
+// ou une heure seule précédée d'un mot de choix.
+function selectedTime(text){
+ const t=norm(text).replace(/[’‘]/g,"'").trim();
+ const m=t.match(/^((?:(?:je (?:prends|choisis|veux|voudrais|reserve)|celui de|celle de|ce sera|ca sera|a|vers|pour)\s+)?(?:le\s+)?(?:(?:a|vers)\s+)?)([01]?\d|2[0-3])\s*(?:h|:)\s*([0-5]\d)?(?:[ ,]*(?:svp|s'il vous plait|merci|ca me va|ok))*[ .!?,]*$/);
+ if(!m)return null;
+ const prefixed=m[1].trim().length>0,hour=Number(m[2]);
+ // Sans mot de choix, seule une heure d'ouverture plausible compte (« 1h30 » seul reste une durée).
+ if(!prefixed&&(hour<8||hour>20))return null;
+ if(!prefixed&&m[3]===undefined&&!/^[01]?\d\s*h$/.test(t))return null;
+ return String(hour).padStart(2,'0')+':'+(m[3]||'00');
+}
 // Retourne l'heure de départ explicite, jamais une durée de prestation.
 function startHour(text){
  const t=norm(text);let durationEnd=0,blockedUntil=0;const hours=/\b(a|vers|entre|de)\s+([01]?\d|2[0-3])\s*(?:h(?:[0-5]\d)?|:[0-5]\d)\b/g;
@@ -119,4 +132,25 @@ function guardedReply(reply,context){
  }
  return reply;
 }
-module.exports={today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression,startHour,planningContext};
+// Reconnaissance d'une prestation nommée par la cliente, à partir du catalogue (champ name).
+// Une prestation est reconnue si tous les mots distinctifs de son nom figurent dans le message
+// (« Kit complet uniquement » ← « kit press nails complet uniquement »). Sinon, si le message
+// contient au moins deux mots distinctifs, les prestations qui les contiennent tous sont proposées.
+// Plusieurs correspondances : demander la précision, jamais choisir au hasard.
+const SERVICE_STOP=new Set(['de','la','le','les','un','une','du','des','et','pour','avec','sur','en','au','aux','ou','plus']);
+function serviceWords(s){return norm(s).replace(/[’‘']/g,' ').split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!SERVICE_STOP.has(w));}
+function matchServices(text,catalogue){
+ const none={ids:[],names:[],ambiguous:null};
+ if(!Array.isArray(catalogue))return none;
+ const leaves=catalogue.map(s=>({id:s.id,name:s.name,w:serviceWords(s.name)})).filter(x=>x.w.length);
+ // Seuls les mots du vocabulaire du catalogue comptent : « je veux », « bonjour » ne sont pas des prestations.
+ const vocabulary=new Set(leaves.flatMap(x=>x.w));
+ const words=new Set(serviceWords(text).filter(w=>vocabulary.has(w)));
+ if(!words.size)return none;
+ let hits=leaves.filter(x=>x.w.every(w=>words.has(w)));
+ if(!hits.length&&words.size>=2)hits=leaves.filter(x=>[...words].every(w=>x.w.includes(w)));
+ if(hits.length===1)return {ids:[hits[0].id],names:[hits[0].name],ambiguous:null};
+ if(hits.length>1)return {ids:[],names:hits.map(x=>x.name).slice(0,4),ambiguous:hits.map(x=>x.name).slice(0,4)};
+ return none;
+}
+module.exports={today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression,startHour,planningContext,selectedTime,matchServices};

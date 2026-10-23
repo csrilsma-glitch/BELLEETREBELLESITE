@@ -225,10 +225,29 @@ async function callClaude(apiKey, messages, context) {
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ model: MODEL, max_tokens: 1100, system: SYSTEM_PROMPT + '\nSélection actuelle du crâne (identifiants du catalogue) : '+JSON.stringify(context.siteSelection||[])+'. Inclure toutes ces prestations pour une demande portant sur cette sélection ; clarifier tout changement avec la cliente.\n' + '\nDate actuelle à Paris : '+policy.today()+' ('+policy.label(policy.today())+'). Fuseau : Europe/Paris.\n' + liveCatalogue + ('\nRègles commerciales confirmées par Mélanie : paiement exclusivement sur place, aucun acompte ni paiement en ligne, y compris lors de la première visite. Plusieurs prestations sont regroupées dans un seul rendez-vous avec prix et durée cumulés.\nMode natif V15 : le clic sur le bouton de confirmation affiché à la cliente crée le rendez-vous. Avant cela, il s’agit uniquement d’une proposition. Ne dis jamais que le rendez-vous est confirmé avant ce clic et son résultat serveur.'), tools: TOOLS, messages }),
+    body: JSON.stringify({ model: MODEL, max_tokens: 1100, system: SYSTEM_PROMPT + '\nSélection actuelle du crâne (identifiants du catalogue) : '+JSON.stringify(context.siteSelection||[])+'. Inclure toutes ces prestations pour une demande portant sur cette sélection ; clarifier tout changement avec la cliente.\n' + (context.selectedStart?'\nCréneau retenu par la cliente : '+context.requestedDate+' à '+context.selectedStart+'. Quand la cliente donne son nom, son téléphone et son e-mail, appelle book_appointment avec cette date et cette heure. Ne reproposes pas la liste des horaires.':'')+((context.services||[]).length?'\nPrestations déjà identifiées dans la conversation (ne les redemande pas) : '+context.services.join(', ')+'. Utilise ces identifiants dans check_availability et book_appointment ; demande seulement ce qui manque (date, puis coordonnées).':'')+'\nDate actuelle à Paris : '+policy.today()+' ('+policy.label(policy.today())+'). Fuseau : Europe/Paris.\n' + liveCatalogue + ('\nRègles commerciales confirmées par Mélanie : paiement exclusivement sur place, aucun acompte ni paiement en ligne, y compris lors de la première visite. Plusieurs prestations sont regroupées dans un seul rendez-vous avec prix et durée cumulés.\nMode natif V15 : le clic sur le bouton de confirmation affiché à la cliente crée le rendez-vous. Avant cela, il s’agit uniquement d’une proposition. Ne dis jamais que le rendez-vous est confirmé avant ce clic et son résultat serveur.'), tools: TOOLS, messages }),
   });
   if (!res.ok) throw new Error('API Claude ' + res.status);
   return res.json();
+}
+
+// Vérifie dans le calendrier réel le créneau désigné par la cliente, puis demande ses coordonnées.
+// Aucune écriture ici : la réservation reste soumise à l'accord et au clic de confirmation.
+async function selectionReply(time, context, date) {
+  const c = require('./lib/core');
+  const services = context.siteSelection;
+  const slots = await calendarAvailability(date, services, context);
+  const label = policy.label(date);
+  const slot = slots.find(x => policy.time(x.starts) === time);
+  if (!slot) {
+    return { reply: 'Cet horaire n’est plus disponible le ' + label + '. Souhaitez-vous un autre horaire ? Aucun rendez-vous n’a été enregistré. ♡', bookingContext: { date, preference: context.preference || null } };
+  }
+  const preference = Number(time.slice(0, 2)) < 12 ? 'morning' : 'afternoon';
+  const q = await c.rpc('quote', { p_ids: c.ids(services) });
+  return {
+    reply: 'Très bien, je note le ' + label + ' à ' + time + ' pour vos prestations (' + q.minutes + ' min au total). Pour réserver ce créneau, indiquez-moi votre nom, votre numéro de téléphone et votre adresse e-mail. Aucun rendez-vous n’est encore enregistré. ♡',
+    bookingContext: { date, preference, start: time },
+  };
 }
 
 exports.handler = async (event) => {
@@ -261,6 +280,40 @@ exports.handler = async (event) => {
   Object.assign(context,policy.planningContext(messages,previous));
   const direct=policy.directReply(messages.at(-1).content);
   if(direct)return json(200,{pendingBooking:null,reply:direct,signature:core.sign('melba-reply:'+direct)});
+  // Prestations nommées par la cliente : retenues dans le contexte signé, jamais redemandées.
+  const mention=policy.matchServices(last[0].content,CATALOGUE);
+  const serviceIds=mention.ids.length?mention.ids:(Array.isArray(previous?.services)?previous.services.filter(x=>CATALOGUE.some(s=>s.id===x)):[]);
+  const signedContext=(fields)=>{const bc={...fields,...(serviceIds.length?{services:serviceIds}:{})};return {bookingContext:bc,contextSignature:core.sign('melba-context:'+JSON.stringify(bc))};};
+  if(mention.ambiguous){
+    const reply='Plusieurs prestations correspondent à votre demande : '+mention.ambiguous.join(' ou ')+'. Laquelle souhaitez-vous ? ♡';
+    return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply),...signedContext({date:previous?.date||null,preference:context.preference||null})});
+  }
+  if(!context.siteSelection.length&&serviceIds.length)context.siteSelection=serviceIds;
+  context.services=serviceIds;
+  // Date seule manquante : réponse serveur directe, sans reposer la question de la prestation ni de la préférence.
+  const lastText=last[0].content,prefKnown=context.preference==='morning'||context.preference==='afternoon'||context.preference==='any';
+  if(serviceIds.length&&!context.requestedDate&&!policy.hasDateExpression(lastText)&&lastText.length<=160&&!/\?/.test(lastText)&&(mention.ids.length||context.preference==='morning'||context.preference==='afternoon')){
+    const names=CATALOGUE.filter(s=>serviceIds.includes(s.id)).map(s=>s.name).join(' + ');
+    const prefWord=context.preference==='morning'?'le matin':context.preference==='afternoon'?'l’après-midi':'';
+    const head=mention.ids.length?'Très bien, '+names+(prefWord?', '+prefWord:'')+'. ':'Très bien, '+prefWord+'. ';
+    const tail=(mention.ids.length&&!prefKnown)?'Quelle date vous conviendrait, et préférez-vous le matin ou l’après-midi ?':'Quelle date vous conviendrait ?';
+    const reply=head+tail+' ♡';
+    return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply),...signedContext({date:null,preference:context.preference||null})});
+  }
+  // Créneau désigné après une liste : réponse serveur directe, sans relancer la recherche ni répéter la liste.
+  const picked=policy.selectedTime(last[0].content);
+  if(picked&&previous?.date&&previous.date===context.requestedDate&&context.siteSelection.length){
+    try{
+      const chosen=await selectionReply(picked,context,previous.date);
+      const ctxOut=signedContext(chosen.bookingContext);
+      return json(200,{pendingBooking:null,reply:chosen.reply,signature:core.sign('melba-reply:'+chosen.reply),...ctxOut});
+    }catch(err){
+      console.error('Sélection de créneau en erreur', err.message);
+      const reply='Je ne peux pas vérifier le calendrier pour le moment. Aucun rendez-vous n’a été enregistré. Réessayez un peu plus tard ou contactez Mélanie au 06 62 28 75 45. 💕';
+      return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply)});
+    }
+  }
+  context.selectedStart=previous?.start&&previous.date===context.requestedDate?previous.start:null;
 
   try {
     let data = await callClaude(apiKey, messages, context);
@@ -290,7 +343,7 @@ exports.handler = async (event) => {
       reply=(retry.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
     }
     const finalReply=policy.guardedReply(reply,context) || 'Je rencontre un souci pour formuler ma réponse. Peux-tu reformuler ta question ?';
-    const bookingContext={date:context.availability?.date||context.requestedDate,preference:context.preference};
+    const bookingContext={date:context.availability?.date||context.requestedDate,preference:context.preference,...(context.selectedStart&&!context.availability?.alternative&&context.selectedStart&&!context.bookingRejected?{start:context.selectedStart}:{}),...(serviceIds.length?{services:serviceIds}:{})};
     return json(200, {pendingBooking:context.pending,reply:finalReply,signature:core.sign('melba-reply:'+finalReply),bookingContext,contextSignature:core.sign('melba-context:'+JSON.stringify(bookingContext))});
   } catch (err) {
     console.error('Erreur', err.message);
@@ -298,4 +351,4 @@ exports.handler = async (event) => {
   }
 };
 
-exports._test={cleanMessages,nativeRunTool,SYSTEM_PROMPT,TOOLS};
+exports._test={cleanMessages,nativeRunTool,selectionReply,SYSTEM_PROMPT,TOOLS};
