@@ -21,4 +21,4 @@ Inclure le nom parfois demandé deux fois comme finition, sans en faire un bloca
 Critères futurs : tests de création unique/refus concurrent/annulation/rappels, aucune notification réelle en mode isolé, rapport vérifiable et PR distincte. Ne pas toucher aux tarifs, prestations, sécurité, design ou aux autres dépôts.
 
 ## Traçabilité
-Branche d'installation : docs/installation-coordination-definitive-20261023 ; PR et SHA d'intégration traçables dans GitHub et dans le compte rendu final. Rapport d'audit : HISTORIQUE/20261023-WORK-CW-002-004.md ; plan : HISTORIQUE/20261023-WORK-plan-deploiement.md. Aucune fusion ni publication fonctionnelle n'est autorisée par ce protocole.
+Branche d'installation : docs/installation-coordination-definitive-20261023 ; PR #9, premier commit 92bb83d ; SHA de fusion traçable dans cette PR et le compte rendu final. Rapport d'audit : HISTORIQUE/20261023-WORK-CW-002-004.md ; plan : HISTORIQUE/20261023-WORK-plan-deploiement.md. Aucune fusion ni publication fonctionnelle n'est autorisée par ce protocole.
