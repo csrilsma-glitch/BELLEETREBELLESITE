@@ -250,7 +250,19 @@ async function selectionReply(time, context, date) {
   };
 }
 
-exports.handler = async (event) => {
+// Mode conseil : réponses de conseil uniquement, sans outil ni créneau ni réservation.
+const ADVISOR_HINT='\nMode conseillère : répondez aux questions de conseil (prestations, techniques, entretien, tarifs, questions diverses) avec le ton de Melba. Ne proposez aucun créneau, ne réservez rien et ne demandez aucune coordonnée. Si la cliente veut réserver, invitez-la à le dire clairement.';
+async function callAdvisor(apiKey, messages){
+  const core=require('./lib/core');
+  if(!await core.rpc('limit',{p_key:'melba-global:'+new Date().toISOString().slice(0,10),p_max:100,p_seconds:86400}))core.fail(429,'Melba a atteint sa limite quotidienne. Contactez Mélanie.');
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:700,system:SYSTEM_PROMPT+ADVISOR_HINT,messages:messages.map(m=>({role:m.role,content:m.content}))})});
+  if(!res.ok)throw new Error('API Claude '+res.status);
+  const data=await res.json();
+  const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+  return text||'Je peux vous renseigner sur les prestations, les tarifs et l’entretien. Souhaitez-vous réserver ? ♡';
+}
+
+async function handleChat(event, ctx = {}) {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Méthode non autorisée' });
 
   const core=require('./lib/core');
@@ -279,13 +291,37 @@ exports.handler = async (event) => {
   context.openingQuestion=/horaires? (?:d['’]ouverture|du studio)|heures? d['’]ouverture|quels sont vos horaires|ouvrez.vous/i.test(last[0].content);
   Object.assign(context,policy.planningContext(messages,previous));
   const direct=policy.directReply(messages.at(-1).content);
+  // Mode conseil ou réservation, choisi par la cliente ; le mode est conservé dans le contexte signé.
+  const plain=String(last[0].content||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[’`]/g,"'");
+  const wantsBooking=/\b(reserver|reservation|rendez.?vous|rdv)\b/.test(plain);
+  const wantsAdvice=!wantsBooking&&/\b(conseil\w*|conseill\w*|lequel me|laquelle me)\b/.test(plain);
+  const prevMode=previous?.mode||null;
+  if(!prevMode&&messages.length===1&&/^(bonjour|bonsoir|salut|hello|coucou)[\s!.,?]*$/.test(plain.trim())){
+    // Même plafond IA que les autres messages, même avant la salutation.
+    if(!await core.rpc('limit',{p_key:'melba-global:'+new Date().toISOString().slice(0,10),p_max:100,p_seconds:86400}))return json(429,{error:'Melba a atteint sa limite quotidienne. Contactez Mélanie.'});
+    const reply='Bonjour ! Vous avez besoin d’un conseil ou vous souhaitez réserver ? ♡';
+    return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply)});
+  }
+  const mode=wantsBooking?'reservation':wantsAdvice?'conseil':(prevMode||'reservation');
+  if(mode==='conseil'){
+    let text;
+    try{text=await callAdvisor(apiKey,messages);}catch(err){return json(err.status===429?429:502,{error:err.status===429?err.message:'Réponse indisponible, réessayez ou appelez Mélanie.'});}
+    const reply=(wantsAdvice&&prevMode!=='conseil'?'Je passe en mode conseillère. ':'')+text;
+    const bc={...(previous||{}),mode:'conseil'};
+    return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply),bookingContext:bc,contextSignature:core.sign('melba-context:'+JSON.stringify(bc))});
+  }
+  if(wantsBooking&&prevMode==='conseil')ctx.modeNote='Je passe en mode agent de réservation. ';
   if(direct)return json(200,{pendingBooking:null,reply:direct,signature:core.sign('melba-reply:'+direct)});
   // Prestations nommées par la cliente : retenues dans le contexte signé, jamais redemandées.
-  const mention=policy.matchServices(last[0].content,CATALOGUE);
+  const lastAssistant=[...messages].reverse().find(m=>m.role==='assistant'&&typeof m.content==='string');
+  const familyAsked=(lastAssistant?.content||'').match(/Dans « (.+?) », quelle option souhaitez-vous/);
+  const mention=policy.matchServices(last[0].content,CATALOGUE,familyAsked?familyAsked[1]:null);
   const serviceIds=mention.ids.length?mention.ids:(Array.isArray(previous?.services)?previous.services.filter(x=>CATALOGUE.some(s=>s.id===x)):[]);
-  const signedContext=(fields)=>{const bc={...fields,...(serviceIds.length?{services:serviceIds}:{})};return {bookingContext:bc,contextSignature:core.sign('melba-context:'+JSON.stringify(bc))};};
+  const signedContext=(fields)=>{const bc={mode:'reservation',...fields,...(serviceIds.length?{services:serviceIds}:{})};return {bookingContext:bc,contextSignature:core.sign('melba-context:'+JSON.stringify(bc))};};
   if(mention.ambiguous){
-    const reply='Plusieurs prestations correspondent à votre demande : '+mention.ambiguous.join(' ou ')+'. Laquelle souhaitez-vous ? ♡';
+    const reply=mention.ambiguousFamily
+      ?'Dans « '+mention.ambiguousFamily+' », quelle option souhaitez-vous : '+mention.ambiguous.join(', ')+' ? ♡'
+      :'Plusieurs prestations correspondent à votre demande : '+mention.ambiguous.join(' ou ')+'. Laquelle souhaitez-vous ? ♡';
     return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply),...signedContext({date:previous?.date||null,preference:context.preference||null})});
   }
   if(!context.siteSelection.length&&serviceIds.length)context.siteSelection=serviceIds;
@@ -293,10 +329,11 @@ exports.handler = async (event) => {
   // Date seule manquante : réponse serveur directe, sans reposer la question de la prestation ni de la préférence.
   const lastText=last[0].content,prefKnown=context.preference==='morning'||context.preference==='afternoon'||context.preference==='any';
   if(serviceIds.length&&!context.requestedDate&&!policy.hasDateExpression(lastText)&&lastText.length<=160&&!/\?/.test(lastText)&&(mention.ids.length||context.preference==='morning'||context.preference==='afternoon')){
-    const names=CATALOGUE.filter(s=>serviceIds.includes(s.id)).map(s=>s.name).join(' + ');
+    const names=CATALOGUE.filter(s=>serviceIds.includes(s.id)).map(s=>policy.serviceLabel(s,CATALOGUE)).join(' + ');
     const prefWord=context.preference==='morning'?'le matin':context.preference==='afternoon'?'l’après-midi':'';
     const head=mention.ids.length?'Très bien, '+names+(prefWord?', '+prefWord:'')+'. ':'Très bien, '+prefWord+'. ';
-    const tail=(mention.ids.length&&!prefKnown)?'Quelle date vous conviendrait, et préférez-vous le matin ou l’après-midi ?':'Quelle date vous conviendrait ?';
+    // Une seule question à la fois : la date d'abord, la période (matin ou après-midi) après le calendrier.
+    const tail='Quelle date vous conviendrait ?';
     const reply=head+tail+' ♡';
     return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply),...signedContext({date:null,preference:context.preference||null})});
   }
@@ -377,12 +414,25 @@ exports.handler = async (event) => {
       reply=(retry.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
     }
     const finalReply=policy.guardedReply(reply,context) || 'Je rencontre un souci pour formuler ma réponse. Peux-tu reformuler ta question ?';
-    const bookingContext={date:context.availability?.date||context.requestedDate,preference:context.preference,...(context.selectedStart&&!context.availability?.alternative&&context.selectedStart&&!context.bookingRejected?{start:context.selectedStart}:{}),...(serviceIds.length?{services:serviceIds}:{})};
+    const bookingContext={mode:'reservation',date:context.availability?.date||context.requestedDate,preference:context.preference,...(context.selectedStart&&!context.availability?.alternative&&context.selectedStart&&!context.bookingRejected?{start:context.selectedStart}:{}),...(serviceIds.length?{services:serviceIds}:{})};
     return json(200, {pendingBooking:context.pending,reply:finalReply,signature:core.sign('melba-reply:'+finalReply),bookingContext,contextSignature:core.sign('melba-context:'+JSON.stringify(bookingContext))});
   } catch (err) {
     console.error('Erreur', err.message);
     return json(err.status===429?429:502, {error:err.status===429?err.message:'Réponse indisponible, réessayez ou appelez Mélanie.'});
   }
+};
+
+// Annonce de changement de mode, ajoutée à la réponse et resignée.
+exports.handler = async (event) => {
+  const ctx = {};
+  const res = await handleChat(event, ctx);
+  if (ctx.modeNote && res.statusCode === 200) {
+    const body = JSON.parse(res.body);
+    body.reply = ctx.modeNote + body.reply;
+    body.signature = require('./lib/core').sign('melba-reply:' + body.reply);
+    res.body = JSON.stringify(body);
+  }
+  return res;
 };
 
 exports._test={cleanMessages,nativeRunTool,selectionReply,SYSTEM_PROMPT,TOOLS};

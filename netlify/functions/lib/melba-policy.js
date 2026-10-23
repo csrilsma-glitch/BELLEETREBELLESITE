@@ -148,18 +148,46 @@ function guardedReply(reply,context){
 // Plusieurs correspondances : demander la précision, jamais choisir au hasard.
 const SERVICE_STOP=new Set(['de','la','le','les','un','une','du','des','et','pour','avec','sur','en','au','aux','ou','plus']);
 function serviceWords(s){return norm(s).replace(/[’‘']/g,' ').split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!SERVICE_STOP.has(w));}
-function matchServices(text,catalogue){
+// Libellé affiché : le nom seul, sauf s'il est partagé par plusieurs familles (« Quatre doigts »).
+function serviceLabel(s,catalogue){
+ const same=(catalogue||[]).filter(x=>x.name===s.name).length;
+ const fam=String(s.path||'').split('›').slice(0,-1).map(x=>x.trim()).filter(Boolean).at(-1);
+ return same>1&&fam?fam+' : '+s.name:s.name;
+}
+function matchServices(text,catalogue,familyHint){
  const none={ids:[],names:[],ambiguous:null};
  if(!Array.isArray(catalogue))return none;
- const leaves=catalogue.map(s=>({id:s.id,name:s.name,w:serviceWords(s.name)})).filter(x=>x.w.length);
+ // Famille = segments parents du chemin (« Babyboomer / babycolor » pour « Deux doigts »).
+ // Chaque segment peut contenir plusieurs alternatives (« Babyboomer / babycolor ») : une seule suffit.
+ const leaves=catalogue.map(s=>({id:s.id,name:s.name,w:serviceWords(s.name),fam:String(s.path||'').split('›').slice(0,-1).map(x=>x.trim()).filter(Boolean).map(label=>({label,alts:label.split('/').map(serviceWords).filter(a=>a.length)})).filter(f=>f.alts.length)})).filter(x=>x.w.length);
  // Seuls les mots du vocabulaire du catalogue comptent : « je veux », « bonjour » ne sont pas des prestations.
- const vocabulary=new Set(leaves.flatMap(x=>x.w));
- const words=new Set(serviceWords(text).filter(w=>vocabulary.has(w)));
+ const vocabulary=new Set([...leaves.flatMap(x=>x.w),...leaves.flatMap(x=>x.fam.flatMap(f=>f.alts.flat()))]);
+ const raw=serviceWords(text);
+ const words=new Set(raw.filter(w=>vocabulary.has(w)));
+ // « baby boomer » = « babyboomer » du catalogue : mots accolés pour retrouver les noms composés.
+ for(let i=0;i<raw.length-1;i++){const joined=raw[i]+raw[i+1];if(vocabulary.has(joined))words.add(joined);}
  if(!words.size)return none;
  let hits=leaves.filter(x=>x.w.every(w=>words.has(w)));
  if(!hits.length&&words.size>=2)hits=leaves.filter(x=>[...words].every(w=>x.w.includes(w)));
+ // Réponse à une question de précision déjà posée dans une famille (« Quatre doigts » après « Dans « Babyboomer / babycolor » … »).
+ if(familyHint&&hits.length>1){const inFamily=hits.filter(x=>x.fam.at(-1)?.label===familyHint);if(inFamily.length)hits=inFamily;}
+ // Une famille nommée (« baby boomer ») restreint les prestations de cette famille.
+ const famHits=leaves.filter(x=>x.fam.some(f=>f.alts.some(a=>a.every(w=>words.has(w)))));
+ let namedFamily=false;
+ if(famHits.length){
+  const narrowed=hits.filter(x=>famHits.includes(x));
+  if(narrowed.length){hits=narrowed;namedFamily=true;}
+  else if(!hits.length||hits.length>1){hits=famHits;namedFamily=true;}
+ }
  if(hits.length===1)return {ids:[hits[0].id],names:[hits[0].name],ambiguous:null};
- if(hits.length>1)return {ids:[],names:hits.map(x=>x.name).slice(0,4),ambiguous:hits.map(x=>x.name).slice(0,4)};
+ if(hits.length>1){
+  const fams=[...new Set(hits.map(x=>x.fam.at(-1)?.label||''))];
+  const shared=fams.length===1&&fams[0]?fams[0]:null;
+  // Noms identiques d'une famille à l'autre : le nom de famille les distingue.
+  const options=hits.map(x=>hits.filter(y=>y.name===x.name).length>1&&x.fam.at(-1)?x.fam.at(-1).label+' : '+x.name:x.name).slice(0,6);
+  // Message « Dans « famille » » seulement si la cliente a nommé la famille.
+  return {ids:[],names:options,ambiguous:options,ambiguousFamily:namedFamily?shared:null};
+ }
  return none;
 }
 // Heure de créneau dans un message qui contient déjà une date : « Le 27 octobre à 10h40 ».
@@ -214,4 +242,4 @@ function contactFromHistory(messages){
 }
 function isRecapRequest(text){return /\b(recapitulatif|resume de (ma|la) (demande|reservation)|recap)\b/.test(norm(text));}
 function isConfirmWord(text){const t=norm(text).replace(/[’‘]/g,"'");return /\b(je confirme|confirme|je valide|c'est bon pour moi)\b/.test(t)&&!/\b(pas|ne|non|annul\w*)\b/.test(t);}
-module.exports={today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression,startHour,planningContext,selectedTime,matchServices,timeAfterA,contactFrom,contactFromHistory,isRecapRequest,isConfirmWord,isNameAnswer,bareName};
+module.exports={serviceLabel,today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression,startHour,planningContext,selectedTime,matchServices,timeAfterA,contactFrom,contactFromHistory,isRecapRequest,isConfirmWord,isNameAnswer,bareName};
