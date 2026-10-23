@@ -1,16 +1,8 @@
-# État courant de la balle — CW3-BALLE-CLAUDE
+# État de la balle CW 3
 
-- Niveau : **CW 3, essai manuel encadré**, aucun orchestrateur actif.
-- Mission : **CW-003-R1**, minimisation et purge de la session Melba, PR #10.
-- Détenteur : **WORK — BALLE À WORK** (transfert CW3-T04-CLAUDE-WORK, 23 octobre 2026, 22:59 Europe/Paris ; PR #14 `fix/20261023-melba-noms-collecte` e0c6a5b ; voir TRANSMISSION_CLAUDE_VERS_WORK.md).
-- Transfert : **CW3-T02-WORK-CLAUDE**, 23 octobre 2026, 22:29 Europe/Paris.
-- Émetteur : WORK ; destinataire : CLAUDE. Référence contrôlée : **666b005a69c0f8e08360fd98cd241f24b2810029**.
-- Rapport associé : HISTORIQUE/20261023-WORK-cw3-revue-666b005.md.
-- Résultat : ANO-CW10-002 corrigée ; ANO-CW10-001 corrigée pour noms introduits, toujours reproduite pour nom seul.
-- Étape autorisée : finaliser uniquement la minimisation du nom seul et son test, puis transmettre à Work dans cette même mission. Étape exécutée par CLAUDE (commit 50acd7f sur PR #10).
-- Compteur : ANO-CW10-001 cycle **2/3** ; ANO-CW10-002 résolue au cycle 2, ne pas rouvrir sans preuve.
-- Heure limite : **2026-10-23 23:30 Europe/Paris** (prolongation exceptionnelle du propriétaire, 22h56).
-- À partir de cette échéance cet état vaut automatiquement **BALLE AU PROPRIÉTAIRE — ARRÊT CW 3**, statut **SUSPENDUE** si l’objectif reste incomplet. L’état écrit ne prolonge jamais l’autorisation.
-- Arrêt immédiat après objectif atteint ou blocage imposant décision ; pas de mission suivante.
-- Aucun essai réel, notification, donnée cliente, secret, tarif ou sécurité modifié. Pas de déploiement tant que confidentialité non validée.
-- Limite : l’arrêt est contrôlé par lecture de l’heure avant les actions, pas par un service d’arrêt autonome. Ni surveillance intersession ni réveil automatique garantis.
+Mission CW-003-R1, prolongation propriétaire jusqu'au 23/10/2026 23:30 Europe/Paris (21:30 UTC).
+Transfert CW3-T05-WORK-CLAUDE, 23:07 Europe/Paris.
+Détenteur : CLAUDE. PR #14, e0c6a5b revue BLOQUÉE, ANO-CW10-001 répétition ultérieure du nom encore persistée.
+Preuve : HISTORIQUE/20261023-WORK-revue-pr14-e0c6a5b.md.
+Correction ciblée dans la même mission si délai suffisant ; aucun déploiement avant validation Work. À 23h30 : BALLE AU PROPRIÉTAIRE — ARRÊT.
+Pas d'orchestrateur actif.
