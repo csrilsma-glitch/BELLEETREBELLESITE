@@ -30,3 +30,32 @@ Mise à jour : 23 octobre 2026, 21:34 Europe/Paris, Work. Les observations sont 
 
 ## Priorité et suite
 Proposer à Claude la préparation d'une validation complète isolée du clic Confirmer jusqu'à Supabase/Outlook/notifications, sans envoi réel, puis soumettre tout essai réel séparément. Statut EN_ATTENTE_VALIDATION. Ne pas déclarer Belle & Rebelle intégralement validée.
+
+## Niveau d'autonomie courant (23/10/2026, Claude)
+- Niveau CW actif : **CW 1** (défaut, aucune commande de niveau reçue pour la mission en cours).
+- Orchestration automatique CW 3 : **NON ACTIVE**. Aucun service ne surveille GitHub.
+- Règles : `NIVEAUX_CW.md`.
+
+## Mise à jour Work — CW2-INT-010-011, 23/10/2026 22:00 Paris
+Cette section courante prime sur les mentions d'état historiques ci-dessus. Niveau de cette mission : **CW 2**, arrêt après rapport. CW 3 **NON ACTIVE**, aucun orchestrateur.
+- PR #10 / c726e49 : **BLOQUÉE** pour confidentialité (nom persistant, historique ressauvé après purge). 202 tests Node verts mais garanties non remplies. Aucun déploiement ni fusion.
+- /app/ charge le client indirectement par iframe vers /?source=pwa : restauration vérifiée en Chromium mobile simulé, pas sur Android physique. Ne pas présenter /app/ comme absent du périmètre.
+- PR #11 / 249f7dd + consolidation documentaire Work : règles validées, intégration documentaire autorisée et exécutée dans ce cycle ; modèle des statuts harmonisé, historique préservé. Voir PR #11 pour le SHA de fusion.
+- Dernier code applicatif publié inchangé : ccd4ed4 ; deploy 6adb33732ee47b285459e856. Aucun nouveau commit applicatif déployé pendant cette mission.
+- Prochaine proposition : CW-003-R1, CLAUDE, EN_ATTENTE_VALIDATION. Aucun agent lancé automatiquement. Détails : HISTORIQUE/20261023-WORK-revue-pr10-pr11.md.
+
+## CW3-T02 — Work — 23/10/2026 22:29 Paris
+État courant : lire ETAT_BALLE_CW.md. Essai CW 3 avant 23:00, aucun orchestrateur ni fréquence cinq minutes installés. Balle CLAUDE à la publication de cette intégration documentaire.
+- PR #10 HEAD 666b005 : purge durable validée ; nom seul encore stocké/restauré. Déploiement bloqué, aucun changement applicatif en production.
+- 12 tests ciblés et scénario navigateur isolé exécutés. Aucun nouveau SMS, email, rendez-vous ou événement réel.
+- PR #12 : règle et suivi de balle documentaires ; aucune modification du code métier.
+- Dernière production applicative connue inchangée : ccd4ed4 / deploy 6adb33732ee47b285459e856 ; pas requalifiée comme validation intégrale du site.
+- Même mission CW-003-R1 autorisée à continuer dans cet essai, uniquement correction résiduelle avant l’échéance ; pas une nouvelle fonctionnalité ni mission.
+
+## Clôture CW3-T04 — Work — 23/10/2026 22:47 Paris
+Cette section est courante ; les sections précédentes restent historiques. Balle finale PROPRIÉTAIRE, essai clos sur blocage.
+- PR #10 HEAD 50acd7f : 14 tests ciblés réussis, mais nom en minuscules après demande de coordonnées stocké et restauré dans /app/ (preuve Chromium isolée). Cycle 3/3, arbitrage requis ; ni fusion ni déploiement.
+- Purge après réservation toujours corrigée, y compris nouveau message. Aucune notification ou réservation réelle pendant les contrôles.
+- Proposition PROPOSITION_ORCHESTRATEUR_GITHUB.md publiée : architecture seulement, aucune installation/secrets/agent actif. Alternative Codex CI distincte de ce chat Work.
+- Dernier code applicatif publié connu inchangé : ccd4ed4 / deploy 6adb33732ee47b285459e856 ; aucun commit applicatif de cette mission déployé.
+- Aucune nouvelle mission autorisée automatiquement ; propriétaires décident de l'arbitrage confidentialité et du pilote d'orchestration.
