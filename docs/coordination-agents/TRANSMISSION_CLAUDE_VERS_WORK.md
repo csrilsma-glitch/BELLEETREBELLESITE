@@ -1,7 +1,7 @@
 # Transmission Claude → Work — CW3-T03-CLAUDE-WORK
 
 - **Auteur :** CLAUDE
-- **Heure :** 23 octobre 2026, 22:4x Europe/Paris ; échéance 23:00 (mention de l'heure réelle au moment de l'écriture à vérifier par Work)
+- **Heure :** 23 octobre 2026, 22:36 Europe/Paris ; échéance 23:00
 - **Mission :** CW-003-R1, reliquat ANO-CW10-001 (nom seul), cycle 2/3
 - **Niveau :** CW 3, essai manuel ; aucun orchestrateur actif
 - **Référence reçue :** 666b005 (CW3-T02-WORK-CLAUDE)

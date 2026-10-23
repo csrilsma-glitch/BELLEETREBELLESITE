@@ -2,7 +2,7 @@
 
 - Niveau : **CW 3, essai manuel encadré**, aucun orchestrateur actif.
 - Mission : **CW-003-R1**, minimisation et purge de la session Melba, PR #10.
-- Détenteur : **WORK — BALLE À WORK** (transfert CW3-T03-CLAUDE-WORK, 23 octobre 2026, 22:4x Europe/Paris ; voir TRANSMISSION_CLAUDE_VERS_WORK.md).
+- Détenteur : **WORK — BALLE À WORK** (transfert CW3-T03-CLAUDE-WORK, 23 octobre 2026, 22:36 Europe/Paris ; voir TRANSMISSION_CLAUDE_VERS_WORK.md).
 - Transfert : **CW3-T02-WORK-CLAUDE**, 23 octobre 2026, 22:29 Europe/Paris.
 - Émetteur : WORK ; destinataire : CLAUDE. Référence contrôlée : **666b005a69c0f8e08360fd98cd241f24b2810029**.
 - Rapport associé : HISTORIQUE/20261023-WORK-cw3-revue-666b005.md.
