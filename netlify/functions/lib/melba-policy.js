@@ -11,6 +11,15 @@ function requestedDate(messages,now=new Date()){
  for(const m of [...messages].reverse().filter(m=>m.role==='user'&&typeof m.content==='string')){
   const text=norm(m.content),candidates=[];
   for(const match of text.matchAll(/\b(\d{4}-\d{2}-\d{2})\b/g))candidates.push({index:match.index,date:validDate(match[1])?match[1]:null});
+  // Format numérique jj/mm ou jj/mm/aaaa (« 27/10 », « 27/10/2026 »), jamais une heure (« 10:40 »).
+  for(const match of text.matchAll(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?\b/g)){
+   const month=Number(match[2]),day=Number(match[1]);let date=null;
+   for(let y=match[3]?Number(match[3]):year;y<=(match[3]?Number(match[3]):year+8);y++){
+    const candidate=`${y}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    if(validDate(candidate)&&(match[3]||candidate>=current)){date=candidate;break;}
+   }
+   candidates.push({index:match.index,date});
+  }
   const named=new RegExp('\\b(\\d{1,2})(?:er)?\\s+('+months.join('|')+')(?:\\s+(\\d{4}))?\\b','g');
   for(const match of text.matchAll(named)){
    const month=months.indexOf(match[2])+1,day=Number(match[1]);let date=null;
@@ -36,7 +45,7 @@ function requestedDate(messages,now=new Date()){
  }
  return null;
 }
-function hasDateExpression(text){return /\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}(?:er)?\s+(?:janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre)\b|\b(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|demain)\b|aujourd['’]hui/.test(norm(text));}
+function hasDateExpression(text){return /\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}\/\d{1,2}(?:\/\d{4})?\b|\b\d{1,2}(?:er)?\s+(?:janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre)\b|\b(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|demain)\b|aujourd['’]hui/.test(norm(text));}
 // Réponse courte qui désigne un créneau proposé : « 10h40 », « 10:40 », « celui de 10h40 ».
 // Une simple durée (« 1h30 ») n'est pas un choix : elle doit contenir la forme HHhMM ou HH:MM complète,
 // ou une heure seule précédée d'un mot de choix.
@@ -153,4 +162,37 @@ function matchServices(text,catalogue){
  if(hits.length>1)return {ids:[],names:hits.map(x=>x.name).slice(0,4),ambiguous:hits.map(x=>x.name).slice(0,4)};
  return none;
 }
-module.exports={today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression,startHour,planningContext,selectedTime,matchServices};
+// Heure de créneau dans un message qui contient déjà une date : « Le 27 octobre à 10h40 ».
+// « à » est exigé : « vers 15h » reste une préférence, pas un choix de créneau.
+function timeAfterA(text){
+ const t=norm(text).replace(/[’‘]/g,"'");
+ const m=t.match(/\ba\s+([01]?\d|2[0-3])\s*(?:h|:)\s*([0-5]\d)?\b/);
+ if(!m)return null;
+ const hour=Number(m[1]);
+ if(hour<7||hour>20)return null;
+ return String(hour).padStart(2,'0')+':'+(m[2]||'00');
+}
+// Coordonnées données par la cliente : libellés (« Nom : », « Téléphone : », « E-mail : ») ou formules simples.
+function contactFrom(text){
+ const raw=String(text||'');
+ const out={};
+ const email=raw.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/);
+ if(email)out.email=email[0];
+ const phone=raw.match(/(?:\+33\s?|\b0)[1-9](?:[\s.-]?\d{2}){4}\b/);
+ if(phone)out.phone=phone[0].trim();
+ const name=raw.match(/(?:\bnom(?:\s+et\s+pr[ée]nom)?|je m['’]appelle|au nom de|je suis|prénom)\s*(?:est)?\s*[:=]?\s*([A-Za-zÀ-ÿ'’\- ]{2,60}?)\s*(?=\n|,|;|$|\s+(?:t[ée]l|tel|mobile|e-?mail|mail)\b|\s+\d)/i);
+ if(name)out.name=name[1].trim();
+ return out;
+}
+// Coordonnées sur tout l'historique : chaque champ prend la mention la plus récente.
+function contactFromHistory(messages){
+ const merged={};
+ for(const m of [...messages].reverse().filter(m=>m.role==='user'&&typeof m.content==='string')){
+  const found=contactFrom(m.content);
+  for(const k of ['name','phone','email'])if(merged[k]===undefined&&found[k])merged[k]=found[k];
+ }
+ return merged;
+}
+function isRecapRequest(text){return /\b(recapitulatif|resume de (ma|la) (demande|reservation)|recap)\b/.test(norm(text));}
+function isConfirmWord(text){const t=norm(text).replace(/[’‘]/g,"'");return /\b(je confirme|confirme|je valide|c'est bon pour moi)\b/.test(t)&&!/\b(pas|ne|non|annul\w*)\b/.test(t);}
+module.exports={today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression,startHour,planningContext,selectedTime,matchServices,timeAfterA,contactFrom,contactFromHistory,isRecapRequest,isConfirmWord};
