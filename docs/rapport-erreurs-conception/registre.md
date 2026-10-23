@@ -84,10 +84,11 @@ Légende : **C** corrigé · **T** testé · **S** à surveiller · **N** non r�
 | HTN-ERR-076 | Date et heure dans le même message : créneau non reconnu | IA | C dans la branche `fix/20261023-melba-parcours` (`3ba662f`), testé | `melba-parcours.test.js` |
 | HTN-ERR-077 | Coordonnées reçues mais aucun récapitulatif (« je dois vérifier le calendrier ») | IA | C dans la branche `fix/20261023-melba-parcours` (`3ba662f`), testé ; défaut reproduit sur `c0c20e0` | `melba-parcours.test.js` |
 | HTN-ERR-078 | Nom communiqué seul après les autres coordonnées : aucun récapitulatif | IA | C dans la branche `fix/20261023-melba-recap-nom`, testé ; défaut reproduit sur `ebe34e0` | `melba-recap-nom.test.js` |
+| HTN-ERR-079 | « Baby boomer » non reconnue : question de prestation répétée (famille absente du catalogue reconnu) | IA | C dans la branche `fix/20261024-melba-baby-modes`, testé ; défaut reproduit sur `098f2e5` | `melba-baby-modes.test.js` |
 
 ## Bilan au 23 octobre 2026
 
-- **78 entrées** (065 au 23 octobre, puis 066–074 issues du contre-audit de la PR #3, second contre-audit sur `01a9ecd`, puis 075–077 issues du parcours de réservation sur téléphone, puis 078 issue du nom seul).
+- **79 entrées** (065 au 23 octobre, puis 066–074 issues du contre-audit de la PR #3, second contre-audit sur `01a9ecd`, puis 075–077 issues du parcours de réservation sur téléphone, puis 078 issue du nom seul, puis 079 issue de « Baby boomer »).
 - **Non résolues** (statut N) : 15 entrées — 025, 034, 035, 040, 042, 052, 061, 062, 063, 066, 068 (preuve à refaire), 069, 070, 074. Parmi elles, 063 bloque un lancement public, 061 est un risque de sécurité accepté, 040 et 034 attendent une décision.
 - **Risque en place à résorber** : 029 (exception MFA pour deux comptes), présente sur `main`.
 - **À surveiller** (statut S ou H) : 004, 009, 010 (non vérifié), 013, 016, 019, 023, 024, 031, 036, 043, 045, 047, 048, 050, 051, 055 (production), 064, 065.
