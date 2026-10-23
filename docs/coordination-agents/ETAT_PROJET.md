@@ -30,3 +30,16 @@ Mise à jour : 23 octobre 2026, 21:34 Europe/Paris, Work. Les observations sont 
 
 ## Priorité et suite
 Proposer à Claude la préparation d'une validation complète isolée du clic Confirmer jusqu'à Supabase/Outlook/notifications, sans envoi réel, puis soumettre tout essai réel séparément. Statut EN_ATTENTE_VALIDATION. Ne pas déclarer Belle & Rebelle intégralement validée.
+
+## Niveau d'autonomie courant (23/10/2026, Claude)
+- Niveau CW actif : **CW 1** (défaut, aucune commande de niveau reçue pour la mission en cours).
+- Orchestration automatique CW 3 : **NON ACTIVE**. Aucun service ne surveille GitHub.
+- Règles : `NIVEAUX_CW.md`.
+
+## Mise à jour Work — CW2-INT-010-011, 23/10/2026 22:00 Paris
+Cette section courante prime sur les mentions d'état historiques ci-dessus. Niveau de cette mission : **CW 2**, arrêt après rapport. CW 3 **NON ACTIVE**, aucun orchestrateur.
+- PR #10 / c726e49 : **BLOQUÉE** pour confidentialité (nom persistant, historique ressauvé après purge). 202 tests Node verts mais garanties non remplies. Aucun déploiement ni fusion.
+- /app/ charge le client indirectement par iframe vers /?source=pwa : restauration vérifiée en Chromium mobile simulé, pas sur Android physique. Ne pas présenter /app/ comme absent du périmètre.
+- PR #11 / 249f7dd + consolidation documentaire Work : règles validées, intégration documentaire autorisée et exécutée dans ce cycle ; modèle des statuts harmonisé, historique préservé. Voir PR #11 pour le SHA de fusion.
+- Dernier code applicatif publié inchangé : ccd4ed4 ; deploy 6adb33732ee47b285459e856. Aucun nouveau commit applicatif déployé pendant cette mission.
+- Prochaine proposition : CW-003-R1, CLAUDE, EN_ATTENTE_VALIDATION. Aucun agent lancé automatiquement. Détails : HISTORIQUE/20261023-WORK-revue-pr10-pr11.md.

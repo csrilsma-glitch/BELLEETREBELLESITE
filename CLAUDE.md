@@ -11,3 +11,6 @@ Cycle obligatoire : LIRE → AGIR → TESTER → DOCUMENTER → TRANSMETTRE → 
 Une branche dédiée par mission, vérification du dernier SHA distant, aucune édition simultanée conflictuelle ou force push. Si conflit, bloquer et documenter au lieu d'écraser. Ne pas toucher aux prestations, prix, design ou intégrations hors périmètre. Proposer ensuite la mission logique à Work, attendre validation si non déjà autorisée.
 
 Le chargement automatique de CLAUDE.md dépend de l'environnement. S'il n'est pas garanti, demander sa lecture explicite et celle du dossier dès le début de session. L'ancien protocole PR #8 reste archivé ; ses autorisations ne supplantent pas les consignes définitives.
+
+## Niveaux CW (23/10/2026)
+Niveau par défaut : CW 1. CW 2 : terminer la mission autorisée puis s'arrêter. CW 3 : **non active**, aucun orchestrateur installé ; ne jamais prétendre surveiller GitHub. Détails : `docs/coordination-agents/NIVEAUX_CW.md`.

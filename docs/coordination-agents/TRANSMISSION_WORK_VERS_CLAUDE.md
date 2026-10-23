@@ -1,24 +1,21 @@
-# Transmission officielle Work → Claude
+# Transmission Work → Claude — CW2-INT-010-011
 
-Auteur : WORK. Date : 23 octobre 2026, Europe/Paris. Missions : COORD-001 et consolidation des résultats CW-002/CW-004 déjà effectués.
+Auteur WORK ; 23 octobre 2026, 22:00 Europe/Paris. Niveau : **CW 2** limité à l'intégration conditionnelle des PR #10/#11.
 
-## Installation
-Source courante : docs/coordination-agents/PROTOCOLE.md. Lire ensuite ETAT_PROJET.md, MISSIONS.md, cette transmission et PROPOSITIONS_A_VALIDER.md. Instructions racine : AGENTS.md et CLAUDE.md. Historique initial CW conservé intégralement ; aucun rapport antérieur effacé. Documentation AutoDiag existante seulement référencée.
+## Résultat
+- PR #10, c726e49 : **BLOQUÉE**, ni fusionnée ni déployée. 202 tests Node réussis mais noms conservés et purge non durable (deux reproductions indépendantes).
+- PR #11, 249f7dd + consolidation Work : règles validées et fusion documentaire de ce cycle, sans déploiement. CW 3 reste **NON ACTIVE**. Statuts du modèle harmonisés ; archives conservées. Le SHA de fusion est fourni par GitHub PR #11.
+- Production applicative inchangée : ccd4ed4 / Netlify 6adb33732ee47b285459e856. Référence de sauvegarde : backup/main-pre-cw2-pr10-pr11-20261023 au main 9d688d8.
 
-**Claude développe et corrige ; Work vérifie, intègre et déploie après autorisation ; ChatGPT conçoit et coordonne ; le propriétaire décide.**
-Le cycle obligatoire est LIRE → AGIR → TESTER → DOCUMENTER → TRANSMETTRE → PROPOSER → ATTENDRE VALIDATION. Ne lancer aucune nouvelle mission proposée sans accord. L'auto-chargement de ces instructions dépend de chaque environnement : leur lecture explicite est obligatoire au début de session.
+## Preuves et causes
+**ANO-CW10-001** : CONTACT ne détecte que téléphone/email ; « Je m’appelle Cliente Fictive » et le nom seul restent dans sessionStorage puis sont restaurés. **ANO-CW10-002** : clear() purge la clé après succès simulé, sans purger history/contexte mémoire ; « Merci » après réservation ressauve l'ancien nom. Données fictives uniquement.
+/app/ est couvert indirectement : iframe#site charge /?source=pwa, qui charge melba-session.js puis assistant.js. Restauration dans la coque vérifiée en navigateur Chromium mobile simulé ; pas de test Android installé physique. Corriger l'affirmation « /app/ non couvert », ne pas créer un deuxième client inutilement.
+Détails, commandes et reproduction documentaire : HISTORIQUE/20261023-WORK-revue-pr10-pr11.md et HISTORIQUE/20261023-WORK-preuve-confidentialite-cw003.md. Les deux transmissions Claude et la transmission Work précédente sont archivées séparément.
 
-## Résultats transmis
-PR #7 / 6bf3a31 : avis technique favorable ciblé. 195 tests Node, SQL isolé et rappels verts ; tests de régression rouges sur main, verts sur branche. Test indépendant avec vraie UI /app/ et gestionnaire HTTP local : babyboomer 2 doigts / bb-2, 10h40, coordonnées et récapitulatif 7 €/10 min corrects, aucune écriture. Ce n'est pas une validation des fournisseurs réels ni du modèle réel avec ce correctif non déployé.
-CW-003 : rafraîchissement de /app/ efface la conversation, reproduit ; aucune correction faite. Pas de nouveau numéro AutoDiag inventé : utiliser CW-003 et compléter le registre AutoDiag existant au début de sa mission autorisée.
-Lecture seule Supabase/Resend : voir état et historique ; Brevo non directement accessible. Production inchangée au dernier commit applicatif ccd4ed4, PR #6. PR #7 et #8 laissées intactes, non fusionnées.
+## Prochaine mission proposée — CW-003-R1
+Claude corrige les deux anomalies dans la PR #10, teste noms libres/libellés, messages assistant, rafraîchissement /app/, expiration et purge suivie d'un nouveau message ; conserve signatures et contexte autorisé sans coordonnées. Aucune modification des tarifs, sécurité, données réelles ou intégrations.
+Statut **EN_ATTENTE_VALIDATION** : aucune exécution automatique. Work intègre ensuite seulement sous l'autorisation applicable. Cycle 1/3, pas de boucle de corrections sans nouvelles preuves.
 
-## Proposition prioritaire — PROP-001
-Préparer une recette complète isolée du bouton Confirmer jusqu'à l'écriture Supabase, Outlook, confirmations et rappels ; intégrer les contrôles anti-doublon et aucune création avant clic. Proposer ensuite les seuls essais réels indispensables avec autorisation distincte, destinataires désignés et nettoyage strict des données fictives.
-Inclure le nom parfois demandé deux fois comme finition, sans en faire un blocage majeur. Persistance CW-003 à soumettre séparément : ne pas stocker naïvement coordonnées, liens sensibles ou actions de confirmation dans un cache partagé.
-
-**Statut : EN_ATTENTE_VALIDATION. NE PAS EXÉCUTER PROP-001 NI CW-003 SANS ACCORD.**
-Critères futurs : tests de création unique/refus concurrent/annulation/rappels, aucune notification réelle en mode isolé, rapport vérifiable et PR distincte. Ne pas toucher aux tarifs, prestations, sécurité, design ou aux autres dépôts.
-
-## Traçabilité
-Branche d'installation : docs/installation-coordination-definitive-20261023 ; PR #9, premier commit 92bb83d ; SHA de fusion traçable dans cette PR et le compte rendu final. Rapport d'audit : HISTORIQUE/20261023-WORK-CW-002-004.md ; plan : HISTORIQUE/20261023-WORK-plan-deploiement.md. Aucune fusion ni publication fonctionnelle n'est autorisée par ce protocole.
+## Clôture
+Fichiers documentaires modifiés : modèle mission, état, registre, propositions, transmission courante et archives/preuves. Aucun code métier changé par Work. Aucun rendez-vous, email, SMS, événement Outlook réel créé. Aucun déploiement de la PR #10 ; pas de certification réelle de bout en bout déduite des simulations.
+Condition d'arrêt atteinte après publication et lecture distante. **MISSION CW 2 TERMINÉE — TRANSMISSION GITHUB EFFECTUÉE — JE M'ARRÊTE ICI.**

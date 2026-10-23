@@ -45,3 +45,6 @@ Si régression critique : arrêter les actions à effet réel et conserver les j
 ## Sources et chargement des instructions
 Le dossier docs/coordination-agents/ est désormais la source courante. L'ancien docs/agent-coordination/ de la PR #8 est conservé dans l'historique pour traçabilité ; il n'accorde aucune autorisation supplémentaire. Ni la PR #7 ni la PR #8 ne sont fusionnées par cette installation.
 AGENTS.md et CLAUDE.md sont des points d'entrée. Leur chargement automatique dépend de l'environnement ; au début de chaque session, demander explicitement leur lecture puis celle de ce dossier. Aucun mécanisme autonome intersession ni HOTANOVA CONTROL n'est installé.
+
+## Niveaux d'autonomie CW 1 / 2 / 3
+Commandes : `rapport CW 1`, `rapport CW 2`, `rapport CW 3`. Sans chiffre, le niveau est CW 1. Règles complètes : `NIVEAUX_CW.md`. CW 3 est **NON ACTIVE** : aucun orchestrateur n'est installé. Un niveau ne donne jamais d'autorisation générale ; il s'applique à une mission déjà AUTORISÉE.
