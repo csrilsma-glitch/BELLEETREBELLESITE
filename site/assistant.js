@@ -70,7 +70,7 @@
       if(sequence!==requestSequence)return;
       if(!data.reply)throw new Error('vide');
       bookingContext=data.bookingContext||null;contextSignature=data.contextSignature||null;
-      history.push({role:'assistant',content:data.reply,signature:data.signature,private:wasCollecting});collecting=window.BRMelbaSession?.isCollecting(data.reply)===true;persist();
+      history.push({role:'assistant',content:data.reply,signature:data.signature,private:wasCollecting});collecting=window.BRMelbaSession?.nextCollecting(collecting,data.reply)===true;persist();
       message('bot',data.reply);
       if(data.pendingBooking) proposal(data.pendingBooking,sequence);
 

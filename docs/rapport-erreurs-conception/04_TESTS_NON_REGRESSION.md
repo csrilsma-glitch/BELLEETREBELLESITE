@@ -59,3 +59,9 @@ Limites : un nom donné seul, sans formule introductive, n’est pas détecté ;
 - Tests : `tests/melba-session.test.js` 16/16 ; `npm test` 209/209.
 - Vérification navigateur simulée (Chromium, viewport 390×844, réponses fictives, aucune fonction réelle) : `index.html`, `reservation.html` et l’iframe de `/app/` : nom absent du stockage et de l’affichage, conversation restaurée après rafraîchissement, demande initiale conservée.
 - Limites : un nom donné hors collecte (sans demande préalable de Melba) n’est pas détecté ; la purge après réservation n’a pas été rejouée dans le navigateur ; aucun test avec de vrais services de réservation, notifications ou Outlook.
+
+## CW-003-R1 (cycle 3, reprise après revue Work CW3-T05)
+
+- Défaut reproduit par Work : la collecte se refermait dès qu’une réponse n’avait plus de mot-clé ; un nom en minuscules était alors persisté. Correction : collecte collante (`nextCollecting`) jusqu’à purge après réservation ou expiration de session.
+- Tests : `tests/melba-session.test.js` 17/17 ; `npm test` 210/210. Reproduction Work rejouée en navigateur simulé sur `index.html` et `app/index.html` : nom absent du stockage.
+- Limite : tant que la collecte est ouverte, les messages suivants ne sont pas restaurés après rafraîchissement (choix de minimisation).

@@ -163,3 +163,24 @@ test('collecte explicite : l’état de collecte survit au rafraîchissement',()
  S.save({history:[{role:'user',content:'Bonjour'}],collecting:false});
  assert.equal(S.load(Date.now()).collecting,false);
 });
+
+// CW-003-R1 cycle 3 (Work, PR #14 bloquée) : la collecte reste ouverte jusqu'à la purge, même si la réponse suivante n'a plus de mot-clé.
+test('collecte collante : une réponse sans mot-clé ne referme pas la collecte, et le nom minuscule n’est pas persisté',()=>{
+ globalThis.sessionStorage=fakeStorage();
+ let c=S.nextCollecting(false,'Quel est votre nom ?');
+ assert.equal(c,true);
+ c=S.nextCollecting(c,'Message reçu : cliente fictive.');
+ assert.equal(c,true,'la collecte doit rester ouverte');
+ c=S.nextCollecting(c,'Voici les horaires disponibles mardi.');
+ assert.equal(c,true,'toujours ouverte après une réponse sans mot-clé');
+ const history=[
+   {role:'user',content:'Kit complet'},
+   {role:'assistant',content:'Quel est votre nom ?'},
+   {role:'user',content:'cliente fictive',private:true},
+   {role:'assistant',content:'Message reçu : cliente fictive.',private:true},
+   {role:'user',content:'mardi',private:true},
+   {role:'assistant',content:'cliente fictive, voici les horaires disponibles.',private:true}
+ ];
+ S.save({history:S.persistable(history),collecting:c});
+ assert.ok(!/fictive/i.test(globalThis.sessionStorage.getItem(S.KEY)),'aucune trace du nom en minuscules');
+});

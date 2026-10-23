@@ -15,6 +15,9 @@
   // la réponse suivante de l'utilisateur, et la réponse de Melba qui y répond, ne sont jamais persistées.
   const COLLECT = /\b(?:nom|pr[ée]nom|coordonn[ée]es?|t[ée]l[ée]phone|e-?mail|mail|adresse)\b/i;
   function isCollecting(reply) { return COLLECT.test(String(reply || '')); }
+  // Collecte collante (Work, cycle 3) : une fois ouverte, elle reste ouverte jusqu'à la purge après réservation
+  // ou l'expiration de la session. Une réponse sans mot-clé ne la referme pas.
+  function nextCollecting(previous, reply) { return previous === true || isCollecting(reply); }
   // Messages marqués privés par l'appelant (collecte en cours) : exclus de toute sauvegarde.
   function persistable(list) { return (Array.isArray(list) ? list : []).filter(m => m && !m.private); }
 
@@ -105,7 +108,7 @@
     try { if (s) s.removeItem(KEY); } catch (_) { /* stockage indisponible : rien à purger */ }
   }
 
-  const api = { KEY, TTL_MS, MAX_MESSAGES, cleanHistory, pack, unpack, save, load, clear, isCollecting, persistable };
+  const api = { KEY, TTL_MS, MAX_MESSAGES, cleanHistory, pack, unpack, save, load, clear, isCollecting, nextCollecting, persistable };
   root.BRMelbaSession = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
