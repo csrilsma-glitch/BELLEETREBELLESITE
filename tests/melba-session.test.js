@@ -184,3 +184,12 @@ test('collecte collante : une réponse sans mot-clé ne referme pas la collecte,
  S.save({history:S.persistable(history),collecting:c});
  assert.ok(!/fictive/i.test(globalThis.sessionStorage.getItem(S.KEY)),'aucune trace du nom en minuscules');
 });
+
+
+test('parcours structuré sans historique public : restauration du contexte sans coordonnées',()=>{
+ const now=1230000,bookingContext={flow:2,id:'fictif',step:'firstname',services:['press-kit-seul'],expires:now+S.TTL_MS};
+ const raw=S.pack({history:[],bookingContext,contextSignature:'signature-fictive',collecting:true},now);
+ assert.deepEqual(S.unpack(raw,now+1).bookingContext,bookingContext);
+ assert.deepEqual(S.unpack(raw,now+1).history,[]);
+ assert.equal(S.unpack(S.pack({history:[]},now),now+1),null);
+});

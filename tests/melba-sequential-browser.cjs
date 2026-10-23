@@ -35,9 +35,10 @@ const c=require('../netlify/functions/lib/core'),chat=require('../netlify/functi
   await ask(day,/matin ou l’après-midi/);await ask('Matin',/créneaux vérifiés/);
   await ask('10h40',/nom de famille/);await ask('cliente fictive',/prénom/);
   const cookies=await context.cookies(base+'/.netlify/functions/chat');assert(cookies.some(x=>x.name==='br15_melba_flow'&&x.httpOnly&&x.secure&&x.sameSite==='Strict'));assert(!JSON.stringify(cookies).includes('cliente fictive'));
-  await page.reload();await f.locator('#assistant-toggle').click();assert(!(await f.locator('#assistant-log').innerText()).includes('cliente fictive'));
+  await page.reload();await f.locator('#assistant-toggle').click();assert(!(await f.locator('#assistant-log').innerText()).includes('cliente fictive'));assert.match(await f.locator('.assistant-bot').last().innerText(),/Quel est votre prénom/);
   await ask('élise',/adresse e-mail/);await ask('cw-test@example.invalid',/téléphone/);await ask('0600000000',/Confirmer mon rendez-vous/);
   assert.equal(await scalar('select count(*)::int v from br15_bookings'),count,'aucun rendez-vous avant clic');raw=await f.locator('body').evaluate(()=>sessionStorage.getItem('br-melba-session-v1'));assert(!/cliente fictive|élise|cw-test|0600000000/.test(raw));
+  await page.reload();await f.locator('#assistant-toggle').click();assert(!(await f.locator('#assistant-log').innerText()).includes('cw-test@example.invalid'));await f.getByRole('button',{name:'Revoir mon récapitulatif',exact:true}).click();await f.getByRole('button',{name:'Confirmer mon rendez-vous',exact:true}).waitFor();
   await f.locator('#assistant-log input[type=checkbox]').check();await f.getByRole('button',{name:'Confirmer mon rendez-vous',exact:true}).click();await f.getByText('Rendez-vous fictif enregistré.',{exact:false}).waitFor();count++;
   assert.equal(await scalar('select count(*)::int v from br15_bookings'),count);assert.equal(await f.locator('body').evaluate(()=>sessionStorage.getItem('br-melba-session-v1')),null);assert(!(await context.cookies(base+'/.netlify/functions/chat')).some(x=>x.name==='br15_melba_flow'));
   const booking=(await db.query("select * from br15_bookings where status='confirme' order by created_at desc limit1".replace('limit1','limit 1'))).rows[0];assert.equal(booking.minutes,30);assert.equal(booking.cents,2500);
