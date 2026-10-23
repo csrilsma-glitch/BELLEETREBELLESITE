@@ -82,7 +82,9 @@ function directReply(text){
  return null;
 }
 function needsCalendarEvidence(reply){
- const t=norm(reply).replace(/[’‘]/g,"'").replace(/\bsur place\b/g,'sur le lieu');
+ let t=norm(reply).replace(/[’‘]/g,"'").replace(/\bsur place\b/g,'sur le lieu');
+ // Une durée de prestation (« le soin dure 1 heure ») n'est pas une heure de rendez-vous.
+ t=t.replace(/\b(?:dure|durer|durent|duree|pendant|durant)\s+(?:environ\s+|a peu pres\s+)?(?:\d{1,2}|une?|deux|trois|quatre)\s*(?:h|heures?)?(?:\s*(?:et\s+)?(?:\d{1,2}\s*(?:min\w*)?|demi\w*|quart))?\b/g,' duree ');
  // Pas de déduction de disponibilité depuis du texte libre : heures, jours et assertions métier.
  const hours=/\b(?:[01]?\d|2[0-3])\s*(?:h(?:\s*[0-5]\d)?|:[0-5]\d)\b|\b(?:une?|deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze|douze|treize|quatorze|quinze|seize|dix[- ]sept|dix[- ]huit|dix[- ]neuf|vingt(?:[- ](?:et[- ])?(?:une?|deux|trois))?|\d{1,2})\s+heures?\b|\b(?:midi|minuit)\b/;
  const days=/\b(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)s?\b/;
