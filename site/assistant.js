@@ -34,7 +34,12 @@
   const quick=document.createElement('div');quick.className='assistant-quick';
   // Melba répond via le serveur (netlify/functions/chat.js) quand il est disponible ;
   // sinon (version statique), on garde les réponses locales ci-dessous.
-  const history=[];let bookingContext=null,contextSignature=null,requestSequence=0;
+  // CW-003 : après un rafraîchissement, la conversation récente est restaurée (texte seulement, 30 min maximum).
+  const restored=window.BRMelbaSession?.load()||null;
+  const history=restored?restored.history.slice():[];
+  let bookingContext=restored?restored.bookingContext:null,contextSignature=restored?restored.contextSignature:null,requestSequence=0;
+  if(restored)restored.history.forEach(m=>message(m.role==='user'?'user':'bot',m.content));
+  const persist=()=>window.BRMelbaSession?.save({history,bookingContext,contextSignature});
   function proposal(draft,sequence){
     const card=document.createElement('div');card.className='assistant-msg assistant-bot';
     const text=document.createElement('p');
@@ -45,7 +50,7 @@
     const key=crypto.randomUUID();
     fetch('/.netlify/functions/catalog',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(c=>{if(sequence!==requestSequence)return;privacy.textContent=c.privacy_text||'Réservations non ouvertes.';button.disabled=!c.enabled||!c.privacy_text;}).catch(()=>{privacy.textContent='Informations indisponibles. Passez par la page Réservation.';});
     button.onclick=async()=>{if(sequence!==requestSequence)return;if(!consent.checked){privacy.textContent+=' Merci de cocher la case après lecture.';return;}button.disabled=true;
-      try{const r=await fetch('/.netlify/functions/reservations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...draft,request_key:key,consent:true,confirmed:true})});const d=await r.json();if(!r.ok)throw Error(d.error||'Réservation refusée');button.remove();consent.disabled=true;message('bot',d.notifications_disabled?'Rendez-vous fictif enregistré. Aucun e-mail ni SMS envoyé en préproduction.':'Votre rendez-vous est enregistré. Les notifications sont en cours de traitement.',{label:'Gérer mon rendez-vous',href:d.manage_url});history.push({role:'user',content:'Le bouton de confirmation a créé le rendez-vous '+d.booking.id+'.'});
+      try{const r=await fetch('/.netlify/functions/reservations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...draft,request_key:key,consent:true,confirmed:true})});const d=await r.json();if(!r.ok)throw Error(d.error||'Réservation refusée');button.remove();consent.disabled=true;message('bot',d.notifications_disabled?'Rendez-vous fictif enregistré. Aucun e-mail ni SMS envoyé en préproduction.':'Votre rendez-vous est enregistré. Les notifications sont en cours de traitement.',{label:'Gérer mon rendez-vous',href:d.manage_url});history.push({role:'user',content:'Le bouton de confirmation a créé le rendez-vous '+d.booking.id+'.'});window.BRMelbaSession?.clear();
       }catch(e){message('bot',e.message);button.disabled=false;}
     };
     card.append(text,privacy,label,button);log.append(card);log.scrollTop=log.scrollHeight;
@@ -62,7 +67,7 @@
       if(sequence!==requestSequence)return;
       if(!data.reply)throw new Error('vide');
       bookingContext=data.bookingContext||null;contextSignature=data.contextSignature||null;
-      history.push({role:'assistant',content:data.reply,signature:data.signature});
+      history.push({role:'assistant',content:data.reply,signature:data.signature});persist();
       message('bot',data.reply);
       if(data.pendingBooking) proposal(data.pendingBooking,sequence);
 

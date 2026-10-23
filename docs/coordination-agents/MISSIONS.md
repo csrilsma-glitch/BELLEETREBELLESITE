@@ -11,3 +11,8 @@ Statuts autorisés : PROPOSÉE, EN_ATTENTE_VALIDATION, AUTORISÉE, EN_COURS, BLO
 | CW-005 / 23-10-2026 | Plan déploiement/retour arrière, Work | TERMINÉE pour rédaction documentaire ; exécution NON autorisée | HISTORIQUE/20261023-WORK-plan-deploiement.md | Procédure et conditions d'arrêt documentées | Attendre autorisation de fusion/déploiement |
 | COORD-001 / 23-10-2026 | Installer ce protocole, Work | TERMINÉE pour installation et publication ; fichier utilisateur joint autorise docs, PR et fusion documentaire uniquement | docs/installation-coordination-definitive-20261023 ; PR #9 ; commit initial 92bb83d | Périmètre Markdown seul contrôlé, lecture distante effectuée | Fusion documentaire autorisée, sans déploiement fonctionnel |
 | PROP-001 / 23-10-2026 | Préparer validation de bout en bout, Claude | EN_ATTENTE_VALIDATION ; aucune autorisation d'exécution | Voir PROPOSITIONS_A_VALIDER.md | Aucun test nouveau lancé sous cette proposition | Décision du propriétaire |
+
+## Mise à jour Claude — 23/10/2026, 21:52 (Europe/Paris)
+- CW-003 : AUTORISÉE par le propriétaire (21:46), EN_COURS puis **TERMINÉE pour le code** ; revue Work demandée. Branche `fix/20261023-melba-persistance-cw003`. Tests : `npm test` 202/202, `tests/melba-session.test.js` 9/9. Limites : `/app/` non couvert, stockage par onglet, pas de navigateur réel.
+- PROP-001 : AUTORISÉE par le propriétaire (21:46), **recette existante relancée** : `npm run test:sql` vert (concurrence, double clic idempotent, clé forgée refusée, rappel unique, annulation). Outlook, Brevo et notifications réelles non testés ; aucune écriture ni envoi réel.
+- Transmission : `TRANSMISSION_CLAUDE_VERS_WORK.md` ; précédente archivée dans `HISTORIQUE/20261023-CLAUDE-transmission-precedente.md`.

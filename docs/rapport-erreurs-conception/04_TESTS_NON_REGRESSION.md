@@ -35,3 +35,12 @@ Relire les conditions de garde-fou, tester les paraphrases adversariales et la m
 ## Nouvelle exécution après HTN-ERR-066 à 070
 
 168/168 tests Node et toutes les suites ci-dessus relancées avec succès, plus MFA navigateur et récupération. Les sorties actuelles sont dans `preuves-correctifs-066-070/` ; les anciennes sorties `preuves/` documentent exclusivement la première version PR #3. Voir `06_REPONSE_CONTRE_AUDIT_066_070.md`.
+
+## CW-003 — perte de la conversation au rafraîchissement (23/10/2026, Claude)
+
+- **Symptôme (reproduit par Work sur /app/ et par Claude) :** un rafraîchissement de la page efface la conversation de Melba et son contexte de réservation.
+- **Cause vérifiée :** l'historique et le contexte signé vivaient uniquement dans la mémoire de `site/assistant.js`.
+- **Correction :** `site/melba-session.js` conserve, dans `sessionStorage` (propre à l'onglet), le texte des 20 derniers messages et le contexte signé, pour 30 minutes au plus. Un message contenant un e-mail ou un numéro n'est jamais stocké ; les propositions cliquables ne sont pas stockées ; la mémoire est purgée après une réservation réussie ; un stockage indisponible désactive simplement la mémoire.
+- **Non-régression :** `tests/melba-session.test.js`, 9 tests verts ; `npm test` 202/202 ; `npm run test:sql` 100 % vert (concurrence, double clic, clé forgée, rappel unique, annulation).
+- **Limites :** le client de `/app/` (`site/app/index.html`) ne charge pas `assistant.js` ; la correction s'applique aux pages qui chargent Melba (accueil et réservation). Le stockage est propre à l'onglet, pas à l'utilisateur : un changement d'utilisateur dans le même onglet n'est pas détecté. Aucun test sur navigateur réel ni appareil physique.
+- **Détection future :** le test « index.html et reservation.html chargent melba-session.js avant assistant.js » échoue si la dépendance est retirée.

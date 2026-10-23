@@ -1,9 +1,38 @@
-# Dernière transmission Claude → Work
+# Transmission Claude → Work
 
-Source conservée : PR #7, commit 6bf3a31, et protocole initial PR #8 (13ca0b1). Auteur original : Claude. Cette fiche est une synthèse de provenance, pas une nouvelle déclaration de Claude.
+Auteur : CLAUDE. Date : 23 octobre 2026, 21:52 Europe/Paris. Missions : CW-003 (persistance de la conversation) et PROP-001 (recette isolée de la réservation), toutes deux autorisées par le propriétaire le 23/10 à 21:46.
 
-Claude a corrigé la reconnaissance de « babyboomer 2 doigts » en utilisant nom et catégorie, puis normalisé baby boomer et les nombres 2/4/6. Rapport technique source : docs/validation/20261023-babyboomer-services.md sur fix/20261023-melba-babyboomer-services.
+## Problème initial
+Un rafraîchissement de la page efface la conversation de Melba et son contexte de réservation (CW-003).
 
-Mission transmise à Work : CW-002, audit indépendant de la PR #7. Deux tests de régression et 195 tests annoncés ; modèle/calendrier simulés. Conservation au rafraîchissement laissée à CW-003. PR #7 non fusionnée, aucune autorisation de déploiement donnée dans cette transmission.
+## Cause (fait vérifié)
+L'historique et le contexte signé étaient uniquement dans la mémoire de `site/assistant.js`.
 
-Work a exécuté sa vérification et répond dans TRANSMISSION_WORK_VERS_CLAUDE.md. Les documents originaux de docs/agent-coordination/ sont archivés tels quels dans HISTORIQUE/protocole-cw-initial/.
+## Actions effectuées
+- `site/melba-session.js` (nouveau) : mémoire de session minimisée, 30 minutes, purge après réservation, pas de coordonnées, pas de propositions cliquables.
+- `site/assistant.js` : restauration au chargement, sauvegarde après chaque réponse, purge après réservation réussie.
+- `site/index.html` et `site/reservation.html` : chargement de `melba-session.js` avant `assistant.js`.
+- `tests/melba-session.test.js` (nouveau) : 9 tests.
+- PROP-001 : recette existante relancée (`npm run test:sql` sur PGlite, `npm test`). Aucun nouveau code de réservation.
+
+## Fichiers modifiés
+`site/assistant.js`, `site/index.html`, `site/reservation.html`, `site/melba-session.js`, `tests/melba-session.test.js`, `docs/rapport-erreurs-conception/04_TESTS_NON_REGRESSION.md`, `docs/coordination-agents/` (registre, propositions, historique).
+
+## Branche, SHA, PR
+Branche : `fix/20261023-melba-persistance-cw003`, à partir de `origin/main` 9d688d8. PR : voir `MISSIONS.md`. Aucune fusion, aucun déploiement.
+
+## Tests et preuves
+- `npm test` : 202 réussis, 0 échec.
+- `npm run test:sql` (PGlite, schéma des migrations) : toutes les vérifications OK, dont « deux demandes concurrentes : une seule réservation », « double clic idempotent », « lien d’annulation forgé refusé », « rappel e-mail 24 h » unique.
+
+## Limites
+- Simulation uniquement pour la mémoire de session : pas de test sur navigateur réel ni appareil physique.
+- `/app/` n'utilise pas le client Melba ; la correction ne le couvre pas.
+- Un changement d'utilisateur dans le même onglet n'est pas détecté.
+- Outlook, Brevo, notifications réelles : non testés ici, hors périmètre fictif.
+
+## Risques
+Faible : la mémoire ne sert qu'à la restauration de texte. Le retour arrière consiste à retirer le script `melba-session.js` et les trois appels dans `assistant.js`.
+
+## Prochaine proposition
+CW-002 (revue Work) de cette branche, puis proposition séparée pour la recette navigateur réelle. **EN_ATTENTE_VALIDATION** : aucune fusion ni déploiement sans autorisation explicite du propriétaire.
