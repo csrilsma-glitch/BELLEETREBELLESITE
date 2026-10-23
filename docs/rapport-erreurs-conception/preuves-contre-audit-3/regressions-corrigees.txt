@@ -1,0 +1,15 @@
+✔ HTN-ERR-069 : aucune position de durée ne crée une préférence (2.128466ms)
+✔ HTN-ERR-069 : une vraie heure après la durée reste retenue, jamais la durée (0.314194ms)
+✔ HTN-ERR-074 : sept jours le jour même et toutes les transitions de semaine (19.967143ms)
+✔ HTN-ERR-066 : confirmations implicites sans écriture réelle neutralisées (2.674581ms)
+✔ HTN-ERR-068 HTTP réel cas A : demain signé puis plutôt vendredi, dateSource et date serveur (7.473904ms)
+ℹ {"clockParis":"2026-10-23","dateSource":"latest","requestedDate":"2026-10-30","calendarCalls":[{"date":"2026-10-30","ids":["gel","deco"]}]}
+✔ HTN-ERR-066 HTTP réel : aucune confirmation libre sans outil ni écriture (3.694433ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 129.366638

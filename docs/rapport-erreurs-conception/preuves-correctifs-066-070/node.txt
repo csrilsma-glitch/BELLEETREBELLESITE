@@ -1,0 +1,253 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> belle-rebelle-v15@15.0.0 test
+> node --test tests/*.test.js
+
+✔ pauses : création, modification, suppression du même événement sans doublon (4.493585ms)
+✔ pauses : ancienne révision ignorée (0.350469ms)
+✔ pauses : préproduction sans autorisation reporte sans écriture (0.279051ms)
+✔ pauses : panne fournisseur laisse la pause et libère le verrou pour reprise (0.983352ms)
+✔ pauses : POST accepté et réponse perdue réconcilié sans nouveau POST (0.857754ms)
+✔ pauses : suppression après réponse POST perdue retrouve et supprime événement (0.602298ms)
+✔ pauses : exécutions concurrentes refusées et calendrier changé protégé (0.606394ms)
+✔ B&R APP : manifeste propre, identité et périmètre dans /app/ (1.362554ms)
+✔ B&R APP ne couvre pas le Manager (0.257979ms)
+✔ accueil : bouton « Installer B&R APP » et manifeste /app/ (0.539273ms)
+✔ réservation : même manifeste B&R APP, aucun manifeste racine (0.327685ms)
+✔ pages publiques : aucun manifeste ne pointe vers la racine du site (0.754398ms)
+✔ installation masquée dans la coque B&R APP (iframe ou ?source=pwa) (0.308555ms)
+✔ coque /app/ : iframe vers l’accueil public, service worker dans /app/ (0.435086ms)
+✔ bouton d’installation : prompt() appelé depuis le clic, sans attendre (2.646541ms)
+✔ fenêtre de secours : titre B&R APP, jamais « Installer Belle & Rebelle » (0.511601ms)
+✔ manifeste B&R APP : icônes 192 et 512 « any » et « maskable » séparées (0.35821ms)
+✔ coque /app/ : titre iOS « B&R APP » pour l’écran d’accueil (0.191338ms)
+✔ PWA embarquée : un événement tardif ne déclenche pas d’erreur ni de prompt (3.512126ms)
+✔ installation tardive : attend un nouveau geste ; prompt exécuté une seule fois au clic (1.602236ms)
+✔ cache B&R APP : rafraîchit le manifeste, isole Manager/API et conserve le secours hors ligne (1.968228ms)
+BR15 409 Error
+BR15 409 Error
+✔ export agenda refusé après annulation ou clôture, vue toujours accessible (3.564434ms)
+BR15 401 Error
+✔ validation dates et coordonnées (2.335661ms)
+✔ jetons de gestion déterministes, secrets et chiffrés (3.094736ms)
+✔ origine et limites de requête (0.266101ms)
+✔ ICS stable pour mises à jour et annulations (0.440544ms)
+✔ Manager anonyme refusé avant toute lecture clientes (2.820303ms)
+✔ Melba conserve prompt, outils et nettoyage de Claude (2.506649ms)
+✔ Manager : authentification vérifiée, allowlist et MFA indispensables (7.842064ms)
+✔ Melba native propose sans écrire un rendez-vous (17.874701ms)
+✔ SMS ambigu : pas de renvoi automatique après timeout fournisseur (2.491898ms)
+BR15 forgot 400
+BR15 400 Error
+BR15 400 Error
+BR15 forgot : récupération simulée en préproduction
+BR15 403 Error
+BR15 forgot : récupération simulée en préproduction
+BR15 forgot : récupération simulée en préproduction
+BR15 forgot : récupération simulée en préproduction
+BR15 forgot : récupération simulée en préproduction
+✔ adresse normalisée et validée (2.404836ms)
+✔ production : lien demandé à Supabase avec retour vers la page de réinitialisation (2.927324ms)
+✔ réponse identique que le compte existe ou non (pas d’énumération) (2.325307ms)
+✔ préproduction : aucun appel à Supabase, réponse identique (0.566013ms)
+✔ limite par adresse atteinte : aucun envoi, réponse identique (0.549699ms)
+✔ entrées invalides refusées avant tout appel (1.137625ms)
+✔ double authentification : mauvais code TOTP = 403, pas 401 (évite le faux « lien expiré ») (4.250609ms)
+✔ préproduction : ancien drapeau réel et allowlist ignorés sans appel Auth (0.564561ms)
+✔ préproduction : drapeau absent ou faux = aucun appel même pour l’adresse listée (0.626224ms)
+✔ préproduction : SITE_URL absent ou production = aucun appel, jamais le domaine public (1.867165ms)
+✔ production : lien sur le domaine public, inchangé (0.208505ms)
+✔ délai de connexion Auth : message clair, journalisé sans secret (1.484769ms)
+✔ worker traite une rafale de tâches simulées sans appeler de fournisseur (2.85191ms)
+✔ install absent native event opens persistent Android instructions, close restores focus state (2.977309ms)
+✔ iPhone and desktop receive appropriate instructions (3.435549ms)
+✔ native prompt deferred until click, once only, accepted is not falsely marked installed (0.780136ms)
+✔ native prompt rejection and dismissal restore usable help instead of dead button (1.895619ms)
+✔ installed standalone Manager hides install; app identities and worker scopes remain separate (1.371357ms)
+BR15 mfa enroll-clean 200
+BR15 mfa challenge 404
+BR15 mfa verify 422 mfa_verification_failed verified
+BR15 mfa verify 422 mfa_verification_failed enrolling
+BR15 mfa challenge 500
+BR15 mfa challenge 404
+✔ enrôlement : seul un facteur non vérifié est retiré avant un nouvel enrôlement (4.443771ms)
+✔ enrôlement refusé si un facteur vérifié existe : aucune suppression, aucun nouvel enrôlement (0.658723ms)
+✔ vérification : facteur absent -> message dédié (0.708879ms)
+✔ vérification : code TOTP invalide sur un facteur vérifié -> message code invalide, aucun cookie (0.658533ms)
+✔ vérification : code faux pendant un enrôlement -> enrôlement incomplet, distinct du code invalide (0.632944ms)
+✔ vérification réussie : cookie de session aal2, aucune suppression de facteur (0.566825ms)
+✔ un facteur vérifié n’est jamais supprimé, quelle que soit l’action (0.633525ms)
+✔ les actions factors et logout restent inchangées (0.827007ms)
+✔ enrôlement en cours : facteur tout juste créé (absent de la liste) puis vérifié avec succès (0.628828ms)
+✔ facteur introuvable côté Supabase (404 au challenge) -> facteur absent, aucun cookie (4.040468ms)
+✔ nouvel enrôlement de csrilsma (aucun facteur) : création directe, sans suppression (0.664222ms)
+✔ exception MFA limitée aux deux identifiants existants, jamais à un email ou claim falsifié (1.03423ms)
+✔ les deux comptes accèdent en AAL1 seulement après Auth et droits actifs, aucun appel facteurs (7.777727ms)
+✔ login annonce mot de passe seul pour chaque compte autorisé et conserve cookie sécurisé (1.75065ms)
+✔ Manager SW never intercepts APIs, recovery tokens, POSTs or external resources (2.841153ms)
+✔ Manager SW refreshes public shell and falls back offline, deletes only its old cache (2.245185ms)
+✔ Manager starts installed at private scope and recovery is not cached (0.461025ms)
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 503 Error
+BR15 503 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+BR15 400 Error
+✔ hours, unblock, settings, service passent par rpc admin (4.260313ms)
+✔ cancel et complete passent par rpc change avec droits Manager (0.644422ms)
+✔ cancel refuse un identifiant non UUID sans appel base (1.173569ms)
+✔ erase-client exige un UUID et appelle erase_client (0.489378ms)
+✔ action inconnue et méthode GET refusées (0.43057ms)
+✔ dashboard lit les tables Manager et renvoie les clés attendues (1.069763ms)
+✔ calendrier mensuel : le début et la fin du mois sont chargés même le 31 (0.457851ms)
+✔ historique cliente : filtre UUID obligatoire, aucun filtre de mois (0.455116ms)
+✔ block : fin avant début, dates invalides ou motif vide refusés sans aucun appel base (0.899076ms)
+✔ block : période valide envoyée en ISO UTC avec motif borné (0.349116ms)
+✔ client : notes relues après écriture ; échec signalé si la note n’a pas changé (0.87516ms)
+✔ client : identifiant non UUID refusé sans appel (0.295595ms)
+✔ client : notes trop longues refusées sans écriture ni perte silencieuse (0.296016ms)
+✔ block : champs null, numériques, tableaux et objets refusés avant écriture (1.527533ms)
+✔ client : texte absent ou non textuel refusé sans effacer les notes (0.39807ms)
+✔ Melba reçoit les règles métier sans perdre sa personnalité ni ses outils (24.920024ms)
+✔ HTN-ERR-066 : chaque contournement publié par Claude est neutralisé sans outil (3.744025ms)
+✔ HTN-ERR-066 : seuls les résultats structurés autorisent des horaires ; paramètres connus non redemandés (17.335227ms)
+✔ HTN-ERR-067 : abandon seul, demande mixte, changement de date et plainte réelle distingués (1.011074ms)
+✔ HTN-ERR-068 : dernier jour exprimé, jour prochain et passage année/mois/Paris (2.617457ms)
+✔ HTN-ERR-069 : durée ne fixe pas le matin, préposition horaire explicite requise (0.983062ms)
+✔ HTN-ERR-068 : une ancienne date non qualifiée ne remplace plus la nouvelle date outil (2.926893ms)
+✔ HTN-ERR-070 : aucune préférence = aucun appel ; date + trois alternatives maximum (2.15517ms)
+✔ HTN-ERR-070 : budget partagé entre outils, jamais de création après épuisement (3.595721ms)
+✔ handler : lendemain signé puis nouveau jour = le jour du dernier message prévaut (4.830734ms)
+✔ HTN-ERR-068 : une date invalide explicite ne retombe pas sur une date mémorisée (2.603906ms)
+Outil en erreur check_availability
+✔ dates sans année : prochaine occurrence, année explicite, dates impossibles et Paris (23.360012ms)
+✔ préférence déjà donnée, changement de préférence, midi et créneaux espacés (6.078585ms)
+✔ abandon ne prétend pas annuler ; vraie annulation exige un lien sécurisé (1.064315ms)
+✔ garde-fous : heures inventées et confirmations bloquées, panne fermée, texte chaleureux conservé (1.689047ms)
+✔ outil : toutes les prestations, date corrigée, préférence et durée cumulée (3.739798ms)
+✔ outil : date passée refusée ; dimanche vide => alternative vraiment vérifiée (1.271677ms)
+✔ proposition revérifiée : créneau occupé refusé, aucune écriture ni confirmation automatique (1.348273ms)
+✔ handler : panne outil => jamais de créneau inventé ni de données écrites (4.845747ms)
+✔ abandon : handler sans appel IA et sans notification, vraie annulation sans action métier (1.820615ms)
+✔ contexte signé : alternative retenue, préférence conservée, contexte falsifié ignoré (5.643609ms)
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 503 Error
+BR15 403 Error
+BR15 403 Error
+BR15 503 Error
+BR15 outlook identity 503 Error
+✔ préproduction, drapeau « undefined » : tout Outlook reste bloqué (5.246691ms)
+✔ préproduction, drapeau « false » : tout Outlook reste bloqué (0.911184ms)
+✔ préproduction, drapeau «  » : tout Outlook reste bloqué (0.781298ms)
+✔ préproduction, drapeau « TRUE » : tout Outlook reste bloqué (0.831414ms)
+✔ préproduction, drapeau « 1 » : tout Outlook reste bloqué (1.492561ms)
+✔ drapeau true sans compte de test configuré : bloqué (0.456548ms)
+✔ drapeau true : la connexion de test est ouverte, avec scope openid et compte de test (1.818251ms)
+✔ drapeau true, compte de test : jeton chiffré et stocké dans la base de préproduction uniquement (2.768964ms)
+✔ drapeau true, autre compte : refusé, rien stocké (0.455296ms)
+✔ drapeau true, id_token sans identifiant : refusé, rien stocké (0.598873ms)
+✔ drapeau true, base de production : refus avant tout échange (0.426964ms)
+✔ drapeau true : l’envoi Outlook de la file reste simulé (0.595938ms)
+✔ production : scope et connexion inchangés (0.320403ms)
+✔ simulation : création d’un rendez-vous confirmé = un événement fictif, lié à la réservation (6.879372ms)
+✔ simulation : nouvelle révision = mise à jour (PATCH), pas de doublon (1.568475ms)
+✔ simulation : événement supprimé côté Outlook = recréé à la prochaine révision (1.293481ms)
+✔ simulation : annulation = suppression de l’événement et du lien (1.250996ms)
+✔ simulation : import des indisponibilités, paginé, sans les propres événements ni les annulés (3.98577ms)
+✔ simulation : lien de pagination hors Graph refusé (1.559111ms)
+✔ simulation : jeton expiré = rafraîchi, nouveau jeton chiffré, relance Graph (1.811482ms)
+✔ simulation : Graph 204 traité comme réponse vide, 404 comme objet manquant (4.046491ms)
+✔ simulation : aucune connexion calendrier = erreur explicite, aucun appel (0.65004ms)
+✔ simulation : pauses Manager exportées exclues par mapping et transactionId sans boucle (0.996252ms)
+BR15 outlook identity : compte différent du compte désigné
+✔ outlook préproduction : sans drapeau, aucune identité vérifiée ni écriture (6.839182ms)
+✔ outlook préproduction : compte différent du compte désigné → aucune écriture (3.919099ms)
+✔ outlook préproduction : compte désigné → un événement [TEST V15], pas de doublon à la relance (5.462025ms)
+✔ outlook préproduction : sans écriture autorisée, la tâche Outlook reste simulée (0.705203ms)
+✔ outlook production : l’écriture n’est pas bridée par les garde-fous de préproduction (0.616961ms)
+✔ each password control preserves value and autofill, masks on submit, reset and background (3.002968ms)
+✔ calendrier test déjà sélectionné : aucune modification (1.088972ms)
+✔ réutilise un calendrier test distinct, sans écriture des événements réels (0.255265ms)
+✔ crée seulement un calendrier vide nommé préproduction et confirme sa sélection (0.710461ms)
+✔ refuse un changement si des événements sont déjà liés (0.434355ms)
+✔ refuse les calendriers de test ambigus (0.308976ms)
+✔ en production : aucun calendrier créé, aucune sélection changée (0.17258ms)
+✔ préproduction : une réservation marquée real_test_until ne déclenche aucun envoi réel (1.332849ms)
+✔ préproduction : une confirmation reste simulée, avec le même identifiant de file (0.871805ms)
+✔ préproduction : le module d’essais réels n’existe plus (0.46412ms)
+✔ préproduction : anciens envois et Outlook bloqués même avec des clés configurées (4.929101ms)
+✔ préproduction : base de production refusée avant toute requête réseau (0.283727ms)
+✔ préproduction : URL différente de la base attendue refusée (0.150317ms)
+✔ préproduction : la file est traitée en simulation, sans appel fournisseur (0.6767ms)
+✔ préproduction : rappel dépassé ou révision remplacée marqué obsolète, pas simulé (1.077665ms)
+✔ préproduction : /jobs traite la file sans passer par Outlook (0.792805ms)
+✔ production : le chemin Resend reste inchangé (envoi réel simulé par fetch) (16.078042ms)
+✔ rappel e-mail dépassé : aucun envoi fournisseur (0.222195ms)
+✔ SMS : erreur 5xx après envoi = incertain, pas de relance (0.797502ms)
+✔ SMS : timeout réseau après envoi = incertain (0.811123ms)
+✔ SMS : refus 4xx définitif = échec relançable (0.751013ms)
+✔ SMS : clé absente = échec relançable, aucun envoi (0.333713ms)
+✔ régression : une prestation terminée ne déclenche aucun envoi (job « terminé » écarté, sans appel fournisseur) (0.314634ms)
+BR15 403 Error
+BR15 400 Error
+BR15 400 Error
+BR15 401 Error
+BR15 400 Error
+BR15 403 Error
+BR15 400 Error
+BR15 400 Error
+✔ start : jeton d’un manager autorisé → cookie de récupération (2.681183ms)
+✔ start : compte absent de l’allowlist refusé (0.866657ms)
+✔ start : jeton trop long ou absent refusé avant tout appel (0.337288ms)
+✔ start : TOTP vérifié et session aal1 → mfa_required (0.380313ms)
+✔ reset sans cookie de récupération refusé (0.280804ms)
+✔ reset : mot de passe trop court refusé, pas de mise à jour (0.749209ms)
+✔ reset : TOTP existant sans session aal2 → code de sécurité exigé (0.687206ms)
+✔ verify : code non numérique refusé ; code valide → session aal2 (0.808519ms)
+✔ reset : succès → mot de passe changé avec le jeton utilisateur, déconnexion globale, cookies effacés (0.677061ms)
+✔ reset : mot de passe refusé par Auth → message sans détail technique (1.207271ms)
+Erreur Melba a atteint sa limite quotidienne. Contactez Mélanie.
+✔ A1: ancien outil ne crée aucune réservation SimplyBook (1.014199ms)
+✔ A2: historique assistant falsifié refusé, signature serveur acceptée (0.993438ms)
+✔ A3: next_run falsifié par HTTP ne déclenche aucune tâche (0.615428ms)
+✔ A4: endpoint SMS retiré même avec authentification (0.347844ms)
+✔ A5: plafond IA global épuisé bloque avant tout appel fournisseur (15.49282ms)
+ℹ tests 168
+ℹ suites 0
+ℹ pass 168
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 497.64574

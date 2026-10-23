@@ -1,0 +1,11 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> belle-rebelle-v15@15.0.0 test:manager
+> node tests/manager-ui.cjs
+
+ok desktop
+ok mobile-standalone
+ok mobile-browser
+ok landscape
+ok legacy-media
+manager-ui : tous les contrôles passent

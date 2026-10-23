@@ -1,0 +1,30 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> belle-rebelle-v15@15.0.0 test:browser
+> node tests/browser.cjs
+
+desktop crâne et sélection OK
+12 vidéos : métadonnées et lecture Chromium OK
+Vidéos : rejouer, pause, ressources libérées, navigation rapide et erreur/réessai OK
+desktop réservation multi-prestations et confirmation OK
+desktop annulation finale, actions masquées, répétition et réouverture OK
+desktop Melba proposition + clic explicite OK
+desktop Manager connexion MFA, agenda, 64 prestations, paramètres OK
+tablet crâne et sélection OK
+tablet réservation multi-prestations et confirmation OK
+tablet annulation finale, actions masquées, répétition et réouverture OK
+tablet Melba proposition + clic explicite OK
+tablet Manager connexion MFA, agenda, 64 prestations, paramètres OK
+mobile crâne et sélection OK
+mobile réservation multi-prestations et confirmation OK
+mobile annulation finale, actions masquées, répétition et réouverture OK
+mobile Melba proposition + clic explicite OK
+mobile Manager connexion MFA, agenda, 64 prestations, paramètres OK
+phone-landscape crâne et sélection OK
+phone-landscape réservation multi-prestations et confirmation OK
+phone-landscape annulation finale, actions masquées, répétition et réouverture OK
+phone-landscape Melba proposition + clic explicite OK
+phone-landscape Manager connexion MFA, agenda, 64 prestations, paramètres OK
+PWA : coexistence réelle des workers /app/ et /manager/, manifests distincts, aucun écrasement
+PWA : ancien cache supprimé, JavaScript actualisé, aucune vidéo/API en cache
+TESTS NAVIGATEUR OK : aucune erreur JavaScript. Fournisseurs simulés.

@@ -1,5 +1,5 @@
 /* Shell public uniquement : aucune API, donnée cliente ou page de récupération. */
-const CACHE='br-manager-v15-9';
+const CACHE='br-manager-v15-11-targeted';
 const SHELL=['/manager/','/manager/index.html','/manager/manager.css','/manager/manager.js','/manager/forgot.js','/manager/password-toggle.js','/manager/pwa-runtime.js','/manager/install.js','/manager/manifest.webmanifest','/assets/icon-192.png','/assets/icon-512.png','/assets/fonts/october-crow.ttf'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('br-manager-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

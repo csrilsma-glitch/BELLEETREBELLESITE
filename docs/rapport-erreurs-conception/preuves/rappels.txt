@@ -1,0 +1,6 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> belle-rebelle-v15@15.0.0 test:reminders
+> node tests/reminders-lifecycle.test.cjs
+
+Rappels email/SMS 24h, déplacement, obsolescence, annulation répétée, délai 24h, reprise après crash : OK

@@ -32,7 +32,21 @@ function renderAgenda(){
  $('appointments').append(card);}
  const select=$('create-services'),selection=[...select.selectedOptions].map(o=>o.value);select.replaceChildren();for(const s of data.services.filter(s=>s.active)){const o=el('option',s.path+' · '+s.minutes+' min · '+euro(s.cents));o.value=s.id;o.selected=selection.includes(s.id);select.append(o);}
 }
-async function move(b,card){const panel=el('div'),date=el('input');date.type='date';date.setAttribute('aria-label','Nouvelle date');date.value=day(b.starts);const list=el('div');panel.append(date,button('Chercher les créneaux',async()=>{const r=await api('manager',{action:'availability',id:b.id,date:date.value,service_ids:b.services.map(s=>s.id)});list.replaceChildren();for(const slot of r.slots){list.append(button(when(slot.starts),async()=>{if(confirm('Déplacer au '+when(slot.starts)+' ?')){await api('manager',{action:'move',id:b.id,date:date.value,starts:slot.starts,service_ids:b.services.map(s=>s.id)});await load();}}));}if(!r.slots.length)list.textContent='Aucun créneau disponible.';}),list);card.append(panel);}
+async function move(b,card){
+ const panel=el('div'),date=el('input'),list=el('div');let search=0;
+ date.type='date';date.setAttribute('aria-label','Nouvelle date');date.value=day(b.starts);
+ date.onchange=()=>{search++;list.replaceChildren();};
+ panel.append(date,button('Chercher les créneaux',async()=>{
+  const generation=++search,queryDate=date.value,r=await api('manager',{action:'availability',id:b.id,date:queryDate,service_ids:b.services.map(s=>s.id)});
+  if(generation!==search)return;list.replaceChildren();
+  if(!r.slots.length){list.textContent='Aucun créneau disponible.';return;}
+  const choice=el('select');choice.setAttribute('aria-label','Horaire de déplacement');
+  const empty=el('option','Choisissez un horaire…');empty.value='';choice.append(empty);
+  for(const slot of r.slots){const option=el('option',when(slot.starts));option.value=slot.starts;choice.append(option);}
+  const apply=button('Confirmer le déplacement',async()=>{const starts=choice.value;if(generation!==search||!starts)return;if(confirm('Déplacer au '+when(starts)+' ?')){await api('manager',{action:'move',id:b.id,date:queryDate,starts,service_ids:b.services.map(s=>s.id)});await load();}});
+  apply.disabled=true;choice.onchange=()=>{apply.disabled=!choice.value;};list.append(choice,apply);
+ }),list);card.append(panel);
+}
 $('refresh').onclick=()=>safe(load);$('agenda-date').onchange=()=>safe(load);$('agenda-mode').onchange=renderAgenda;
 for(const x of document.querySelectorAll('[data-view]'))x.onclick=()=>{document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==x.dataset.view);document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b===x));};
 function renderClients(){const q=$('client-filter').value.toLocaleLowerCase('fr');$('client-list').replaceChildren();for(const c of data.clients.filter(c=>(c.name+' '+c.email+' '+c.phone).toLocaleLowerCase('fr').includes(q))){const card=el('article',undefined,'card'),notes=el('textarea');notes.value=c.notes;notes.rows=3;notes.maxLength=4000;notes.setAttribute('aria-label','Notes internes pour '+c.name);card.append(el('h3',c.name),el('p',c.email+' · '+c.phone),notes,button('Voir l’historique',async()=>{const result=await api('manager',{action:'history',id:c.id});let history=card.querySelector('.client-history');if(!history){history=el('div',undefined,'client-history');card.append(history);}history.replaceChildren(el('h4','Historique des rendez-vous'));for(const rdv of result.bookings)history.append(el('p',when(rdv.starts)+' · '+rdv.status+' · '+euro(rdv.cents)+' · '+rdv.services.map(s=>s.name).join(' + ')));if(!result.bookings.length)history.append(el('p','Aucun rendez-vous pour cette fiche.'));}),button('Enregistrer les notes',async()=>{if(notesSaves.has(c.id))return;

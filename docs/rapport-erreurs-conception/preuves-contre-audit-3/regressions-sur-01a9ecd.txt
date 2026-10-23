@@ -1,0 +1,144 @@
+✖ HTN-ERR-069 : aucune position de durée ne crée une préférence (2.496212ms)
+✖ HTN-ERR-069 : une vraie heure après la durée reste retenue, jamais la durée (0.645285ms)
+✖ HTN-ERR-074 : sept jours le jour même et toutes les transitions de semaine (15.435686ms)
+✖ HTN-ERR-066 : confirmations implicites sans écriture réelle neutralisées (0.95975ms)
+✖ HTN-ERR-068 HTTP réel cas A : demain signé puis plutôt vendredi, dateSource et date serveur (7.247242ms)
+✖ HTN-ERR-066 HTTP réel : aucune confirmation libre sans outil ni écriture (4.077727ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 0
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 132.70723
+
+✖ failing tests:
+
+test at tests/melba-reaudit.test.js:5:1
+✖ HTN-ERR-069 : aucune position de durée ne crée une préférence (2.496212ms)
+  AssertionError [ERR_ASSERTION]: un soin de 1h30
+
+  'morning' !== null
+
+      at TestContext.<anonymous> (/workspace/scratch/2b4bd7914797/br-targeted-20261023/tests/melba-reaudit.test.js:6:354)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'morning',
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/melba-reaudit.test.js:8:1
+✖ HTN-ERR-069 : une vraie heure après la durée reste retenue, jamais la durée (0.645285ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + 'morning'
+  - 'afternoon'
+
+      at TestContext.<anonymous> (/workspace/scratch/2b4bd7914797/br-targeted-20261023/tests/melba-reaudit.test.js:13:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'morning',
+    expected: 'afternoon',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/melba-reaudit.test.js:20:1
+✖ HTN-ERR-074 : sept jours le jour même et toutes les transitions de semaine (15.435686ms)
+  AssertionError [ERR_ASSERTION]: dimanche → dimanche
+  + actual - expected
+
+  + '2026-10-25'
+  - '2026-11-01'
+           ^
+
+      at TestContext.<anonymous> (/workspace/scratch/2b4bd7914797/br-targeted-20261023/tests/melba-reaudit.test.js:26:11)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '2026-10-25',
+    expected: '2026-11-01',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/melba-reaudit.test.js:36:1
+✖ HTN-ERR-066 : confirmations implicites sans écriture réelle neutralisées (0.95975ms)
+  AssertionError [ERR_ASSERTION]: C'est réservé pour vous
+      at TestContext.<anonymous> (/workspace/scratch/2b4bd7914797/br-targeted-20261023/tests/melba-reaudit.test.js:37:302)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: "C'est réservé pour vous",
+    expected: "C'est réservé pour vous",
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/melba-reaudit.test.js:47:1
+✖ HTN-ERR-068 HTTP réel cas A : demain signé puis plutôt vendredi, dateSource et date serveur (7.247242ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+    [
+      {
+  +     date: '2026-10-23',
+  -     date: '2026-10-30',
+        ids: [
+          'gel',
+          'deco'
+        ]
+      }
+
+      at /workspace/scratch/2b4bd7914797/br-targeted-20261023/tests/melba-reaudit.test.js:54:47
+      at async fixture (/workspace/scratch/2b4bd7914797/br-targeted-20261023/tests/melba-reaudit.test.js:45:202)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ { date: '2026-10-23', ids: [Array] } ],
+    expected: [ { date: '2026-10-30', ids: [Array] } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/melba-reaudit.test.js:59:1
+✖ HTN-ERR-066 HTTP réel : aucune confirmation libre sans outil ni écriture (4.077727ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be strictly unequal to:
+
+  "C'est réservé pour vous"
+      at /workspace/scratch/2b4bd7914797/br-targeted-20261023/tests/melba-reaudit.test.js:62:163
+      at async fixture (/workspace/scratch/2b4bd7914797/br-targeted-20261023/tests/melba-reaudit.test.js:45:202)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: "C'est réservé pour vous",
+    expected: "C'est réservé pour vous",
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
