@@ -1,0 +1,13 @@
+# Registre officiel des missions
+
+Statuts autorisés : PROPOSÉE, EN_ATTENTE_VALIDATION, AUTORISÉE, EN_COURS, BLOQUÉE, TERMINÉE, REFUSÉE.
+
+| ID / date | Objectif / responsable | Statut et autorisation | Référence | Tests / résultat | Prochaine action |
+|---|---|---|---|---|---|
+| CW-001 / 23-10-2026 | Babyboomer, Claude | TERMINÉE pour la livraison du code ; revue Work favorable ciblée | fix/20261023-melba-babyboomer-services ; 6bf3a31 ; PR #7 | 195 tests ; problème détecté sur main, corrigé localement | Ne pas fusionner sans autorisation |
+| CW-002 / 23-10-2026 | Audit indépendant, Work | TERMINÉE pour l'audit autorisé par message RAPPORT CW ; validation limitée au correctif | work/cw-002-audit-20261023 (prise en charge) ; 6bf3a31 audité | UI /app/ locale + HTTP, calendrier/modèle simulés ; perte au reload confirmée | Lire HISTORIQUE/20261023-WORK-CW-002-004.md |
+| CW-003 / 23-10-2026 | Persistance conversation, Claude | EN_ATTENTE_VALIDATION selon instruction définitive ; non exécutée | site/assistant.js, aucun correctif | Reproduction fournie par Work | Proposer une persistance minimisée, sûre et limitée ; attendre accord |
+| CW-004 / 23-10-2026 | Vérification intégrations, Work | TERMINÉE pour lecture seule autorisée ; limites explicites | Supabase production / Resend, aucun commit applicatif | 64 services, indicateurs Outlook sains ; Brevo non vérifiable directement | Validation réelle distincte si autorisée |
+| CW-005 / 23-10-2026 | Plan déploiement/retour arrière, Work | TERMINÉE pour rédaction documentaire ; exécution NON autorisée | HISTORIQUE/20261023-WORK-plan-deploiement.md | Procédure et conditions d'arrêt documentées | Attendre autorisation de fusion/déploiement |
+| COORD-001 / 23-10-2026 | Installer ce protocole, Work | EN_COURS ; fichier utilisateur joint autorise docs, PR et fusion documentaire uniquement | docs/installation-coordination-definitive-20261023 | Liens, périmètre et absence de secrets à contrôler | Publication puis lecture distante et fusion documentaire |
+| PROP-001 / 23-10-2026 | Préparer validation de bout en bout, Claude | EN_ATTENTE_VALIDATION ; aucune autorisation d'exécution | Voir PROPOSITIONS_A_VALIDER.md | Aucun test nouveau lancé sous cette proposition | Décision du propriétaire |
