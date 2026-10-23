@@ -74,7 +74,10 @@
     if (!data || data.v !== 1 || typeof data.savedAt !== 'number') return null;
     if (now - data.savedAt > TTL_MS || now < data.savedAt) return null;
     const history = cleanHistory(data.history);
-    if (!history.length) return null;
+    // Une sélection préremplie peut entrer en collecte dès le premier message.
+    // Le contexte métier public suffit ; les coordonnées restent dans le cookie HttpOnly.
+    const structuredFlow = data.bookingContext?.flow === 2 && typeof data.contextSignature === 'string';
+    if (!history.length && !structuredFlow) return null;
     return {
       history,
       bookingContext: data.bookingContext && typeof data.bookingContext === 'object' ? data.bookingContext : null,

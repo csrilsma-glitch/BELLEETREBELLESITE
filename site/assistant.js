@@ -42,6 +42,16 @@
   let collecting=restored?restored.collecting===true:false;
   let busy=false;
   if(restored)restored.history.forEach(m=>message(m.role==='user'?'user':'bot',m.content));
+  // Les coordonnées restent privées, mais la question courante doit être lisible après reload.
+  if(restored&&bookingContext?.flow===2&&bookingContext.expires>Date.now()){
+    const prompts={surname:'Quel est votre nom de famille ?',firstname:'Quel est votre prénom ?',email:'Quelle est votre adresse e-mail ?',phone:'Quel est votre numéro de téléphone ?'};
+    if(prompts[bookingContext.step])message('bot',prompts[bookingContext.step]+' ♡');
+    if(bookingContext.step==='recap'){
+      const resume=document.createElement('button');resume.type='button';resume.className='assistant-confirm';resume.textContent='Revoir mon récapitulatif';
+      resume.onclick=()=>{if(!busy){message('user','Revoir mon récapitulatif');ask('Revoir mon récapitulatif');}};log.append(resume);
+    }
+  }
+
   const persist=()=>window.BRMelbaSession?.save({history:window.BRMelbaSession.persistable(history),bookingContext,contextSignature,collecting});
   function proposal(draft,sequence){
     const card=document.createElement('div');card.className='assistant-msg assistant-bot';
