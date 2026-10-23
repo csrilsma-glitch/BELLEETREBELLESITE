@@ -7,13 +7,25 @@
   const MAX_MESSAGES = 20;
   const MAX_CHARS = 1000;
   const CONTACT = /[\w.+-]+@[\w-]+\.[\w.-]+|(?:\+33|0)\s?[1-9](?:[\s.-]?\d{2}){4}|\b\d{10}\b/;
+  // ANO-CW10-001 : un nom introduit par une formule explicite fait sortir le message de la mémoire.
+  // Limite : un nom donné seul, sans formule, n'est pas détectable ici.
+  const NAME_CUE = /\b(?:je\s+m['’]\s*appelle|mon\s+pr[ée]nom(?:\s+est)?|mon\s+nom(?:\s+est)?|je\s+suis|voici\s+mon|nom\s*:|pr[ée]nom\s*:)\s*:?\s*([\p{L}'’-]+(?:\s+[\p{L}'’-]+)?)?/iu;
+  const norm = t => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
   // Une valeur stockée n'est jamais rendue ni renvoyée au serveur sans ces contrôles.
+  // Un nom annoncé est retenu : tout message qui le répète (y compris une réponse de Melba) est écarté.
   function cleanHistory(list) {
     if (!Array.isArray(list)) return [];
-    return list
-      .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
-      .filter(m => !CONTACT.test(m.content))
+    const valid = list.filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string');
+    const names = new Set();
+    valid.forEach(m => {
+      for (const hit of m.content.matchAll(new RegExp(NAME_CUE.source, 'giu'))) {
+        if (hit[1]) hit[1].split(/\s+/).map(norm).filter(w => w.length >= 3).forEach(w => names.add(w));
+      }
+    });
+    const repeatsName = t => { const n = norm(t); return [...names].some(w => n.includes(w)); };
+    return valid
+      .filter(m => !CONTACT.test(m.content) && !NAME_CUE.test(m.content) && !repeatsName(m.content))
       .map(m => ({ role: m.role, content: m.content.slice(0, MAX_CHARS), ...(typeof m.signature === 'string' ? { signature: m.signature } : {}) }))
       .slice(-MAX_MESSAGES);
   }

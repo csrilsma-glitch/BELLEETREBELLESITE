@@ -44,3 +44,11 @@ Relire les conditions de garde-fou, tester les paraphrases adversariales et la m
 - **Non-régression :** `tests/melba-session.test.js`, 9 tests verts ; `npm test` 202/202 ; `npm run test:sql` 100 % vert (concurrence, double clic, clé forgée, rappel unique, annulation).
 - **Limites :** le client de `/app/` (`site/app/index.html`) ne charge pas `assistant.js` ; la correction s'applique aux pages qui chargent Melba (accueil et réservation). Le stockage est propre à l'onglet, pas à l'utilisateur : un changement d'utilisateur dans le même onglet n'est pas détecté. Aucun test sur navigateur réel ni appareil physique.
 - **Détection future :** le test « index.html et reservation.html chargent melba-session.js avant assistant.js » échoue si la dépendance est retirée.
+
+## CW-003-R1 — corrections demandées par Work (PR #10)
+
+- ANO-CW10-001 (noms conservés) : un nom annoncé par « je m’appelle », « mon prénom est », « mon nom est », « je suis », « nom : » ou « prénom : » est retenu ; tout message le contenant, y compris une réponse de Melba qui le répète, n’est plus stocké (`site/melba-session.js`, `cleanHistory`). Tests : `tests/melba-session.test.js`, 2 régressions.
+- ANO-CW10-002 (mémoire après purge) : après réservation réussie, `site/assistant.js` vide l’historique et remet `bookingContext`/`contextSignature` à null avant `clear()`, sans réinjecter de message. Test de source sur la branche de succès.
+- Correction de test préexistante : l’horloge de test était figée à 20:00Z alors que `save()` horodate avec l’heure réelle ; les états sauvés paraissaient futurs et étaient rejetés.
+
+Limites : un nom donné seul, sans formule introductive, n’est pas détecté ; un mot suivant « je suis » (ex. « je suis fatiguée ») est aussi retenu, ce qui écarte des messages en trop (minimisation par excès, sans effet sur la réservation). Aucun test navigateur réel dans cette correction ; le module est testé avec un sessionStorage factice. Aucune donnée réelle, aucune réservation, aucune notification.

@@ -8,7 +8,7 @@ function fakeStorage(){
 }
 globalThis.sessionStorage=fakeStorage();
 const S=require('../site/melba-session.js');
-const NOW=Date.parse('2026-10-23T20:00:00Z');
+const NOW=Date.now(); // horloge de test alignée sur save() (Date.now) ; fixe à 20:00Z, les états sauvés paraissaient futurs
 
 test('restaure la conversation récente (texte, contexte signé) après rechargement',()=>{
  globalThis.sessionStorage=fakeStorage();
@@ -24,7 +24,7 @@ test('restaure la conversation récente (texte, contexte signé) après recharge
 test('expiration : après 30 minutes, rien n’est restauré et la clé est purgée',()=>{
  globalThis.sessionStorage=fakeStorage();
  S.save({history:[{role:'user',content:'Bonjour'}]});
- assert.equal(S.load(NOW+S.TTL_MS+1),null);
+ assert.equal(S.load(Date.now()+S.TTL_MS+1),null);
  assert.equal(globalThis.sessionStorage.getItem(S.KEY),null);
 });
 
@@ -82,4 +82,33 @@ test('index.html et reservation.html chargent melba-session.js avant assistant.j
   const a=html.indexOf('src="melba-session.js"'),b=html.indexOf('src="assistant.js"');
   assert.ok(a>=0&&b>a,f+' : ordre de chargement incorrect');
  }
+});
+
+// CW-003-R1 — ANO-CW10-001 : aucun nom introduit par une formule explicite n'est stocké, y compris dans les réponses.
+test('ANO-CW10-001 : « Je m’appelle … » et les réponses qui le répètent ne sont jamais stockés',()=>{
+ globalThis.sessionStorage=fakeStorage();
+ const state={history:[
+   {role:'user',content:'Je m’appelle Cliente Fictive'},
+   {role:'assistant',content:'Bonjour Cliente Fictive, quel jour ?',signature:'sig-2'},
+   {role:'user',content:'Mon prénom : Client Fictif'},
+   {role:'user',content:'babyboomer 2 doigts'}
+ ]};
+ S.save(state);
+ const raw=globalThis.sessionStorage.getItem(S.KEY);
+ assert.ok(raw && !/Cliente Fictive|Client Fictif/.test(raw),'le nom fictif ne doit apparaître nulle part dans le stockage');
+ assert.deepEqual(S.load(NOW+1000).history.map(m=>m.content),['babyboomer 2 doigts']);
+});
+
+test('ANO-CW10-001 : une réponse qui répète « je suis … » ou « mon nom » est écartée',()=>{
+ assert.deepEqual(S.cleanHistory([{role:'assistant',content:'Mon nom est Melba.'},{role:'user',content:'Mon nom : Dupont'},{role:'user',content:'Je souhaite un rendez-vous mardi'}]).map(m=>m.content),['Je souhaite un rendez-vous mardi']);
+});
+
+// ANO-CW10-002 : après réservation, l'état en mémoire est vidé (le module seul ne le fait pas).
+// Test de source : la branche de succès doit réinitialiser historique et contextes avant clear().
+test('ANO-CW10-002 : après réservation, historique et contextes en mémoire sont remis à zéro',()=>{
+ const fs=require('node:fs'),src=fs.readFileSync(require('node:path').join(__dirname,'../site/assistant.js'),'utf8');
+ const ok=src.match(/notifications_disabled[\s\S]*?window\.BRMelbaSession\?\.clear\(\);/);
+ assert.ok(ok,'branche de succès introuvable');
+ assert.match(ok[0],/history\.length=0;bookingContext=null;contextSignature=null;window\.BRMelbaSession\?\.clear\(\);/);
+ assert.doesNotMatch(ok[0],/history\.push/,'aucun message de réservation ne doit être réinjecté dans l’historique');
 });
