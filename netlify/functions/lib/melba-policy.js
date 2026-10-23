@@ -185,9 +185,28 @@ function contactFrom(text){
  return out;
 }
 // Coordonnées sur tout l'historique : chaque champ prend la mention la plus récente.
+// Réponse « nom seul » : seulement si Melba vient de demander le nom, et si le message est un nom simple.
+const NOT_A_NAME=new Set(['oui','non','merci','ok','bonjour','svp','je','confirme','valide','recapitulatif','bien','d','accord']);
+function bareName(text){
+ const t=String(text||'').trim();
+ if(!/^[A-Za-zÀ-ÿ'’\- ]{2,60}$/.test(t))return null;
+ const words=t.split(/\s+/);
+ if(words.length>5||words.some(w=>NOT_A_NAME.has(norm(w).replace(/[’']/g,''))))return null;
+ return t;
+}
+function askedForName(assistantText){return /\b(votre|ton|le) nom\b/.test(norm(assistantText));}
+// Le dernier message de la cliente est-il son nom, en réponse à la demande de Melba ?
+function isNameAnswer(messages){
+ const list=messages.filter(m=>typeof m.content==='string');
+ const last=list.at(-1),prev=list.at(-2);
+ return Boolean(last&&last.role==='user'&&prev&&prev.role==='assistant'&&askedForName(prev.content)&&bareName(last.content));
+}
 function contactFromHistory(messages){
  const merged={};
- for(const m of [...messages].reverse().filter(m=>m.role==='user'&&typeof m.content==='string')){
+ const list=messages.filter(m=>typeof m.content==='string');
+ // Le nom donné en réponse à la question de Melba est le plus récent : il prime.
+ if(isNameAnswer(list))merged.name=bareName(list.at(-1).content);
+ for(const m of [...list].reverse().filter(m=>m.role==='user')){
   const found=contactFrom(m.content);
   for(const k of ['name','phone','email'])if(merged[k]===undefined&&found[k])merged[k]=found[k];
  }
@@ -195,4 +214,4 @@ function contactFromHistory(messages){
 }
 function isRecapRequest(text){return /\b(recapitulatif|resume de (ma|la) (demande|reservation)|recap)\b/.test(norm(text));}
 function isConfirmWord(text){const t=norm(text).replace(/[’‘]/g,"'");return /\b(je confirme|confirme|je valide|c'est bon pour moi)\b/.test(t)&&!/\b(pas|ne|non|annul\w*)\b/.test(t);}
-module.exports={today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression,startHour,planningContext,selectedTime,matchServices,timeAfterA,contactFrom,contactFromHistory,isRecapRequest,isConfirmWord};
+module.exports={today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression,startHour,planningContext,selectedTime,matchServices,timeAfterA,contactFrom,contactFromHistory,isRecapRequest,isConfirmWord,isNameAnswer,bareName};
