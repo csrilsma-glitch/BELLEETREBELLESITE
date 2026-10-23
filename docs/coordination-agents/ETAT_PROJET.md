@@ -51,3 +51,11 @@ Cette section courante prime sur les mentions d'état historiques ci-dessus. Niv
 - PR #12 : règle et suivi de balle documentaires ; aucune modification du code métier.
 - Dernière production applicative connue inchangée : ccd4ed4 / deploy 6adb33732ee47b285459e856 ; pas requalifiée comme validation intégrale du site.
 - Même mission CW-003-R1 autorisée à continuer dans cet essai, uniquement correction résiduelle avant l’échéance ; pas une nouvelle fonctionnalité ni mission.
+
+## Clôture CW3-T04 — Work — 23/10/2026 22:47 Paris
+Cette section est courante ; les sections précédentes restent historiques. Balle finale PROPRIÉTAIRE, essai clos sur blocage.
+- PR #10 HEAD 50acd7f : 14 tests ciblés réussis, mais nom en minuscules après demande de coordonnées stocké et restauré dans /app/ (preuve Chromium isolée). Cycle 3/3, arbitrage requis ; ni fusion ni déploiement.
+- Purge après réservation toujours corrigée, y compris nouveau message. Aucune notification ou réservation réelle pendant les contrôles.
+- Proposition PROPOSITION_ORCHESTRATEUR_GITHUB.md publiée : architecture seulement, aucune installation/secrets/agent actif. Alternative Codex CI distincte de ce chat Work.
+- Dernier code applicatif publié connu inchangé : ccd4ed4 / deploy 6adb33732ee47b285459e856 ; aucun commit applicatif de cette mission déployé.
+- Aucune nouvelle mission autorisée automatiquement ; propriétaires décident de l'arbitrage confidentialité et du pilote d'orchestration.
