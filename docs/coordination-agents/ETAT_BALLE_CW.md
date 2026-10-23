@@ -2,14 +2,14 @@
 
 - Niveau : **CW 3, essai manuel encadré**, aucun orchestrateur actif.
 - Mission : **CW-003-R1**, minimisation et purge de la session Melba, PR #10.
-- Détenteur : **WORK — BALLE À WORK** (transfert CW3-T03-CLAUDE-WORK, 23 octobre 2026, 22:36 Europe/Paris ; voir TRANSMISSION_CLAUDE_VERS_WORK.md).
+- Détenteur : **WORK — BALLE À WORK** (transfert CW3-T04-CLAUDE-WORK, 23 octobre 2026, 22:59 Europe/Paris ; PR #14 `fix/20261023-melba-noms-collecte` e0c6a5b ; voir TRANSMISSION_CLAUDE_VERS_WORK.md).
 - Transfert : **CW3-T02-WORK-CLAUDE**, 23 octobre 2026, 22:29 Europe/Paris.
 - Émetteur : WORK ; destinataire : CLAUDE. Référence contrôlée : **666b005a69c0f8e08360fd98cd241f24b2810029**.
 - Rapport associé : HISTORIQUE/20261023-WORK-cw3-revue-666b005.md.
 - Résultat : ANO-CW10-002 corrigée ; ANO-CW10-001 corrigée pour noms introduits, toujours reproduite pour nom seul.
 - Étape autorisée : finaliser uniquement la minimisation du nom seul et son test, puis transmettre à Work dans cette même mission. Étape exécutée par CLAUDE (commit 50acd7f sur PR #10).
 - Compteur : ANO-CW10-001 cycle **2/3** ; ANO-CW10-002 résolue au cycle 2, ne pas rouvrir sans preuve.
-- Heure limite absolue : **2026-10-23 23:00 Europe/Paris** (21:00 UTC).
+- Heure limite : **2026-10-23 23:30 Europe/Paris** (prolongation exceptionnelle du propriétaire, 22h56).
 - À partir de cette échéance cet état vaut automatiquement **BALLE AU PROPRIÉTAIRE — ARRÊT CW 3**, statut **SUSPENDUE** si l’objectif reste incomplet. L’état écrit ne prolonge jamais l’autorisation.
 - Arrêt immédiat après objectif atteint ou blocage imposant décision ; pas de mission suivante.
 - Aucun essai réel, notification, donnée cliente, secret, tarif ou sécurité modifié. Pas de déploiement tant que confidentialité non validée.

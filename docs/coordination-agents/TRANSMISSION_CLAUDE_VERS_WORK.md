@@ -1,22 +1,21 @@
-# Transmission Claude → Work — CW3-T03-CLAUDE-WORK
+# Transmission Claude → Work — CW3-T04-CLAUDE-WORK
 
 - **Auteur :** CLAUDE
-- **Heure :** 23 octobre 2026, 22:36 Europe/Paris ; échéance 23:00
-- **Mission :** CW-003-R1, reliquat ANO-CW10-001 (nom seul), cycle 2/3
+- **Heure :** 23 octobre 2026, 22:59 Europe/Paris ; échéance 23:30 (prolongation du propriétaire)
+- **Mission :** Melba doit fonctionner sur le site et la PWA ; correction du reliquat ANO-CW10-001 (cycle 3)
 - **Niveau :** CW 3, essai manuel ; aucun orchestrateur actif
-- **Référence reçue :** 666b005 (CW3-T02-WORK-CLAUDE)
+- **Référence reçue :** CW3-T03 (balle à Claude par la prolongation du propriétaire)
 
-## Actions réalisées (preuves)
-- Commit **50acd7f** sur `fix/20261023-melba-persistance-cw003` (PR #10), fast-forward depuis 666b005, push vérifié par ls-remote.
-- `site/melba-session.js` : une réponse courte et majuscule, juste après une demande de nom ou de coordonnées (ou juste après un message contenant téléphone ou e-mail), est traitée comme un nom seul. Ses mots deviennent interdits pour la suite de l'historique, et tout message les répétant est écarté (y compris une réponse de Melba).
-- `tests/melba-session.test.js` : 2 tests du parcours de Work : (1) nom seul après « Quel est votre nom ? », avec répétition par Melba écartée ; (2) nom seul après un téléphone déjà donné, message suivant conservé.
-- Tests : `node --test tests/melba-session.test.js` 14/14 ; `npm test` 207/207.
-- Documentation : section CW-003-R1 de `docs/rapport-erreurs-conception/04_TESTS_NON_REGRESSION.md` complétée (non modifiée ici ; voir commit 50acd7f pour le code et les tests).
+## Correctif livré
+- **Branche et PR** : `fix/20261023-melba-noms-collecte`, commit **e0c6a5b**, **PR #14** (base main). Inclut la PR #10 (50acd7f) ; si validé, #14 la remplace et #10 peut être fermée.
+- **Mécanisme** : collecte explicite. Si la réponse de Melba demande un nom, des coordonnées, un téléphone, un e-mail ou une adresse, le message suivant de l'utilisateur et la réponse de Melba qui y répond sont marqués privés et ne sont jamais persistés. L'état de collecte est sauvegardé pour survivre au rafraîchissement. `site/melba-session.js` (`isCollecting`, `persistable`), `site/assistant.js`.
+- **Tests** : `tests/melba-session.test.js` 16/16 ; `npm test` 209/209.
+- **Navigateur simulé** (Chromium, 390×844, réponses fictives, aucune fonction réelle) : `index.html`, `reservation.html` et iframe `/app/` : nom absent du stockage et de l'affichage, conversation restaurée après rafraîchissement, demande initiale conservée.
 
-## Non réalisé (à faire savoir clairement)
-- Pas de nouveau test navigateur de ma part dans cette étape : le reload /app/, l'expiration sur navigateur et la purge suivie d'un nouveau message ne sont couverts que par les tests du module (sessionStorage factice), pas par un rejeu Chromium. Work a déjà fait le test navigateur de 666b005 ; le rejeu après 50acd7f est à sa charge si nécessaire.
-- Un nom seul sans contexte (ni demande de nom, ni téléphone/e-mail juste avant) n'est pas détecté. C'est la limite reconnue dans la revue Work.
-- Aucun déploiement, aucune fusion, aucune réservation ni notification réelle. PR #10 non fusionnée.
+## Limites à vérifier par Work
+- Un nom donné hors collecte (sans demande préalable de Melba) n'est pas détecté.
+- Purge après réservation non rejouée dans le navigateur (couverte par le test de source et par le module).
+- Aucun test avec de vrais services de réservation, notifications, Outlook ou Brevo. Rien n'a été fusionné ni déployé par Claude.
 
-## Décision demandée à Work
-- **BALLE À WORK** : contrôler 50acd7f, rejouer le test navigateur si Work le juge nécessaire avant 23h00, décider de la suite. Si la limite « nom seul sans contexte » reste bloquante, la mission est bloquée et la balle revient au propriétaire (« MISSION BLOQUÉE — BALLE AU PROPRIÉTAIRE »).
+## Décision demandée à Work (avant 23h30)
+- **BALLE À WORK** : contrôler e0c6a5b (PR #14), rejouer la vérification navigateur si nécessaire, puis fusionner et déployer seulement si les contrôles sont satisfaisants, avec SHA confirmé. Sinon : « CORRECTIF NON VALIDÉ — PRODUCTION INCHANGÉE — BALLE AU PROPRIÉTAIRE ».
