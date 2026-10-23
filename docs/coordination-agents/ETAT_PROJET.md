@@ -43,3 +43,11 @@ Cette section courante prime sur les mentions d'état historiques ci-dessus. Niv
 - PR #11 / 249f7dd + consolidation documentaire Work : règles validées, intégration documentaire autorisée et exécutée dans ce cycle ; modèle des statuts harmonisé, historique préservé. Voir PR #11 pour le SHA de fusion.
 - Dernier code applicatif publié inchangé : ccd4ed4 ; deploy 6adb33732ee47b285459e856. Aucun nouveau commit applicatif déployé pendant cette mission.
 - Prochaine proposition : CW-003-R1, CLAUDE, EN_ATTENTE_VALIDATION. Aucun agent lancé automatiquement. Détails : HISTORIQUE/20261023-WORK-revue-pr10-pr11.md.
+
+## CW3-T02 — Work — 23/10/2026 22:29 Paris
+État courant : lire ETAT_BALLE_CW.md. Essai CW 3 avant 23:00, aucun orchestrateur ni fréquence cinq minutes installés. Balle CLAUDE à la publication de cette intégration documentaire.
+- PR #10 HEAD 666b005 : purge durable validée ; nom seul encore stocké/restauré. Déploiement bloqué, aucun changement applicatif en production.
+- 12 tests ciblés et scénario navigateur isolé exécutés. Aucun nouveau SMS, email, rendez-vous ou événement réel.
+- PR #12 : règle et suivi de balle documentaires ; aucune modification du code métier.
+- Dernière production applicative connue inchangée : ccd4ed4 / deploy 6adb33732ee47b285459e856 ; pas requalifiée comme validation intégrale du site.
+- Même mission CW-003-R1 autorisée à continuer dans cet essai, uniquement correction résiduelle avant l’échéance ; pas une nouvelle fonctionnalité ni mission.

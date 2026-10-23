@@ -48,3 +48,6 @@ AGENTS.md et CLAUDE.md sont des points d'entrée. Leur chargement automatique d�
 
 ## Niveaux d'autonomie CW 1 / 2 / 3
 Commandes : `rapport CW 1`, `rapport CW 2`, `rapport CW 3`. Sans chiffre, le niveau est CW 1. Règles complètes : `NIVEAUX_CW.md`. CW 3 est **NON ACTIVE** : aucun orchestrateur n'est installé. Un niveau ne donne jamais d'autorisation générale ; il s'applique à une mission déjà AUTORISÉE.
+
+## Essai CW 3 : état de balle et échéance
+Lire NIVEAUX_CW.md et ETAT_BALLE_CW.md sur main avant toute étape. La règle datée et l’échéance explicite du propriétaire priment sur une mention historique. Aucun réveil automatique promis. À l’échéance : SUSPENDUE si incomplet et balle au propriétaire ; aucune nouvelle action.
