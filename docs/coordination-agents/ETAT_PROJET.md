@@ -59,3 +59,7 @@ Cette section est courante ; les sections précédentes restent historiques. Bal
 - Proposition PROPOSITION_ORCHESTRATEUR_GITHUB.md publiée : architecture seulement, aucune installation/secrets/agent actif. Alternative Codex CI distincte de ce chat Work.
 - Dernier code applicatif publié connu inchangé : ccd4ed4 / deploy 6adb33732ee47b285459e856 ; aucun commit applicatif de cette mission déployé.
 - Aucune nouvelle mission autorisée automatiquement ; propriétaires décident de l'arbitrage confidentialité et du pilote d'orchestration.
+
+
+## Actualisation finale — 23/10/2026, 23:19 Paris
+PR14 fusionnée et production publiée : 6790096e693c23d2e81a31048838cb303d8f1678, Netlify6adbce1f79c773577ebfd797 ready. Mémoire de session et collecte privée validées ; 210Node, SQL, rappels et Chromium local réussis. B&R APP réelle vérifiée jusqu'au récapitulatif25€/30min, sans confirmation. Rafraîchissement conserve l'historique ordinaire et exclut les coordonnées. Limites et preuves : HISTORIQUE/20261023-WORK-cloture-pr14-deployee.md. PR10 remplacée ; PR7/8 restent hors mission. BALLE AU PROPRIÉTAIRE, mission TERMINÉE.

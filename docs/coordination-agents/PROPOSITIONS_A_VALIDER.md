@@ -21,3 +21,7 @@ Une proposition n'est jamais une autorisation. Aucune des missions ci-dessous n'
 ## Après CW3-T04 — propositions non exécutées
 - **ARBITRAGE-CW003** — propriétaire, EN_ATTENTE_VALIDATION : critère de confidentialité non rempli après cycle 3/3 (nom minuscule). Décider d'une approche structurée de persistance métier, puis d'une mission Claude ciblée. Aucun quatrième cycle implicite ni déploiement.
 - **ORCH-PILOT-001** — EN_ATTENTE_VALIDATION : lire PROPOSITION_ORCHESTRATEUR_GITHUB.md, choisir agents CI ou hybridation, budget et périmètre. Premier essai proposé avec deux faux agents sans modèle, secret ou production. Aucune installation ni mise en route autorisée par l'étude seule.
+
+
+## Clôture PR14 — 23/10/2026,23:19 Paris
+ARBITRAGE-CW003 : prolongation propriétaire a autorisé le correctif ciblé ; livré df568b4, intégré PR14 et déployé6790096. L'ancien blocage de répétition du nom en collecte est levé. Les autres propositions restent EN_ATTENTE_VALIDATION ; aucun lancement automatique. Aucun travail sur orchestrateur dans cette mission.
