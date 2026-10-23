@@ -315,7 +315,7 @@ exports.handler = async (event) => {
   }
   // Créneau déjà retenu : coordonnées, récapitulatif, puis confirmation par clic uniquement.
   const haveSlot=Boolean(previous?.start&&previous.date&&context.requestedDate===previous.date&&serviceIds.length);
-  const contactNow=policy.contactFrom(lastText),hasContactNow=Object.keys(contactNow).length>0;
+  const contactNow=policy.contactFrom(lastText),nameNow=policy.isNameAnswer(messages),hasContactNow=Object.keys(contactNow).length>0||nameNow;
   const recapAsk=policy.isRecapRequest(lastText),confirmAsk=policy.isConfirmWord(lastText);
   if(haveSlot&&(hasContactNow||recapAsk||confirmAsk)){
     if(confirmAsk&&!hasContactNow){
