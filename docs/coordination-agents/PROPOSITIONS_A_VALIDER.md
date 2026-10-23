@@ -17,3 +17,7 @@ Une proposition n'est jamais une autorisation. Aucune des missions ci-dessous n'
 - Risques : perdre la continuité utile, invalider des signatures ou conserver une ancienne proposition. Préserver le contexte métier autorisé sans coordonnées.
 - Critères : pas de noms/téléphones/e-mails dans storage, y compris messages assistant et noms libres ; rafraîchissement de la coque /app/ ; TTL déterministe ; succès suivi de « Merci » ne réenregistre pas l'ancien contexte ; aucune action de confirmation restaurée.
 - Cycle : 1/3 pour chaque anomalie. Autorisation du propriétaire nécessaire ; aucune nouvelle mission lancée.
+
+## Après CW3-T04 — propositions non exécutées
+- **ARBITRAGE-CW003** — propriétaire, EN_ATTENTE_VALIDATION : critère de confidentialité non rempli après cycle 3/3 (nom minuscule). Décider d'une approche structurée de persistance métier, puis d'une mission Claude ciblée. Aucun quatrième cycle implicite ni déploiement.
+- **ORCH-PILOT-001** — EN_ATTENTE_VALIDATION : lire PROPOSITION_ORCHESTRATEUR_GITHUB.md, choisir agents CI ou hybridation, budget et périmètre. Premier essai proposé avec deux faux agents sans modèle, secret ou production. Aucune installation ni mise en route autorisée par l'étude seule.
