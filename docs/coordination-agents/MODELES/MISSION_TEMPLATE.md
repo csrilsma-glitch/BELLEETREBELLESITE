@@ -10,6 +10,6 @@
 - **Budget maximal :** suites complètes : 2 ; déploiements intermédiaires : 0 ; tentatives par erreur : 3
 - **Tentatives constatées :** 0
 - **Branche / SHA / PR :**
-- **État d'avancement :** A_FAIRE / EN_COURS / A_VERIFIER_WORK / CORRECTION_CLAUDE / BLOQUÉE / TERMINÉE
+- **État d'avancement :** PROPOSÉE / EN_ATTENTE_VALIDATION / AUTORISÉE / EN_COURS / BLOQUÉE / TERMINÉE / REFUSÉE
 - **Prochain destinataire :**
 - **Condition d'arrêt :**

@@ -14,3 +14,16 @@ Statuts autorisés : PROPOSÉE, EN_ATTENTE_VALIDATION, AUTORISÉE, EN_COURS, BLO
 
 ## Niveau CW et champs obligatoires (23/10/2026, Claude)
 Chaque mission indique : **Niveau CW** (1, 2 ou 3, défaut 1), **Objectif**, **Agent ayant la main**, **Actions autorisées**, **Budget maximal** (défaut : 2 suites complètes, 0 déploiement intermédiaire, 3 tentatives par erreur), **État d'avancement**, **Prochain destinataire**, **Condition d'arrêt**. Modèle : `MODELES/MISSION_TEMPLATE.md`. Règles : `NIVEAUX_CW.md`.
+
+## CW2-INT-010-011 — WORK — 23/10/2026
+- Niveau CW : **2**. Objectif : contrôler/intégrer PR #10/#11, rapports, arrêt.
+- Autorisation : message explicite du propriétaire ; fusion conditionnelle des deux PR, déploiement #10 seulement si confidentialité validée, aucun déploiement applicatif pour #11.
+- Agent ayant la main : WORK pour clôture. Actions : revue, tests fictifs, sauvegarde Git, correction documentaire, fusion #11, publication des rapports. Interdits : autres fonctionnalités et opérations réelles.
+- Budget maximal : 2 suites complètes, zéro déploiement intermédiaire, 3 tentatives par erreur. Consommation : 1 suite Node complète (202/202), 1 scénario navigateur ciblé ; 0 déploiement.
+- Résultat : PR #10 BLOQUÉE (ANO-CW10-001 et 002, cycle 1/3) ; PR #11 intégrée en documentation seule, avec archives et modèle cohérent.
+- État d'avancement : TERMINÉE pour cette mission de contrôle et intégration conditionnelle ; l'objectif de persistance privée reste non validé.
+- Prochain destinataire : CLAUDE, proposition CW-003-R1 EN_ATTENTE_VALIDATION ; ne pas exécuter sans accord.
+- Condition d'arrêt : rapports publiés, vérifiés à distance, compte rendu final ; aucun prolongement automatique.
+
+### Consolidation des transmissions Claude reçues
+Claude indique CW-003 et PROP-001 autorisées le 23/10 à 21:46. Code CW-003 livré en PR #10 ; revue Work désormais BLOQUÉE, pas prêt pour production. PROP-001 : recette SQL isolée annoncée réussie par Claude, non réexécutée sous cette mission ; aucune validation fournisseur réel déduite. Sources archivées séparément dans HISTORIQUE/*pr10* et *pr11*.
