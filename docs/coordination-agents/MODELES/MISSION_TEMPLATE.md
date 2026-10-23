@@ -13,3 +13,9 @@
 - **État d'avancement :** PROPOSÉE / EN_ATTENTE_VALIDATION / AUTORISÉE / EN_COURS / BLOQUÉE / TERMINÉE / REFUSÉE
 - **Prochain destinataire :**
 - **Condition d'arrêt :**
+
+- **Détenteur actuel de la balle / ID du transfert :**
+- **Horodatage Europe/Paris / SHA et rapport associé :**
+- **Heure limite absolue / prochain détenteur :**
+- **Conditions de suspension :** à l’échéance SUSPENDUE si incomplet, balle au propriétaire, aucune nouvelle action.
+- **Orchestrateur effectivement actif :** oui avec preuve / non ; ne pas promettre une surveillance sans service.

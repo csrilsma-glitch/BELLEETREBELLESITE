@@ -2,6 +2,20 @@
 
 Version documentaire du 23 octobre 2026, 21:58 Europe/Paris, par CLAUDE. Source : demande du propriétaire « Ajout du système d'autorisation RAPPORT CW 1 / 2 / 3 ». Ce document complète `PROTOCOLE.md` ; il ne l'écrase pas.
 
+## État de référence de la balle
+
+Lire `ETAT_BALLE_CW.md` sur `main` avant chaque étape. Il contient mission, détenteur, transfert, SHA, échéance et conditions d’arrêt. Une balle préparée sur branche ne devient effective que lorsque son état est publié dans main ; ne pas anticiper le transfert. Aucun polling automatique toutes les cinq minutes n’est installé. L’outil de planification disponible est limité à une fréquence horaire : aucun faux cycle de surveillance n’a été créé.
+
+## Règle de la balle (CW 3, essai du 23/10/2026 — ajout de CLAUDE)
+
+- Seul l'agent qui détient la balle exécute une étape. Au démarrage : « BALLE À CLAUDE ». Aucun agent n'anticipe une balle qu'il n'a pas reçue.
+- Claude termine son étape (tests, preuves, commits, transmission) puis écrit « BALLE À WORK ». À partir de là il cesse de travailler sur la mission.
+- Work lit la transmission, vérifie, intègre et déploie si l'autorisation le prévoit, documente, puis écrit « BALLE À CLAUDE » s'il reste une correction.
+- Chaque transfert indique : identifiant de mission, horodatage (Europe/Paris), commit ou rapport associé, prochain détenteur, niveau CW, heure limite, conditions d'arrêt.
+- La balle doit figurer dans un état GitHub explicite (la transmission datée), pas seulement dans une phrase de conversation.
+- Échéance : à 23h00 Europe/Paris, la balle revient au propriétaire (« BALLE AU PROPRIÉTAIRE — ARRÊT CW 3 ») ; plus aucun commit, fusion, déploiement ou test. Si l'objectif n'est pas atteint : avancement enregistré, tâches restantes listées, statut SUSPENDUE.
+- Limite : rien ne garantit techniquement l'arrêt à 23h00. Sans orchestrateur actif, l'arrêt dépend de l'agent ; aucun agent ne prétend surveiller GitHub.
+
 ## 0. Principe
 
 Le propriétaire choisit le niveau d'autonomie avec une commande :

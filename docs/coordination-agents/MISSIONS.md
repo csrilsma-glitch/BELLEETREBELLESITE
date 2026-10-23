@@ -27,3 +27,12 @@ Chaque mission indique : **Niveau CW** (1, 2 ou 3, défaut 1), **Objectif**, **A
 
 ### Consolidation des transmissions Claude reçues
 Claude indique CW-003 et PROP-001 autorisées le 23/10 à 21:46. Code CW-003 livré en PR #10 ; revue Work désormais BLOQUÉE, pas prêt pour production. PROP-001 : recette SQL isolée annoncée réussie par Claude, non réexécutée sous cette mission ; aucune validation fournisseur réel déduite. Sources archivées séparément dans HISTORIQUE/*pr10* et *pr11*.
+
+## CW3-BALLE-CLAUDE / CW-003-R1 — essai autorisé le 23/10
+- Niveau : CW 3 encadré, pas d’orchestrateur. Autorisation : message explicite du propriétaire, dernière proposition Work, 22:16–23:00 Paris.
+- Agent ayant la main : CLAUDE, après transfert Work CW3-T02 publié dans main ; état de référence ETAT_BALLE_CW.md.
+- Claude : documentation 2790bce et correction 666b005 livrées ; Work : 12 tests ciblés, contrôle navigateur et intégration documentaire PR #12. Pas de déploiement applicatif.
+- ANO-CW10-002 : corrigée vérifiée ; ANO-CW10-001 : nom introduit corrigé, nom seul non corrigé (cycle 2/3). PR #10 reste BLOQUÉE pour intégration ; correction résiduelle AUTORISÉE dans cette même mission avant 23:00.
+- Budget : 0 suite complète répétée par Work dans cette reprise, 1 suite ciblée et 1 scénario navigateur, 0 déploiement. Maximum 3 cycles par erreur.
+- Prochain destinataire : CLAUDE, puis WORK après transmission officielle. À 23:00 : propriétaire, SUSPENDUE si incomplet, aucune action ultérieure.
+- Conditions d’arrêt : objectif atteint, blocage nécessitant décision ou 23:00 absolu. La réception d’une balle après échéance n’autorise aucune reprise.
