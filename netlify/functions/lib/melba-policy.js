@@ -148,16 +148,23 @@ function guardedReply(reply,context){
 // Plusieurs correspondances : demander la précision, jamais choisir au hasard.
 const SERVICE_STOP=new Set(['de','la','le','les','un','une','du','des','et','pour','avec','sur','en','au','aux','ou','plus']);
 function serviceWords(s){return norm(s).replace(/[’‘']/g,' ').split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!SERVICE_STOP.has(w));}
+// Formulations courantes des clientes : « baby boomer », « 2 doigts » (le catalogue dit « Babyboomer », « Deux doigts »).
+function normaliseServiceText(text){
+ return norm(text).replace(/[’‘']/g,' ').replace(/\bbaby\s+boomer\b/g,'babyboomer').replace(/\b2\b/g,' deux ').replace(/\b4\b/g,' quatre ').replace(/\b6\b/g,' six ');
+}
 function matchServices(text,catalogue){
  const none={ids:[],names:[],ambiguous:null};
  if(!Array.isArray(catalogue))return none;
- const leaves=catalogue.map(s=>({id:s.id,name:s.name,w:serviceWords(s.name)})).filter(x=>x.w.length);
+ // Le nom seul ne suffit pas : « Deux doigts » existe dans plusieurs catégories. Le chemin (« Babyboomer / babycolor »)
+ // sert à départager : tous les mots de la cliente doivent être compatibles avec le nom ET la catégorie de la prestation.
+ const leaves=catalogue.map(s=>({id:s.id,name:s.name,w:serviceWords(s.name),p:new Set(serviceWords(s.path||''))})).filter(x=>x.w.length);
  // Seuls les mots du vocabulaire du catalogue comptent : « je veux », « bonjour » ne sont pas des prestations.
- const vocabulary=new Set(leaves.flatMap(x=>x.w));
- const words=new Set(serviceWords(text).filter(w=>vocabulary.has(w)));
+ const vocabulary=new Set(leaves.flatMap(x=>[...x.w,...x.p]));
+ const words=new Set(serviceWords(normaliseServiceText(text)).filter(w=>vocabulary.has(w)));
  if(!words.size)return none;
- let hits=leaves.filter(x=>x.w.every(w=>words.has(w)));
- if(!hits.length&&words.size>=2)hits=leaves.filter(x=>[...words].every(w=>x.w.includes(w)));
+ const fits=x=>[...words].every(w=>x.w.includes(w)||x.p.has(w));
+ let hits=leaves.filter(x=>x.w.every(w=>words.has(w))&&fits(x));
+ if(!hits.length&&words.size>=2)hits=leaves.filter(x=>[...words].every(w=>x.w.includes(w)||x.p.has(w)));
  if(hits.length===1)return {ids:[hits[0].id],names:[hits[0].name],ambiguous:null};
  if(hits.length>1)return {ids:[],names:hits.map(x=>x.name).slice(0,4),ambiguous:hits.map(x=>x.name).slice(0,4)};
  return none;
