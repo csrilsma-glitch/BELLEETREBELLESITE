@@ -40,6 +40,7 @@
   let bookingContext=restored?restored.bookingContext:null,contextSignature=restored?restored.contextSignature:null,requestSequence=0;
   // CW-003-R1 : collecte explicite de coordonnées (voir melba-session.js). Pendant la collecte, rien n'est persisté.
   let collecting=restored?restored.collecting===true:false;
+  let busy=false;
   if(restored)restored.history.forEach(m=>message(m.role==='user'?'user':'bot',m.content));
   const persist=()=>window.BRMelbaSession?.save({history:window.BRMelbaSession.persistable(history),bookingContext,contextSignature,collecting});
   function proposal(draft,sequence){
@@ -48,7 +49,7 @@
     text.textContent=draft.quote.services.map(s=>s.path).join(' + ')+' — '+new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',dateStyle:'full',timeStyle:'short'}).format(new Date(draft.starts))+' — '+draft.quote.minutes+' min — '+new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(draft.quote.cents/100)+' — '+draft.client_name+' · '+draft.client_phone+' · '+draft.client_email;
     const privacy=document.createElement('p');privacy.textContent='Chargement des informations clientèle…';
     const label=document.createElement('label'),consent=document.createElement('input');consent.type='checkbox';label.append(consent,document.createTextNode(' J’ai lu les informations relatives à mes données.'));
-    const button=document.createElement('button');button.type='button';button.className='assistant-confirm';button.textContent='Confirmer ce rendez-vous sans acompte';button.disabled=true;
+    const button=document.createElement('button');button.type='button';button.className='assistant-confirm';button.textContent='Confirmer mon rendez-vous';button.disabled=true;
     const key=crypto.randomUUID();
     fetch('/.netlify/functions/catalog',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(c=>{if(sequence!==requestSequence)return;privacy.textContent=c.privacy_text||'Réservations non ouvertes.';button.disabled=!c.enabled||!c.privacy_text;}).catch(()=>{privacy.textContent='Informations indisponibles. Passez par la page Réservation.';});
     button.onclick=async()=>{if(sequence!==requestSequence)return;if(!consent.checked){privacy.textContent+=' Merci de cocher la case après lecture.';return;}button.disabled=true;
@@ -58,25 +59,33 @@
     card.append(text,privacy,label,button);log.append(card);log.scrollTop=log.scrollHeight;
   }
   async function ask(text){
+    if(busy)return;busy=true;form.querySelector('button').disabled=true;
     const sequence=++requestSequence;
     // Une proposition ancienne ne reste pas actionnable après un nouveau message.
     log.querySelectorAll('.assistant-confirm').forEach(b=>{b.disabled=true;b.textContent='Proposition remplacée — demandez un nouveau créneau';});
     const wasCollecting=collecting;
     const userMessage={role:'user',content:text,private:wasCollecting};history.push(userMessage);
     try{
-      const res=await fetch('/.netlify/functions/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history.slice(-20),bookingContext,contextSignature,selected_service_ids:window.BR_SELECTION?.get()||[]})});
+      const res=await fetch('/.netlify/functions/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({flow_version:2,messages:history.slice(-20),bookingContext,contextSignature,selected_service_ids:window.BR_SELECTION?.get()||[]})});
       if(!res.ok)throw new Error('indisponible');
       const data=await res.json();
       if(sequence!==requestSequence)return;
       if(!data.reply)throw new Error('vide');
       bookingContext=data.bookingContext||null;contextSignature=data.contextSignature||null;
-      history.push({role:'assistant',content:data.reply,signature:data.signature,private:wasCollecting});collecting=window.BRMelbaSession?.nextCollecting(collecting,data.reply)===true;persist();
+      if(data.private)userMessage.private=true;
+      history.push({role:'assistant',content:data.reply,signature:data.signature,private:wasCollecting||data.private===true});collecting=window.BRMelbaSession?.nextCollecting(collecting,data.reply)===true;persist();
+      if(data.resetFlow){history.length=0;bookingContext=null;contextSignature=null;collecting=false;window.BRMelbaSession?.clear();}
       message('bot',data.reply);
+      log.querySelectorAll('.assistant-choices').forEach(el=>el.remove());
+      if(Array.isArray(data.choices)&&data.choices.length){
+        const choices=document.createElement('div');choices.className='assistant-choices assistant-quick';
+        data.choices.forEach(value=>{const b=document.createElement('button');b.type='button';b.textContent=value;b.onclick=()=>{if(busy)return;message('user',value);ask(value);};choices.append(b);});log.append(choices);
+      }
       if(data.pendingBooking) proposal(data.pendingBooking,sequence);
 
-    }catch(err){if(sequence!==requestSequence)return;const index=history.indexOf(userMessage);if(index>=0)history.splice(index,1);message('bot','Je ne peux pas joindre mon service pour le moment. Aucun rendez-vous ni message n’a été envoyé par cette tentative. Réessayez ou appelez Mélanie au 06 62 28 75 45.');}
+    }catch(err){if(sequence!==requestSequence)return;const index=history.indexOf(userMessage);if(index>=0)history.splice(index,1);message('bot','Je ne peux pas joindre mon service pour le moment. Aucun rendez-vous ni message n’a été envoyé par cette tentative. Réessayez ou appelez Mélanie au 06 62 28 75 45.');}finally{busy=false;form.querySelector('button').disabled=false;}
   }
-  ['Sans acompte ?','Plusieurs prestations','Un problème'].forEach(label=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>{message('user',label);ask(label);});quick.append(b);});
+  ['Sans acompte ?','Plusieurs prestations','Un problème'].forEach(label=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>{if(busy)return;message('user',label);ask(label);});quick.append(b);});
   panel.insertBefore(quick,form);
-  form.addEventListener('submit',e=>{e.preventDefault();const raw=input.value.trim();if(!raw)return;input.value='';message('user',raw);ask(raw);});
+  form.addEventListener('submit',e=>{e.preventDefault();if(busy)return;const raw=input.value.trim();if(!raw)return;input.value='';message('user',raw);ask(raw);});
 })();
