@@ -47,7 +47,7 @@ Si la cliente signale un problème, une réclamation, une difficulté, une doule
 Règles pour réserver :
 1. Ne récite pas tout le catalogue : demande à la cliente ce qu'elle souhaite (famille puis prestation), puis la date souhaitée, puis vérifie les disponibilités.
 2. Propose les horaires réellement disponibles, sans en inventer.
-3. Avant de réserver, demande le nom, le téléphone et l'e-mail de la cliente.
+3. Une seule question à la fois. Le parcours serveur retient la prestation, demande la date seule, vérifie le calendrier, demande la période disponible puis l'heure. Ensuite : nom de famille seul, prénom seul, e-mail seul, téléphone seul. Ne redemande aucune information validée.
 4. Récapitule (prestations, date, heure, durée totale) et attends son accord explicite.
 5. Ne réserve jamais sans cet accord.
 6. Si une réservation échoue, ne promets rien : demande à la cliente d'appeler Mélanie au 06 62 28 75 45.
@@ -272,7 +272,17 @@ exports.handler = async (event) => {
   let previous=null;
   if(payload.bookingContext&&typeof payload.contextSignature==='string'){
     const serialized=JSON.stringify(payload.bookingContext);
-    if(serialized.length<500&&core.safeEqual(payload.contextSignature,core.sign('melba-context:'+serialized)))previous=payload.bookingContext;
+    if(serialized.length<1500&&core.safeEqual(payload.contextSignature,core.sign('melba-context:'+serialized)))previous=payload.bookingContext;
+  }
+  // Nouveau client : progression métier explicite, sans décision libre du modèle.
+  if(payload.flow_version===2){
+    try{
+      const result=await require('./lib/melba-flow').handle({event,payload,messages,previous});
+      if(result)return result;
+    }catch(err){
+      console.error('Melba parcours',err.status||503,err.name);
+      return core.json(err.status||503,{error:err.status?err.message:'Calendrier momentanément indisponible. Vos informations validées sont conservées ; réessayez.'});
+    }
   }
   try{context.siteSelection=Array.isArray(payload.selected_service_ids)&&payload.selected_service_ids.length?core.ids(payload.selected_service_ids):[];}catch{return json(400,{error:'Sélection de prestations invalide'});}
   const last=[messages.at(-1)];
@@ -377,7 +387,7 @@ exports.handler = async (event) => {
       reply=(retry.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
     }
     const finalReply=policy.guardedReply(reply,context) || 'Je rencontre un souci pour formuler ma réponse. Peux-tu reformuler ta question ?';
-    const bookingContext={date:context.availability?.date||context.requestedDate,preference:context.preference,...(context.selectedStart&&!context.availability?.alternative&&context.selectedStart&&!context.bookingRejected?{start:context.selectedStart}:{}),...(serviceIds.length?{services:serviceIds}:{})};
+    const bookingContext=previous?.flow===2?previous:{date:context.availability?.date||context.requestedDate,preference:context.preference,...(context.selectedStart&&!context.availability?.alternative&&context.selectedStart&&!context.bookingRejected?{start:context.selectedStart}:{}),...(serviceIds.length?{services:serviceIds}:{})};
     return json(200, {pendingBooking:context.pending,reply:finalReply,signature:core.sign('melba-reply:'+finalReply),bookingContext,contextSignature:core.sign('melba-context:'+JSON.stringify(bookingContext))});
   } catch (err) {
     console.error('Erreur', err.message);

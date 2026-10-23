@@ -1,6 +1,6 @@
 /* Cache limité à ce site. Aucune API, page de connexion, vidéo ou donnée privée en cache. */
-const CACHE='br-v15-20261023-recap-nom';
-const SHELL=['./native.css','./catalogue-runtime.js','./offline.html','./styles.css','./v10.css','./melba-transparence-v10-1.css','./catalogue.js','./selecteur.js','./script.js','./assistant.js','./reservation.js','./gallery.js','./pwa.js','./manifest.webmanifest','./assets/icon-192.png','./assets/icon-512.png','./assets/favicon.svg','./assets/fonts/october-crow.ttf','./assets/hero-art.jpg','./assets/melanie.jpg','./assets/melba-fond.png','./assets/crane-valide.png','./assets/familles-onglerie.jpg','./assets/familles-principales.jpg','./assets/depose-reference.jpg'];
+const CACHE='br-v15-20261024-melba-sequential';
+const SHELL=['./native.css','./catalogue-runtime.js','./offline.html','./styles.css','./v10.css','./melba-transparence-v10-1.css','./catalogue.js','./selecteur.js','./script.js','./assistant.js','./melba-session.js','./reservation.js','./gallery.js','./pwa.js','./manifest.webmanifest','./assets/icon-192.png','./assets/icon-512.png','./assets/favicon.svg','./assets/fonts/october-crow.ttf','./assets/hero-art.jpg','./assets/melanie.jpg','./assets/melba-fond.png','./assets/crane-valide.png','./assets/familles-onglerie.jpg','./assets/familles-principales.jpg','./assets/depose-reference.jpg'];
 const ALLOWED=new Set(SHELL.map(path=>new URL(path,self.location.href).pathname));
 const PAGES=new Set(['./','./index.html','./reservation.html','./mentions-legales.html'].map(path=>new URL(path,self.location.href).pathname));
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));});
