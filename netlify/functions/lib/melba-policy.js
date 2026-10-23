@@ -148,20 +148,51 @@ function guardedReply(reply,context){
 // Plusieurs correspondances : demander la précision, jamais choisir au hasard.
 const SERVICE_STOP=new Set(['de','la','le','les','un','une','du','des','et','pour','avec','sur','en','au','aux','ou','plus']);
 function serviceWords(s){return norm(s).replace(/[’‘']/g,' ').split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!SERVICE_STOP.has(w));}
-function matchServices(text,catalogue){
- const none={ids:[],names:[],ambiguous:null};
+// Famille = segments parents du chemin ; chaque segment peut porter plusieurs alternatives (« Babyboomer / babycolor »).
+function serviceFamilies(path){return String(path||'').split('›').slice(0,-1).map(x=>x.trim()).filter(Boolean).map(label=>({label,alts:label.split('/').map(serviceWords).filter(a=>a.length)})).filter(f=>f.alts.length);}
+// Libellé affiché : le nom seul, sauf s'il est partagé par plusieurs familles (« Quatre doigts »).
+function serviceLabel(s,catalogue){
+ const same=(catalogue||[]).filter(x=>x.name===s.name).length;
+ const fam=String(s.path||'').split('›').slice(0,-1).map(x=>x.trim()).filter(Boolean).at(-1);
+ return same>1&&fam?fam+' : '+s.name:s.name;
+}
+// Reconnaissance d'une prestation : chaque candidat est jugé sur les mots du message qu'il explique.
+// Un nom complet ou une famille nommée explique plus de mots qu'un nom partiel ; le meilleur gagne.
+// Plusieurs meilleurs candidats : précision demandée, jamais de choix au hasard.
+function matchServices(text,catalogue,familyHint){
+ const none={ids:[],names:[],ambiguous:null,ambiguousFamily:null};
  if(!Array.isArray(catalogue))return none;
- const leaves=catalogue.map(s=>({id:s.id,name:s.name,w:serviceWords(s.name)})).filter(x=>x.w.length);
+ const leaves=catalogue.map(s=>({id:s.id,name:s.name,w:serviceWords(s.name),fam:serviceFamilies(s.path)})).filter(x=>x.w.length);
  // Seuls les mots du vocabulaire du catalogue comptent : « je veux », « bonjour » ne sont pas des prestations.
- const vocabulary=new Set(leaves.flatMap(x=>x.w));
- const words=new Set(serviceWords(text).filter(w=>vocabulary.has(w)));
- if(!words.size)return none;
- let hits=leaves.filter(x=>x.w.every(w=>words.has(w)));
- if(!hits.length&&words.size>=2)hits=leaves.filter(x=>[...words].every(w=>x.w.includes(w)));
- if(hits.length===1)return {ids:[hits[0].id],names:[hits[0].name],ambiguous:null};
- if(hits.length>1)return {ids:[],names:hits.map(x=>x.name).slice(0,4),ambiguous:hits.map(x=>x.name).slice(0,4)};
+ const vocabulary=new Set([...leaves.flatMap(x=>x.w),...leaves.flatMap(x=>x.fam.flatMap(f=>f.alts.flat()))]);
+ const raw=serviceWords(text);
+ const T=new Set(raw.filter(w=>vocabulary.has(w)));
+ // « baby boomer » = « babyboomer » du catalogue : mots accolés pour retrouver les noms composés.
+ for(let i=0;i<raw.length-1;i++){const joined=raw[i]+raw[i+1];if(vocabulary.has(joined))T.add(joined);}
+ if(!T.size)return none;
+ const famMatched=x=>x.fam.filter(f=>f.alts.some(a=>a.every(w=>T.has(w))));
+ const extraOf=x=>{const explained=new Set([...x.w,...famMatched(x).flatMap(f=>f.alts.filter(a=>a.every(w=>T.has(w))).flat())]);return [...T].filter(w=>!explained.has(w)).length;};
+ let hits=leaves.filter(x=>x.w.every(w=>T.has(w)));
+ if(!hits.length&&T.size>=2)hits=leaves.filter(x=>[...T].every(w=>x.w.includes(w)));
+ if(!hits.length)hits=leaves.filter(x=>famMatched(x).length>0);
+ // Réponse à une question de précision déjà posée dans une famille (« Quatre doigts » après « Dans « Babyboomer / babycolor » … »).
+ if(familyHint&&hits.length>1){const inFamily=hits.filter(x=>x.fam.at(-1)?.label===familyHint);if(inFamily.length)hits=inFamily;}
+ if(hits.length>1){const best=Math.min(...hits.map(extraOf));hits=hits.filter(x=>extraOf(x)===best);}
+ // Ex æquo : le nom complet qui apparaît en suite dans le message l'emporte (« popits court » ≠ « demi popits court »).
+ if(hits.length>1){const seq=raw.join(' ');const phrase=hits.filter(x=>(' '+seq+' ').includes(' '+x.w.join(' ')+' '));if(phrase.length){const longest=Math.max(...phrase.map(x=>x.w.length));hits=phrase.filter(x=>x.w.length===longest);}}
+ if(hits.length===1)return {ids:[hits[0].id],names:[hits[0].name],ambiguous:null,ambiguousFamily:null};
+ if(hits.length>1){
+  const fams=[...new Set(hits.map(x=>x.fam.at(-1)?.label||''))];
+  const shared=fams.length===1&&fams[0]?fams[0]:null;
+  // Famille annoncée seulement si la cliente l'a nommée pour chaque candidat.
+  const familyNamed=Boolean(shared)&&hits.every(x=>famMatched(x).length>0);
+  // Noms identiques d'une famille à l'autre : le nom de famille les distingue.
+  const options=hits.map(x=>hits.filter(y=>y.name===x.name).length>1&&x.fam.at(-1)?x.fam.at(-1).label+' : '+x.name:x.name).slice(0,6);
+  return {ids:[],names:options,ambiguous:options,ambiguousFamily:familyNamed?shared:null};
+ }
  return none;
 }
+function wantedMode(text){const t=norm(text);if(/\b(reserver|reservation|rendez.?vous|rdv)\b/.test(t))return 'reservation';if(/\b(conseil\w*|lequel me|laquelle me)\b/.test(t))return 'conseil';return null;}
 // Heure de créneau dans un message qui contient déjà une date : « Le 27 octobre à 10h40 ».
 // « à » est exigé : « vers 15h » reste une préférence, pas un choix de créneau.
 function timeAfterA(text){
@@ -214,4 +245,4 @@ function contactFromHistory(messages){
 }
 function isRecapRequest(text){return /\b(recapitulatif|resume de (ma|la) (demande|reservation)|recap)\b/.test(norm(text));}
 function isConfirmWord(text){const t=norm(text).replace(/[’‘]/g,"'");return /\b(je confirme|confirme|je valide|c'est bon pour moi)\b/.test(t)&&!/\b(pas|ne|non|annul\w*)\b/.test(t);}
-module.exports={today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression,startHour,planningContext,selectedTime,matchServices,timeAfterA,contactFrom,contactFromHistory,isRecapRequest,isConfirmWord,isNameAnswer,bareName};
+module.exports={serviceLabel,wantedMode,today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression,startHour,planningContext,selectedTime,matchServices,timeAfterA,contactFrom,contactFromHistory,isRecapRequest,isConfirmWord,isNameAnswer,bareName};

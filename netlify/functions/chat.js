@@ -250,6 +250,26 @@ async function selectionReply(time, context, date) {
   };
 }
 
+// Mode conseil : réponses de conseil uniquement, sans outil, sans créneau ni réservation.
+const ADVISOR_HINT='\nMode conseillère : répondez aux questions de conseil (prestations, techniques, entretien, tarifs, questions diverses) avec le ton de Melba. Ne proposez aucun créneau, ne réservez rien et ne demandez aucune coordonnée. Si la cliente veut réserver, invitez-la à le dire clairement.';
+async function callAdvisor(apiKey, messages){
+  const core=require('./lib/core');
+  if(!await core.rpc('limit',{p_key:'melba-global:'+new Date().toISOString().slice(0,10),p_max:100,p_seconds:86400}))core.fail(429,'Melba a atteint sa limite quotidienne. Contactez Mélanie.');
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:700,system:SYSTEM_PROMPT+ADVISOR_HINT,messages:messages.map(m=>({role:m.role,content:m.content}))})});
+  if(!res.ok)throw new Error('API Claude '+res.status);
+  const data=await res.json();
+  const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+  return text||'Je peux vous renseigner sur les prestations, les tarifs et l’entretien. Souhaitez-vous réserver ? ♡';
+}
+// Annonce de changement de mode ajoutée à une réponse déjà signée, puis resignée.
+function withNote(res,note){
+  if(res.statusCode!==200)return res;
+  const body=JSON.parse(res.body);
+  body.reply=note+body.reply;
+  body.signature=require('./lib/core').sign('melba-reply:'+body.reply);
+  return {...res,body:JSON.stringify(body)};
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Méthode non autorisée' });
 
@@ -276,9 +296,40 @@ exports.handler = async (event) => {
   }
   // Nouveau client : progression métier explicite, sans décision libre du modèle.
   if(payload.flow_version===2){
+    const lastText=messages.at(-1).content;
+    const modeAsked=policy.wantedMode(lastText);
+    const prevMode=previous?.mode||null;
+    const hello=/^(bonjour|bonsoir|salut|hello|coucou)[\s!.,?]*$/.test(String(lastText).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim());
+    const budgetOk=()=>core.rpc('limit',{p_key:'melba-global:'+new Date().toISOString().slice(0,10),p_max:100,p_seconds:86400});
+    // Salutation seule, sans historique : la cliente choisit conseil ou réservation.
+    if(!previous&&messages.length===1&&hello){
+      if(!await budgetOk())return json(429,{error:'Melba a atteint sa limite quotidienne. Contactez Mélanie.'});
+      const reply='Bonjour ! Vous avez besoin d’un conseil ou vous souhaitez réserver ? ♡';
+      return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply)});
+    }
+    // Mode conseil : aucune réservation, le contexte en cours (et donc une réservation commencée) est conservé.
+    if((modeAsked||prevMode)==='conseil'&&modeAsked!=='reservation'){
+      if(!await budgetOk())return json(429,{error:'Melba a atteint sa limite quotidienne. Contactez Mélanie.'});
+      // Les messages contenant des coordonnées ne partent jamais vers le modèle de conseil.
+      const publicMessages=cleanMessages((payload.messages||[]).filter(m=>m&&!m.private))||[];
+      if(!publicMessages.length||publicMessages.at(-1).role!=='user')return json(400,{error:'Aucun message'});
+      // Une réponse de réservation (date, matin, heure) pendant le mode conseil : rien n'est perdu, la cliente reprend explicitement.
+      const bookingAnswer=previous?.flow===2&&!modeAsked&&(policy.hasDateExpression(lastText)||policy.preference([{role:'user',content:lastText}])||policy.selectedTime(lastText));
+      if(bookingAnswer){
+        const kept='Votre réservation en cours est conservée. Dites « je veux réserver » pour reprendre où nous en étions. ♡';
+        return json(200,{pendingBooking:null,reply:kept,signature:core.sign('melba-reply:'+kept),bookingContext:{...previous,mode:'conseil'},contextSignature:core.sign('melba-context:'+JSON.stringify({...previous,mode:'conseil'}))});
+      }
+      let text;
+      try{text=await callAdvisor(apiKey,publicMessages);}catch(err){return json(err.status===429?429:502,{error:err.status===429?err.message:'Réponse indisponible, réessayez ou appelez Mélanie.'});}
+      const note=modeAsked==='conseil'&&prevMode!=='conseil'?'Je passe en mode conseillère. ':'';
+      const reply=note+text;
+      const bc={...(previous||{}),mode:'conseil'};
+      return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply),bookingContext:bc,contextSignature:core.sign('melba-context:'+JSON.stringify(bc))});
+    }
+    const modeNote=modeAsked==='reservation'&&prevMode==='conseil'?'Je passe en mode agent de réservation. ':'';
     try{
       const result=await require('./lib/melba-flow').handle({event,payload,messages,previous});
-      if(result)return result;
+      if(result)return modeNote?withNote(result,modeNote):result;
     }catch(err){
       console.error('Melba parcours',err.status||503,err.name);
       return core.json(err.status||503,{error:err.status?err.message:'Calendrier momentanément indisponible. Vos informations validées sont conservées ; réessayez.'});

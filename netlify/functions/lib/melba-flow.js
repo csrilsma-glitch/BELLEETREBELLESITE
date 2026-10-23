@@ -13,17 +13,20 @@ function personName(raw,kind){
  value=value.replace(kind==='surname'?/^(?:(?:mon )?nom(?: de famille)?(?: est)?\s*[:=]?\s*|je m['’]appelle\s+)/i:/^(?:(?:mon )?pr[ée]nom(?: est)?\s*[:=]?\s*|je m['’]appelle\s+)/i,'').trim();
  return /^[\p{L}][\p{L}\p{M}'’ -]{0,59}$/u.test(value)&&!/[?]/.test(raw)&&!p.isConfirmWord(value)&&!['oui','non','merci','bonjour','ok'].includes(p.norm?.(value)||value.toLowerCase())?value:null;
 }
-function serviceMatch(text,catalogue){
+function serviceMatch(text,catalogue,familyHint){
+ // Le nom complet d'abord : « popits et demi popits » ou « kit complet + prise de mesure » contiennent des séparateurs.
+ const whole=p.matchServices(text,catalogue,familyHint);
+ if(whole.ids.length===1||!/\s*\+\s*|\s+et\s+/i.test(text))return whole;
  // Réponses explicites par identifiant ou libellé exact ; plusieurs prestations via le crâne ou +.
  const chunks=text.split(/\s*\+\s*|\s+et\s+/i);let ids=[];
  for(const chunk of chunks){
   const exact=catalogue.filter(s=>s.id===chunk.trim()||s.name.toLocaleLowerCase('fr')===chunk.trim().toLocaleLowerCase('fr'));
-  const m=exact.length===1?{ids:[exact[0].id]}:p.matchServices(chunk,catalogue);
+  const m=exact.length===1?{ids:[exact[0].id]}:p.matchServices(chunk,catalogue,familyHint);
   if(m.ambiguous)return m;
   ids.push(...m.ids);
  }
  if(ids.length)return {ids:[...new Set(ids)]};
- return p.matchServices(text,catalogue);
+ return p.matchServices(text,catalogue,familyHint);
 }
 async function handle({event,payload,messages,previous}){
  const text=messages.at(-1).content,now=Date.now();
@@ -38,23 +41,29 @@ async function handle({event,payload,messages,previous}){
  const intent=/r[ée]serv|rendez[- ]?vous|\brdv\b|cr[ée]neau|disponib|\bkit\b|\bpose\b|\bgel\b|\bsemi[- ]?permanent\b|\bpress\b|baby\s?boomer/i.test(text);
  if(!old&&!selected.length&&(!intent||(/\?/.test(text)&&!/r[ée]serv|rendez[- ]?vous|\brdv\b|cr[ée]neau|disponib/i.test(text))))return null;
  const catalogue=await c.db('br15_services?active=eq.true&order=position.asc');
- const match=(!old||['service','date','period','time'].includes(old.step))?serviceMatch(text,catalogue):{ids:[]};
+ const match=(!old||['service','date','period','time'].includes(old.step))?serviceMatch(text,catalogue,old?.family):{ids:[]};
  let state=old?{...old}:{flow:2,id:crypto.randomUUID(),expires:now+TTL,step:'service',services:[]};
  let contact=readContact(event,state),privateTurn=['surname','firstname','email','phone','recap'].includes(state.step);
  function reply(message,{pendingBooking=null,choices,reset=false}={}){
-  const bookingContext=state;
+  // Le mode réservation est explicite dans le contexte signé ; les coordonnées n'y figurent jamais.
+  const bookingContext={...state,mode:'reservation'};
   // Les données clientes ne figurent jamais dans ce contexte signé/restaurable.
   const headers={};
   if(['surname','firstname','email','phone'].some(k=>contact[k]))headers['Set-Cookie']=cookie(c.seal({...contact,id:state.id,expires:state.expires}),Math.max(0,Math.ceil((state.expires-Date.now())/1000)));
   if(reset)headers['Set-Cookie']=clearCookie();
   return c.json(200,{reply:message+' ♡',signature:c.sign('melba-reply:'+message+' ♡'),bookingContext,contextSignature:c.sign('melba-context:'+JSON.stringify(bookingContext)),pendingBooking,private:privateTurn,flowStep:state.step,...(choices?{choices}:{})},headers);
  }
- const names=()=>state.services.map(id=>catalogue.find(s=>s.id===id)?.name).filter(Boolean).join(' + ');
+ const names=()=>state.services.map(id=>catalogue.find(s=>s.id===id)).filter(Boolean).map(s=>p.serviceLabel(s,catalogue)).join(' + ');
 
 
  const changed=match.ids?.length&&JSON.stringify(match.ids)!==JSON.stringify(state.services);
  const siteChanged=selected.length&&JSON.stringify(selected)!==JSON.stringify(state.siteSelection||[])&&JSON.stringify(selected)!==JSON.stringify(state.services);
- if(match.ambiguous){return reply('Plusieurs prestations correspondent : '+match.ambiguous.join(' ou ')+'. Laquelle souhaitez-vous ?');}
+ if(match.ambiguous){
+  // La famille nommée reste en mémoire signée : la réponse « Quatre doigts » est résolue dans cette famille.
+  if(match.ambiguousFamily)state.family=match.ambiguousFamily;else delete state.family;
+  return reply(match.ambiguousFamily?'Dans « '+match.ambiguousFamily+' », quelle option souhaitez-vous : '+match.ambiguous.join(', ')+' ?':'Plusieurs prestations correspondent : '+match.ambiguous.join(' ou ')+'. Laquelle souhaitez-vous ?');
+ }
+ if(match.ids?.length)delete state.family;
  if(changed||siteChanged){
   state.services=siteChanged?selected:match.ids;state.siteSelection=selected;state.step='date';delete state.start;delete state.date;delete state.preference;
  }
@@ -91,7 +100,7 @@ async function handle({event,payload,messages,previous}){
    if(state.step==='period'&&periods.length===1&&/^(?:oui|d['’]accord|ok)[.! ]*$/i.test(text))state.preference=periods[0];
    if(!state.preference){
    state.step='period';
-   return reply('Pour '+p.label(state.date)+', '+(periods.length===2?QUESTIONS.period:periods[0]==='morning'?'seul le matin dispose de créneaux compatibles. Souhaitez-vous le matin ?':'seul l’après-midi dispose de créneaux compatibles. Souhaitez-vous l’après-midi ?'),{choices:periods.map(x=>x==='morning'?'Matin':'Après-midi')});
+   return reply('Pour '+p.label(state.date)+', '+(periods.length===2?QUESTIONS.period.charAt(0).toLowerCase()+QUESTIONS.period.slice(1):periods[0]==='morning'?'seul le matin dispose de créneaux compatibles. Souhaitez-vous le matin ?':'seul l’après-midi dispose de créneaux compatibles. Souhaitez-vous l’après-midi ?'),{choices:periods.map(x=>x==='morning'?'Matin':'Après-midi')});
    }
   }
   if(state.step!=='surname'){
