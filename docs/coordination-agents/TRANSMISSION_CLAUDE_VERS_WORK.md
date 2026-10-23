@@ -1,20 +1,22 @@
-# Transmission Claude → Work — CW3-BALLE-CLAUDE
+# Transmission Claude → Work — CW3-T03-CLAUDE-WORK
 
 - **Auteur :** CLAUDE
-- **Date :** 23 octobre 2026, 22:30 Europe/Paris (heure limite : 23h00)
-- **Mission :** essai CW 3 (rapport du propriétaire) — règle de la balle + correction CW-003-R1 (PR #10)
-- **Niveau CW :** CW 3, essai ponctuel ; aucun orchestrateur actif
-- **Détenteur de la balle :** CLAUDE → transmis ci-dessous
+- **Heure :** 23 octobre 2026, 22:4x Europe/Paris ; échéance 23:00 (mention de l'heure réelle au moment de l'écriture à vérifier par Work)
+- **Mission :** CW-003-R1, reliquat ANO-CW10-001 (nom seul), cycle 2/3
+- **Niveau :** CW 3, essai manuel ; aucun orchestrateur actif
+- **Référence reçue :** 666b005 (CW3-T02-WORK-CLAUDE)
 
 ## Actions réalisées (preuves)
-- Branche `docs/balle-cw3` (depuis main) : règle de la balle ajoutée en tête de `NIVEAUX_CW.md`. Ancienne transmission archivée dans `HISTORIQUE/20261023-CLAUDE-transmission-avant-cw3-balle.md`.
-- Branche PR #10 `fix/20261023-melba-persistance-cw003` : commit **666b005** (fast-forward depuis c726e49, push vérifié sur le serveur). Corrige ANO-CW10-001 (noms annoncés retenus, messages répétant le nom écartés) et ANO-CW10-002 (historique, contexte et signature remis à zéro après réservation réussie, sans réinjection de message). Documentation : `docs/rapport-erreurs-conception/04_TESTS_NON_REGRESSION.md`, section CW-003-R1.
-- Tests : `node --test tests/melba-session.test.js` 12/12 ; `npm test` 205/205. Corrigé au passage : horloge figée des tests de session (préexistante).
+- Commit **50acd7f** sur `fix/20261023-melba-persistance-cw003` (PR #10), fast-forward depuis 666b005, push vérifié par ls-remote.
+- `site/melba-session.js` : une réponse courte et majuscule, juste après une demande de nom ou de coordonnées (ou juste après un message contenant téléphone ou e-mail), est traitée comme un nom seul. Ses mots deviennent interdits pour la suite de l'historique, et tout message les répétant est écarté (y compris une réponse de Melba).
+- `tests/melba-session.test.js` : 2 tests du parcours de Work : (1) nom seul après « Quel est votre nom ? », avec répétition par Melba écartée ; (2) nom seul après un téléphone déjà donné, message suivant conservé.
+- Tests : `node --test tests/melba-session.test.js` 14/14 ; `npm test` 207/207.
+- Documentation : section CW-003-R1 de `docs/rapport-erreurs-conception/04_TESTS_NON_REGRESSION.md` complétée (non modifiée ici ; voir commit 50acd7f pour le code et les tests).
 
-## Limites
-- Un nom donné seul, sans formule introductive, n'est pas détecté.
-- Aucun test navigateur réel ; sessionStorage factice uniquement. Aucune donnée réelle, réservation, notification, déploiement ou fusion.
-- La PR #10 n'est ni fusionnée ni déployée par Claude.
+## Non réalisé (à faire savoir clairement)
+- Pas de nouveau test navigateur de ma part dans cette étape : le reload /app/, l'expiration sur navigateur et la purge suivie d'un nouveau message ne sont couverts que par les tests du module (sessionStorage factice), pas par un rejeu Chromium. Work a déjà fait le test navigateur de 666b005 ; le rejeu après 50acd7f est à sa charge si nécessaire.
+- Un nom seul sans contexte (ni demande de nom, ni téléphone/e-mail juste avant) n'est pas détecté. C'est la limite reconnue dans la revue Work.
+- Aucun déploiement, aucune fusion, aucune réservation ni notification réelle. PR #10 non fusionnée.
 
-## Prochain détenteur
-- **BALLE À WORK** : vérifier 666b005 (contrôle indépendant), décider de l'intégration et du déploiement éventuel selon l'autorisation du propriétaire.
+## Décision demandée à Work
+- **BALLE À WORK** : contrôler 50acd7f, rejouer le test navigateur si Work le juge nécessaire avant 23h00, décider de la suite. Si la limite « nom seul sans contexte » reste bloquante, la mission est bloquée et la balle revient au propriétaire (« MISSION BLOQUÉE — BALLE AU PROPRIÉTAIRE »).
