@@ -1,43 +1,36 @@
-# Clôture Work — CW3-T04 — 23 octobre 2026
+# RAPPORT CW3 — clôture finale Work — 23 octobre 2026, 23:19 Europe/Paris
 
-Auteur WORK ; contrôle débuté à 22:42 Paris, clôture documentaire préparée à 22:47, échéance 23:00. Niveau CW3 encadré, sans orchestrateur. Autorisation : terminer le contrôle puis étudier l'orchestration, sans installer ni lancer d'agents.
+## Résultat
+PR #14 fusionnée et correctif publié en production avant 23h30. Claude : df568b4a10482d099d4cc1e44e25703a993d8123. Work : intégration 27f560ef146aa9c6dd448cf1e5db6535e30091ee puis fusion **6790096e693c23d2e81a31048838cb303d8f1678**.
+Netlify existant belleetrebelle-nailstudio / 93027859-2254-4471-b9b6-cfad17f470aa : déploiement **6adbce1f79c773577ebfd797**, contexte production, main, ready, publié 2026-10-23T21:14:21.627Z, SHA exact 6790096e693c23d2e81a31048838cb303d8f1678.
+URL officielle https://belleetrebelle-nailstudio.fr/ ; PWA cliente https://belleetrebelle-nailstudio.fr/app/.
+Retour arrière préparé : backup/main-pre-cw3-pr14-20261023 = 1dd4ee43904dd634abd03a496a1c120a31dbdce6 ; application précédente ccd4ed4bb8e974acd6f600b4eb3b4added72cbf7 / Netlify 6adb33732ee47b285459e856. Incident éventuel : revert ciblé + redéploiement, sans modifier les données.
 
-## Mission actuelle : revue 50acd7f
-Dernière transmission Claude lue sur docs/balle-cw3 (CW3-T03), distincte de la copie plus ancienne de main et de celle de la branche code. Correctif PR #10 : 50acd7f18219f2659c61bf50fdc72e6b929458a9. Base production applicative inchangée : ccd4ed4.
-14/14 tests ciblés melba-session relancés, réussis. Claude annonce 207 tests complets ; cette suite n'a pas été réexécutée inutilement par Work.
+## Corrections vérifiées
+Collecte des coordonnées explicitement privée et collante jusqu'à purge ; nom minuscule et réponses ultérieures qui le répètent exclus de la mémoire persistante. Historique ordinaire et contexte de réservation restaurés après rafraîchissement ; durée limitée à 30 minutes selon TTL du module. Après confirmation réussie, historique et contextes en mémoire ET stockage vidés ; Merci ne réinjecte rien.
+Pages couvertes : index.html, reservation.html, /app/ via son iframe vers le site. Pas de nouveau client parallèle.
+Conflits documentaires résolus sans écraser main : arbre construit sur main, seuls fichiers applicatifs/tests identiques à df568b4 copiés ; variantes anciennes de coordination archivées. Aucun changement à d8024eb pour avertissement de signature. Aucun changement aux fonctions serveur, tarifs, données clientes, secrets, Manager ou règles MFA.
+PR #10 remplacée par #14 ; GitHub peut la marquer merged par inclusion de son ascendance dans #14 ; pas de fusion ou déploiement séparé. PR #7 et #8 inchangées.
 
-**ANO-CW10-001 reste reproduite**, cycle 3/3 : après un message assistant « Pour réserver, indiquez votre nom, téléphone et e-mail. », un nom fictif en minuscules « cliente fictive » est gardé. Le code isBareName impose une majuscule Unicode ; cleanHistory ne traite donc pas cette entrée comme nom seul. Le précédent test majuscule « Cliente Fictive » est désormais correctement filtré.
+## Tests réellement exécutés par Work
+- npm test : **210/210**, 0 échec.
+- npm run check : 39 fichiers JavaScript valides, 64 prestations conservées.
+- SQL isolé PGlite : toutes les migrations et assertions passent, dont concurrence, double réservation refusée, idempotence, droits anonymes, cumul prix/durée, changement tarif non rétroactif, déplacement, pauses et rappels. Aucune base réelle utilisée.
+- Rappels simulés : email/SMS24h, déplacement, obsolescence, annulation répétée, délai24h et reprise après crash : OK.
+- Chromium153 local, 390x844, réseau fonctions simulé : sur accueil, réservation et vraie iframe /app/, nom minuscule absent ; conversation ordinaire restaurée ; répétition du nom à un tour ultérieur exclue ; confirmation fictive puis purge et Merci sans réapparition ; TTL déterministe avant/après30min : OK.
+- Le harnais reservation utilisait initialement un sélecteur checkbox ambigu ; restriction à assistant-log et relance réussie. Lancement SQL initial sans NODE_PATH : module PGlite absent du worktree, corrigé par réutilisation de la dépendance locale existante, puis succès. Ces incidents d'environnement ne sont pas des défauts applicatifs.
+- Téléchargement HTTPS du module publié : SHA256 identique au fichier validé : 93c1336cd5148e5c1aa103d2904451aabcd46ec26b2d17423e57ccd4f7b4498a.
+- Navigateur cloud réel, B&R APP publiée : demande Kit press on nails complet uniquement -> demande date/préférence ; rafraîchissement -> conservation demande et réponse ; 27 octobre2026 à10h40 -> mardi et30min, demande coordonnées ; coordonnées totalement fictives puis nom explicite -> **récapitulatif25€/30min**, bouton Confirmer présent, message aucun rendez-vous enregistré. **Aucun clic Confirmer réel**.
+- Nouveau rafraîchissement production : historique avant collecte restauré ; nom, téléphone, e-mail fictifs et récapitulatif absents de l'affichage restauré. Coque /app/ et Melba accessibles après déploiement.
+- Chromium local direct vers Internet bloqué par configuration réseau/TLS du runtime ; la vérification réelle a été réalisée dans le navigateur cloud sans contournement de certificat.
 
-Preuve module minimale :
-```js
-const S = require('./site/melba-session');
-const history = [
-  {role:'assistant', content:'Pour réserver, indiquez votre nom, téléphone et e-mail.'},
-  {role:'user', content:'cliente fictive'}
-];
-console.log(S.pack({history}).includes('cliente fictive')); // true sur 50acd7f
-```
+## Limites et réserves
+Aucun rendez-vous réel ni SMS/e-mail/événement Outlook de test créé. Le clic final et fournisseurs réels ne sont donc pas certifiés de bout en bout par cette mission ; ils restent couverts ici par simulations et SQL isolé uniquement. Android/iPhone physiques non testés. Cette livraison ne certifie ni toute l'exploitation ni la conformité juridique/sécurité antérieure.
+Après début collecte, tous messages suivants restent privés et ne sont volontairement pas restaurés : les coordonnées peuvent devoir être redonnées après un rafraîchissement. Hors collecte explicite, la détection universelle d'un nom spontané n'est pas garantie ; ne pas prétendre filtrer toute information personnelle libre. Pas de stockage durable inter-appareils ni de nouvelle promesse hors ligne.
+Observation réelle non bloquante : nom mélangé sans formule à téléphone/e-mail a été redemandé ; une formulation Je m'appelle… permet le récapitulatif correct. Pas de nouveau correctif serveur dans ce périmètre.
+Les mentions historiques affirmant /app/ non couvert ou les anciennes limites de chaque cycle restent des archives ; le présent rapport actualise ces constats.
+L'orchestrateur reste absent et hors périmètre. Aucune nouvelle mission n'est lancée.
 
-Test indépendant dans vraie coque /app/ servie localement, Chromium 153, viewport 390x844, endpoints entièrement simulés : demande de nom puis réponse minuscule → nom dans sessionStorage → nom restauré après rafraîchissement. Ce cas est contextuel, pas la limite « nom sans contexte » évoquée par Claude. Aucun appareil physique utilisé.
-**ANO-CW10-002 reste corrigée** : réservation simulée puis « Merci » ne ressauve pas le nom. TTL déterministe avant/après 30 minutes vérifié. Une première exécution du nouveau harnais a échoué sur son attente de texte, corrigée dans le harnais local ; l'exécution vérifiée finale a réussi et confirmé les résultats ci-dessus. Aucun nouveau défaut métier déduit de cet incident de test.
-
-## Décision de contrôle
-PR #10 : **BLOQUÉE**, pas de fusion, pas de déploiement. Pas de quatrième cycle lancé : arbitrage du propriétaire conformément à la limite de trois reprises. Recommandation soumise : remplacer la détection heuristique de noms par un état persistant métier autorisé et une séparation de la collecte des coordonnées, si le propriétaire autorise cette suite. Ne pas accepter silencieusement la conservation des noms.
-Aucune modification de code applicatif par Work, aucune suppression de données, aucun changement de secrets/sécurité/tarifs, aucun SMS, e-mail, événement Outlook ou rendez-vous réel de test.
-
-## Étude d'orchestration livrée
-PROPOSITION_ORCHESTRATEUR_GITHUB.md : architecture événementielle, état machine, contrôleur déterministe, agents CI, lease et concurrence, budget, délai, journal et arrêt ; sources officielles consultées. Une action Claude Code et une action Codex sont documentées ; aucune API publique de réveil de ce chat Work n'a été identifiée. Codex CI serait un intégrateur distinct, sans navigateur/connecteurs ChatGPT hérités.
-Un cron GitHub de secours cinq minutes est documenté mais non ponctuel garanti ; rien n'a été installé. Les tâches ChatGPT disponibles sont limitées à une heure ; aucune créée. Premier test proposé avec deux faux agents, zéro IA, zéro secret et zéro production, EN_ATTENTE_VALIDATION.
-
-## Historique du cycle
-- Claude : documentation 2790bce, correctifs 666b005 puis 50acd7f ; simulations annoncées et transmissions archivées.
-- Work : contrôles ciblés et navigateur, règle de balle intégrée en PR #12 / 310fae7 ; purge durable validée, défaut de nom minuscule confirmé ; proposition d'architecture seulement.
-- PR #7 et #8 restent hors mission, non intégrées par cette étape.
-- Aucun déploiement applicatif de cette étape. Dernier déploiement connu : 6adb33732ee47b285459e856, SHA applicatif ccd4ed4bb8e974acd6f600b4eb3b4added72cbf7 ; ne pas confondre avec les SHA documentaires main.
-
-## Détenteur final / arrêt
-**PROPRIÉTAIRE**, transfert CW3-T04-WORK-OWNER. Objectif applicatif non atteint, statut BLOQUÉE pour arbitrage ; proposition documentaire livrée. Fin anticipée sur blocage avant 23:00 ; aucun agent n'est relancé et aucune opération suivante autorisée.
-**MISSION BLOQUÉE — BALLE AU PROPRIÉTAIRE — EN ATTENTE DE DÉCISION.**
-
-
-Claude ne reprend pas automatiquement : limite de trois cycles atteinte et balle rendue au propriétaire. Proposition d’orchestration uniquement à valider.
+## Clôture
+Objectif de ce correctif atteint et publication SHA confirmée. Prochain détenteur : PROPRIÉTAIRE. Les propositions indépendantes restent EN_ATTENTE_VALIDATION.
+**MELBA DÉPLOYÉE — SHA CONFIRMÉ — BALLE AU PROPRIÉTAIRE — MISSION TERMINÉE.**
