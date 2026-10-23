@@ -79,11 +79,14 @@ Légende : **C** corrigé · **T** testé · **S** à surveiller · **N** non r�
 | HTN-ERR-071 | Markdown affiché brut | Interface | C dans la PR, à relancer sur navigateur | PR #3 `assistant.js` |
 | HTN-ERR-072 | Grille de créneaux démesurée | Interface | C dans la PR, à relancer sur navigateur | PR #3 `reservation.js`, `manager.js` |
 | HTN-ERR-073 | Réponse ou proposition tardive actionnable | Interface | C dans la PR (lecture), à relancer | PR #3 `assistant.js` |
-| HTN-ERR-074 | Jour de la semaine identique au jour courant résolu à aujourd'hui | Dates | N (confirmé en `01a9ecd`, correction à faire) | PR #3 `melba-policy.js` (`requestedDate`) |
+| HTN-ERR-074 | Jour de la semaine identique au jour courant résolu à aujourd'hui | Dates | C dans `135e084`, testé | PR #3 `melba-policy.js` (`requestedDate`) |
+| HTN-ERR-075 | Prestation nommée non retenue (« kit press nails complet uniquement ») | IA | C dans `17f1c32` (déployé `c0c20e0`), testé ; vérification téléphone à faire | `melba-press-context.test.js` |
+| HTN-ERR-076 | Date et heure dans le même message : créneau non reconnu | IA | C dans la branche `fix/20261023-melba-parcours` (`3ba662f`), testé | `melba-parcours.test.js` |
+| HTN-ERR-077 | Coordonnées reçues mais aucun récapitulatif (« je dois vérifier le calendrier ») | IA | C dans la branche `fix/20261023-melba-parcours` (`3ba662f`), testé ; défaut reproduit sur `c0c20e0` | `melba-parcours.test.js` |
 
 ## Bilan au 23 octobre 2026
 
-- **74 entrées** (065 au 23 octobre, puis 066–074 issues du contre-audit de la PR #3, second contre-audit sur `01a9ecd`).
+- **77 entrées** (065 au 23 octobre, puis 066–074 issues du contre-audit de la PR #3, second contre-audit sur `01a9ecd`, puis 075–077 issues du parcours de réservation sur téléphone).
 - **Non résolues** (statut N) : 15 entrées — 025, 034, 035, 040, 042, 052, 061, 062, 063, 066, 068 (preuve à refaire), 069, 070, 074. Parmi elles, 063 bloque un lancement public, 061 est un risque de sécurité accepté, 040 et 034 attendent une décision.
 - **Risque en place à résorber** : 029 (exception MFA pour deux comptes), présente sur `main`.
 - **À surveiller** (statut S ou H) : 004, 009, 010 (non vérifié), 013, 016, 019, 023, 024, 031, 036, 043, 045, 047, 048, 050, 051, 055 (production), 064, 065.
