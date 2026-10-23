@@ -52,3 +52,10 @@ Relire les conditions de garde-fou, tester les paraphrases adversariales et la m
 - Correction de test préexistante : l’horloge de test était figée à 20:00Z alors que `save()` horodate avec l’heure réelle ; les états sauvés paraissaient futurs et étaient rejetés.
 
 Limites : un nom donné seul, sans formule introductive, n’est pas détecté ; un mot suivant « je suis » (ex. « je suis fatiguée ») est aussi retenu, ce qui écarte des messages en trop (minimisation par excès, sans effet sur la réservation). Aucun test navigateur réel dans cette correction ; le module est testé avec un sessionStorage factice. Aucune donnée réelle, aucune réservation, aucune notification.
+
+## CW-003-R1 (cycle 3, prolongation du propriétaire jusqu’à 23h30) — collecte explicite
+
+- AutoDiag ANO-CW10-001 (reliquat) : un nom seul, donné après une demande de nom ou de coordonnées, était conservé. Correction : collecte explicite. Si la réponse de Melba demande un nom, des coordonnées, un téléphone, un e-mail ou une adresse, le message suivant de l’utilisateur et la réponse de Melba qui y répond sont marqués privés et ne sont jamais persistés (`isCollecting`, `persistable`, `site/assistant.js`). L’état de collecte est sauvegardé pour survivre au rafraîchissement.
+- Tests : `tests/melba-session.test.js` 16/16 ; `npm test` 209/209.
+- Vérification navigateur simulée (Chromium, viewport 390×844, réponses fictives, aucune fonction réelle) : `index.html`, `reservation.html` et l’iframe de `/app/` : nom absent du stockage et de l’affichage, conversation restaurée après rafraîchissement, demande initiale conservée.
+- Limites : un nom donné hors collecte (sans demande préalable de Melba) n’est pas détecté ; la purge après réservation n’a pas été rejouée dans le navigateur ; aucun test avec de vrais services de réservation, notifications ou Outlook.

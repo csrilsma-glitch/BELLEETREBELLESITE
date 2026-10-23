@@ -11,6 +11,12 @@
   // Limite : un nom donné seul, sans formule, n'est pas détectable ici.
   const NAME_CUE = /\b(?:je\s+m['’]\s*appelle|mon\s+pr[ée]nom(?:\s+est)?|mon\s+nom(?:\s+est)?|je\s+suis|voici\s+mon|nom\s*:|pr[ée]nom\s*:)\s*:?\s*([\p{L}'’-]+(?:\s+[\p{L}'’-]+)?)?/iu;
   const norm = t => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  // CW-003-R1 (propriétaire, 23/10 22h56) : collecte explicite. Si Melba demande un nom ou des coordonnées,
+  // la réponse suivante de l'utilisateur, et la réponse de Melba qui y répond, ne sont jamais persistées.
+  const COLLECT = /\b(?:nom|pr[ée]nom|coordonn[ée]es?|t[ée]l[ée]phone|e-?mail|mail|adresse)\b/i;
+  function isCollecting(reply) { return COLLECT.test(String(reply || '')); }
+  // Messages marqués privés par l'appelant (collecte en cours) : exclus de toute sauvegarde.
+  function persistable(list) { return (Array.isArray(list) ? list : []).filter(m => m && !m.private); }
 
   // Une valeur stockée n'est jamais rendue ni renvoyée au serveur sans ces contrôles.
   // Un nom annoncé est retenu : tout message qui le répète (y compris une réponse de Melba) est écarté.
@@ -53,6 +59,7 @@
       history: cleanHistory(state.history),
       bookingContext: state.bookingContext && typeof state.bookingContext === 'object' ? state.bookingContext : null,
       contextSignature: typeof state.contextSignature === 'string' ? state.contextSignature : null,
+      collecting: state.collecting === true,
     });
   }
 
@@ -69,6 +76,7 @@
       history,
       bookingContext: data.bookingContext && typeof data.bookingContext === 'object' ? data.bookingContext : null,
       contextSignature: typeof data.contextSignature === 'string' ? data.contextSignature : null,
+      collecting: data.collecting === true,
     };
   }
 
@@ -97,7 +105,7 @@
     try { if (s) s.removeItem(KEY); } catch (_) { /* stockage indisponible : rien à purger */ }
   }
 
-  const api = { KEY, TTL_MS, MAX_MESSAGES, cleanHistory, pack, unpack, save, load, clear };
+  const api = { KEY, TTL_MS, MAX_MESSAGES, cleanHistory, pack, unpack, save, load, clear, isCollecting, persistable };
   root.BRMelbaSession = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

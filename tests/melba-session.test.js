@@ -109,7 +109,7 @@ test('ANO-CW10-002 : après réservation, historique et contextes en mémoire so
  const fs=require('node:fs'),src=fs.readFileSync(require('node:path').join(__dirname,'../site/assistant.js'),'utf8');
  const ok=src.match(/notifications_disabled[\s\S]*?window\.BRMelbaSession\?\.clear\(\);/);
  assert.ok(ok,'branche de succès introuvable');
- assert.match(ok[0],/history\.length=0;bookingContext=null;contextSignature=null;window\.BRMelbaSession\?\.clear\(\);/);
+ assert.match(ok[0],/history\.length=0;bookingContext=null;contextSignature=null;collecting=false;window\.BRMelbaSession\?\.clear\(\);/);
  assert.doesNotMatch(ok[0],/history\.push/,'aucun message de réservation ne doit être réinjecté dans l’historique');
 });
 
@@ -136,4 +136,30 @@ test('ANO-CW10-001 reliquat : nom seul après un téléphone déjà donné est �
  ];
  const out=S.cleanHistory(h).map(m=>m.content);
  assert.deepEqual(out,['Merci. Et votre nom ?','Je voudrais un créneau mardi']);
+});
+
+// CW-003-R1 (propriétaire, 23/10 22h56) : collecte explicite de coordonnées, séparée de l'historique persisté.
+test('collecte explicite : une demande de nom ou de coordonnées ouvre la collecte ; le nom donné et la réponse ne sont jamais persistés',()=>{
+ globalThis.sessionStorage=fakeStorage();
+ assert.equal(S.isCollecting('Quel est votre nom pour la réservation ?'),true);
+ assert.equal(S.isCollecting('Voici les créneaux disponibles mardi.'),false);
+ const history=[
+   {role:'user',content:'babyboomer 2 doigts'},
+   {role:'assistant',content:'Quel est votre nom ?',private:false},
+   {role:'user',content:'Nom Fictif Unique',private:true},
+   {role:'assistant',content:'Merci Nom Fictif Unique, mardi 10h ?',private:true},
+   {role:'user',content:'mardi 10h'}
+ ];
+ S.save({history:S.persistable(history),collecting:false});
+ const raw=globalThis.sessionStorage.getItem(S.KEY);
+ assert.ok(!/Fictif|Unique/.test(raw),'le nom donné pendant la collecte ne doit pas être stocké');
+ assert.deepEqual(S.load(Date.now()).history.map(m=>m.content),['babyboomer 2 doigts','Quel est votre nom ?','mardi 10h']);
+});
+
+test('collecte explicite : l’état de collecte survit au rafraîchissement',()=>{
+ globalThis.sessionStorage=fakeStorage();
+ S.save({history:[{role:'user',content:'Bonjour'}],collecting:true});
+ assert.equal(S.load(Date.now()).collecting,true);
+ S.save({history:[{role:'user',content:'Bonjour'}],collecting:false});
+ assert.equal(S.load(Date.now()).collecting,false);
 });
