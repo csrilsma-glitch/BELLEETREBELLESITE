@@ -300,15 +300,49 @@ exports.handler = async (event) => {
     const reply=head+tail+' ♡';
     return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply),...signedContext({date:null,preference:context.preference||null})});
   }
-  // Créneau désigné après une liste : réponse serveur directe, sans relancer la recherche ni répéter la liste.
-  const picked=policy.selectedTime(last[0].content);
-  if(picked&&previous?.date&&previous.date===context.requestedDate&&context.siteSelection.length){
+  // Créneau désigné : « 10h40 », ou « Le 27 octobre à 10h40 » (la date du message prime sur la mémoire).
+  const picked=policy.selectedTime(lastText)||(policy.hasDateExpression(lastText)?policy.timeAfterA(lastText):null);
+  if(picked&&context.requestedDate&&context.siteSelection.length){
     try{
-      const chosen=await selectionReply(picked,context,previous.date);
+      const chosen=await selectionReply(picked,context,context.requestedDate);
       const ctxOut=signedContext(chosen.bookingContext);
       return json(200,{pendingBooking:null,reply:chosen.reply,signature:core.sign('melba-reply:'+chosen.reply),...ctxOut});
     }catch(err){
       console.error('Sélection de créneau en erreur', err.message);
+      const reply='Je ne peux pas vérifier le calendrier pour le moment. Aucun rendez-vous n’a été enregistré. Réessayez un peu plus tard ou contactez Mélanie au 06 62 28 75 45. 💕';
+      return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply)});
+    }
+  }
+  // Créneau déjà retenu : coordonnées, récapitulatif, puis confirmation par clic uniquement.
+  const haveSlot=Boolean(previous?.start&&previous.date&&context.requestedDate===previous.date&&serviceIds.length);
+  const contactNow=policy.contactFrom(lastText),hasContactNow=Object.keys(contactNow).length>0;
+  const recapAsk=policy.isRecapRequest(lastText),confirmAsk=policy.isConfirmWord(lastText);
+  if(haveSlot&&(hasContactNow||recapAsk||confirmAsk)){
+    if(confirmAsk&&!hasContactNow){
+      const reply='Je ne peux pas confirmer le rendez-vous depuis le chat. Cliquez sur le bouton Confirmer sous le récapitulatif pour le valider. Aucun rendez-vous n’est encore enregistré. ♡';
+      return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply),...signedContext({date:previous.date,preference:context.preference||null,start:previous.start})});
+    }
+    const contact=policy.contactFromHistory(messages);
+    const labels={name:'votre nom',phone:'votre numéro de téléphone',email:'votre adresse e-mail'};
+    const missing=['name','phone','email'].filter(k=>!contact[k]).map(k=>labels[k]);
+    if(missing.length){
+      const reply='Pour préparer le récapitulatif, il me manque encore '+missing.join(', puis ')+'. ♡';
+      return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply),...signedContext({date:previous.date,preference:context.preference||null,start:previous.start})});
+    }
+    try{
+      await nativeRunTool('book_appointment',{date:previous.date,start:previous.start,service_ids:serviceIds,client_name:contact.name,client_phone:contact.phone,client_email:contact.email},context);
+      const ctxOut=signedContext({date:previous.date,preference:context.preference||null,start:previous.start});
+      if(context.pending){
+        const q=context.pending.quote||{};
+        const names=CATALOGUE.filter(s=>serviceIds.includes(s.id)).map(s=>s.name).join(' + ');
+        const euros=String(Number(q.cents||0)/100).replace('.',',');
+        const reply='Voici le récapitulatif de votre demande : '+names+', '+euros+' € pour '+q.minutes+' min, '+policy.label(previous.date)+' à '+previous.start+'. Au nom de '+contact.name+' ('+contact.phone+', '+contact.email+'). Aucun rendez-vous n’est encore enregistré : vérifiez ces informations, puis cliquez sur Confirmer pour valider la réservation. ♡';
+        return json(200,{pendingBooking:context.pending,reply,signature:core.sign('melba-reply:'+reply),...ctxOut});
+      }
+      const reply='Ce créneau n’est plus disponible pour cette préférence. Aucun rendez-vous n’a été enregistré. Souhaitez-vous un autre horaire ? ♡';
+      return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply),...signedContext({date:previous.date,preference:context.preference||null})});
+    }catch(err){
+      console.error('Récapitulatif en erreur', err.message);
       const reply='Je ne peux pas vérifier le calendrier pour le moment. Aucun rendez-vous n’a été enregistré. Réessayez un peu plus tard ou contactez Mélanie au 06 62 28 75 45. 💕';
       return json(200,{pendingBooking:null,reply,signature:core.sign('melba-reply:'+reply)});
     }
