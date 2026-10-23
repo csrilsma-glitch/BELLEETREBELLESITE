@@ -17,3 +17,6 @@ Pas de main, fusion ou production sans autorisation explicite ; même exigence p
 L'installation documentaire COORD-001 autorise sa seule PR documentaire et sa fusion, marquée skip netlify pour éviter un déploiement fonctionnel. Ne pas fusionner les PR #7/#8. Les autorisations directes récentes priment. L'ancien protocole CW est archivé, non une extension des autorisations.
 
 Le chargement automatique de ce fichier dépend de l'environnement ; si absent, sa lecture explicite doit ouvrir la session. Finir par rapport court, lien GitHub, prochaine proposition EN_ATTENTE_VALIDATION et arrêt.
+
+## Niveaux CW (23/10/2026)
+`rapport CW 1` supervision directe (défaut) ; `rapport CW 2` mission autonome limitée à l'objectif autorisé, arrêt après rapport final ; `rapport CW 3` collaboration autonome **non active** tant qu'aucun orchestrateur réel n'existe. Aucun niveau n'autorise une action sensible ou une nouvelle mission. Voir `docs/coordination-agents/NIVEAUX_CW.md`.

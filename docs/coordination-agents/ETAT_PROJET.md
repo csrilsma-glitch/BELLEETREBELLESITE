@@ -30,3 +30,8 @@ Mise à jour : 23 octobre 2026, 21:34 Europe/Paris, Work. Les observations sont 
 
 ## Priorité et suite
 Proposer à Claude la préparation d'une validation complète isolée du clic Confirmer jusqu'à Supabase/Outlook/notifications, sans envoi réel, puis soumettre tout essai réel séparément. Statut EN_ATTENTE_VALIDATION. Ne pas déclarer Belle & Rebelle intégralement validée.
+
+## Niveau d'autonomie courant (23/10/2026, Claude)
+- Niveau CW actif : **CW 1** (défaut, aucune commande de niveau reçue pour la mission en cours).
+- Orchestration automatique CW 3 : **NON ACTIVE**. Aucun service ne surveille GitHub.
+- Règles : `NIVEAUX_CW.md`.
