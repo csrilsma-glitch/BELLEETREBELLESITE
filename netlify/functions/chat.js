@@ -258,12 +258,7 @@ exports.handler = async (event) => {
   try{context.siteSelection=Array.isArray(payload.selected_service_ids)&&payload.selected_service_ids.length?core.ids(payload.selected_service_ids):[];}catch{return json(400,{error:'Sélection de prestations invalide'});}
   const last=[messages.at(-1)];
   context.openingQuestion=/horaires? (?:d['’]ouverture|du studio)|heures? d['’]ouverture|quels sont vos horaires|ouvrez.vous/i.test(last[0].content);
-  const latestDate=policy.requestedDate(last);
-  const latestDateMention=policy.hasDateExpression(last[0].content);
-  context.invalidDate=latestDateMention&&!latestDate;
-  context.dateSource=latestDateMention?'latest':previous?.date?'memory':'history';
-  context.requestedDate=latestDateMention?latestDate:previous?.date||policy.requestedDate(messages);
-  context.preference=policy.preference(last)||previous?.preference||policy.preference(messages);
+  Object.assign(context,policy.planningContext(messages,previous));
   const direct=policy.directReply(messages.at(-1).content);
   if(direct)return json(200,{pendingBooking:null,reply:direct,signature:core.sign('melba-reply:'+direct)});
 

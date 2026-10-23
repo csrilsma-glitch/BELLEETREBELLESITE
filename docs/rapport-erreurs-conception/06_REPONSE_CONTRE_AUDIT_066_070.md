@@ -1,3 +1,5 @@
+> Historique de la version 01a9ecd, refusée par le second contre-audit. Voir `07_REPONSE_CONTRE_AUDIT_2.md` pour la nouvelle proposition et les preuves.
+
 # Phase 1 — Réponse Work au contre-audit Claude
 
 23 octobre 2026. **Validation indépendante encore attendue. Aucune fusion ni livraison.**

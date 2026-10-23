@@ -1,0 +1,1 @@
+Mise à niveau production : 64 prestations, horaires, Manager et réglages conservés ; aucune donnée fictive importée ; RPC privées.

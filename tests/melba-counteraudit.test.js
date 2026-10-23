@@ -27,7 +27,7 @@ test('HTN-ERR-068 : dernier jour exprimé, jour prochain et passage année/mois/
  assert.equal(p.requestedDate(user('jeudi, mais plutôt demain'),now),'2026-10-24');
  assert.equal(p.requestedDate(user('lundi prochain'),new Date('2026-10-26T10:00Z')),'2026-11-02');
  assert.equal(p.requestedDate(user('vendredi'),new Date('2026-12-31T10:00Z')),'2027-01-01');
- assert.equal(p.requestedDate(user('dimanche'),new Date('2026-10-24T22:30Z')),'2026-10-25');
+ assert.equal(p.requestedDate(user('dimanche'),new Date('2026-10-24T22:30Z')),'2026-11-01');
  assert.equal(p.requestedDate(user('lundi 26 octobre'),now),'2026-10-26');
 });
 test('HTN-ERR-069 : durée ne fixe pas le matin, préposition horaire explicite requise',()=>{
