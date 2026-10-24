@@ -71,3 +71,7 @@ Production **6ad1ec023cd1fd6c047f31d039d60930fbd13cc2**, Netlify6adbdb70a378c9c7
 
 ## MELBA-PERIOD-001 — 24octobre2026 — Work
 État avant publication : production ffa36c7/Netlify6adc02b451f95fe7304fd2ea. Bug de refus de période reproduit publiquement. Correctif ciblé validé localement :332Node, navigateur3formats, parcours HTTP/SQL complet isolé. Fusion et un déploiement expressément autorisés ; EN_COURS. Rapport docs/validation/20261024-melba-autre-date.md ; preuves de publication à compléter dans la clôture GitHub. Aucun rendez-vous/message réel, tarif ou sécurité modifié.
+
+
+### Clôture MELBA-PERIOD-001
+PR20 fusionnée, production b4ee16cb21dc7499497de59f21b423806446b812, Netlify6adc0df1ec183b0f27999cf5 ready,03:46:41Paris. Refus du matin et recherche27/28/29octobre vérifiés sur3pages publiques ; date27revérifiée sur accueil.332Node et recettes isolées réussis. TERMINÉE, aucune réservation/notification réelle. Rapport20261024-melba-autre-date.md.

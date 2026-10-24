@@ -25,3 +25,7 @@ Une proposition n'est jamais une autorisation. Aucune des missions ci-dessous n'
 
 ## Clôture PR14 — 23/10/2026,23:19 Paris
 ARBITRAGE-CW003 : prolongation propriétaire a autorisé le correctif ciblé ; livré df568b4, intégré PR14 et déployé6790096. L'ancien blocage de répétition du nom en collecte est levé. Les autres propositions restent EN_ATTENTE_VALIDATION ; aucun lancement automatique. Aucun travail sur orchestrateur dans cette mission.
+
+
+## Après MELBA-PERIOD-001 — 24octobre2026
+Aucun développement suivant lancé. Contrôle physique Android du refus de période : EN_ATTENTE_VALIDATION uniquement si souhaité ; trois interfaces déjà contrôlées en ligne et Chromium3formats automatisé. Ne pas demander de répéter les tests déjà couverts.

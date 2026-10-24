@@ -61,3 +61,7 @@ Autorisation expresse du propriétaire : développement/test/fusion/production s
 
 ## MELBA-PERIOD-001 — 24octobre2026 — Work
 Mission directe autorisée : corriger refus période/chercher autre date, tester, fusionner et déployer. EN_COURS après tests332Node et Chromium3formats validés. Branche fix/20261024-melba-autre-date ; rapport docs/validation/20261024-melba-autre-date.md. Limites : aucune écriture réelle, aucun envoi, secrets/tarifs/Manager intacts. Clôture après contrôle du SHA Netlify et scénario public. Aucun chantier suivant autorisé.
+
+
+### MELBA-PERIOD-001 — TERMINÉE
+PR20/code dfacd3c ; fusion et déploiement b4ee16cb21dc7499497de59f21b423806446b812 ; Netlify6adc0df1ec183b0f27999cf5 ready. Contrôles publics accueil/réservation/PWA réussis sans confirmation réelle. Une publication applicative.332Node, recettes navigateur/SQL isolées. Aucun nouveau chantier.
