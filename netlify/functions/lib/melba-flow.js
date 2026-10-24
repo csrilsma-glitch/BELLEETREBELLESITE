@@ -86,10 +86,12 @@ async function handle({event,payload,messages,previous,resume=false}){
  }
 
  // Refuser la seule période disponible ne doit jamais réinitialiser la préférence.
- const dateExpected=['date','alternative'].includes(state.step);
+ const normalized=String(text).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+ // Aux étapes horaire et période, seul « le <jour> » est un changement de date : un nombre seul peut être une heure.
+ const explicitDay=/^le\s+\d/.test(normalized);
+ const dateExpected=['date','alternative'].includes(state.step)||(['time','period'].includes(state.step)&&explicitDay);
  const shortAnchor=state.date||(dateExpected&&state.alternativeDates?.find(d=>p.abbreviatedDate(text,d)===d))||null;
  const shortDate=dateExpected?p.abbreviatedDate(text,shortAnchor):undefined;
- const normalized=String(text).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
  const accepted=/^(?:oui|oui\b.*|d['’]accord|ok|volontiers|cherchez(?:.*)|cherche(?:.*)|allez[- ]y)[.! ]*$/i.test(normalized);
  const rejected=/^(?:non|pas|je ne veux pas|je prefere pas)\b/i.test(normalized);
  const periodName=()=>state.preference==='morning'?'le matin':state.preference==='afternoon'?'l’après-midi':'sur une période disponible';
