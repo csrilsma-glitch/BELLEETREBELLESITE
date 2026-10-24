@@ -57,3 +57,7 @@ CW-003-R1 TERMINÉE, prolongation propriétaire jusqu'à23h30 respectée. Claude
 
 ## MELBA-FLOW-001 — mission directe Work,24octobre2026 — TERMINÉE
 Autorisation expresse du propriétaire : développement/test/fusion/production sans validation intermédiaire ni relaisClaude/CW. Étapes strictes et privé, PR16/17 ; production6ad1ec023cd1fd6c047f31d039d60930fbd13cc2/Netlify6adbdb70a378c9c715fa1954. 224Node + SQL/rappels +3parcours navigateur avec insertions locales ; production jusqu'au récapitulatif sans envoi ni réservation de test. Rapport docs/validation/20261024-melba-parcours-sequentiel.md. Fin de mission ; pas de mission suivante automatique.
+
+
+## MELBA-PERIOD-001 — 24octobre2026 — Work
+Mission directe autorisée : corriger refus période/chercher autre date, tester, fusionner et déployer. EN_COURS après tests332Node et Chromium3formats validés. Branche fix/20261024-melba-autre-date ; rapport docs/validation/20261024-melba-autre-date.md. Limites : aucune écriture réelle, aucun envoi, secrets/tarifs/Manager intacts. Clôture après contrôle du SHA Netlify et scénario public. Aucun chantier suivant autorisé.

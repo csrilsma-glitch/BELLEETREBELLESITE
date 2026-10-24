@@ -12,7 +12,8 @@
     "test:manager": "node tests/manager-ui.cjs",
     "test:mfa-ui": "node tests/mfa-ui.cjs",
     "test:targeted-ui": "node tests/targeted-ui.cjs",
-    "test:melba-flow": "node tests/melba-sequential-browser.cjs"
+    "test:melba-flow": "node tests/melba-sequential-browser.cjs",
+    "test:melba-alternatives": "node tests/melba-autre-date-browser.cjs"
   },
   "engines": {
     "node": ">=22"
