@@ -2,7 +2,7 @@
 // Parcours métier déterministe. Aucune écriture : seul le bouton cliente appelle reservations.
 const crypto=require('node:crypto'),c=require('./core'),b=require('./booking'),p=require('./melba-policy');
 const COOKIE='br15_melba_flow',TTL=30*60*1000;
-const QUESTIONS={date:'Quelle date vous conviendrait ?',period:'Préférez-vous le matin ou l’après-midi ?',time:'Quel horaire choisissez-vous ?',surname:'Quel est votre nom de famille ?',firstname:'Quel est votre prénom ?',email:'Quelle est votre adresse e-mail ?',phone:'Quel est votre numéro de téléphone ?'};
+const QUESTIONS={alternative:'Souhaitez-vous que je cherche un autre jour ?',date:'Quelle date vous conviendrait ?',period:'Préférez-vous le matin ou l’après-midi ?',time:'Quel horaire choisissez-vous ?',surname:'Quel est votre nom de famille ?',firstname:'Quel est votre prénom ?',email:'Quelle est votre adresse e-mail ?',phone:'Quel est votre numéro de téléphone ?'};
 const cookie=(value,seconds=1800)=>`${COOKIE}=${encodeURIComponent(value)}; Path=/.netlify/functions/; HttpOnly; Secure; SameSite=Strict; Max-Age=${seconds}`;
 const clearCookie=()=>cookie('',0);
 function readContact(event,state){
@@ -42,7 +42,7 @@ async function handle({event,payload,messages,previous,resume=false}){
  const intent=/r[ée]serv|rendez[- ]?vous|\brdv\b|cr[ée]neau|disponib|\bkit\b|\bpose\b|\bgel\b|\bsemi[- ]?permanent\b|\bpress\b|baby\s?boomer/i.test(text);
  if(!old&&!selected.length&&(!intent||(/\?/.test(text)&&!/r[ée]serv|rendez[- ]?vous|\brdv\b|cr[ée]neau|disponib/i.test(text))))return null;
  const catalogue=await c.db('br15_services?active=eq.true&order=position.asc');
- const match=(!old||['service','date','period','time'].includes(old.step))?serviceMatch(text,catalogue,old?.family):{ids:[]};
+ const match=(!old||['service','date','period','time','alternative'].includes(old.step))?serviceMatch(text,catalogue,old?.family):{ids:[]};
  let state=old?{...old}:{flow:2,id:crypto.randomUUID(),expires:now+TTL,step:'service',services:[]};
  let contact=readContact(event,state),privateTurn=['surname','firstname','email','phone','recap'].includes(state.step);
  function reply(message,{pendingBooking=null,choices,reset=false}={}){
@@ -69,7 +69,7 @@ async function handle({event,payload,messages,previous,resume=false}){
  if(match.ids?.length){delete state.family;if(state.pendingServices?.length){match.ids=[...new Set([...state.pendingServices,...match.ids])];delete state.pendingServices;}}
  changed=match.ids?.length&&JSON.stringify(match.ids)!==JSON.stringify(state.services);
  if(changed||siteChanged){
-  state.services=siteChanged?selected:match.ids;state.siteSelection=selected;state.step='date';delete state.start;delete state.date;delete state.preference;
+  delete state.alternativeDates;delete state.offeredPeriod;state.services=siteChanged?selected:match.ids;state.siteSelection=selected;state.step='date';delete state.start;delete state.date;delete state.preference;
  }
  if(!state.services.length&&state.family){const options=p.matchServices(state.family,catalogue).ambiguous;if(options)return reply('Dans « '+state.family+' », quelle option souhaitez-vous : '+options.join(', ')+' ?');}
  if(!state.services.length){state.step='service';return reply('Quelle prestation souhaitez-vous ? Vous pouvez aussi composer plusieurs prestations dans le crâne.');}
@@ -85,19 +85,50 @@ async function handle({event,payload,messages,previous,resume=false}){
   return reply(QUESTIONS[state.step]||'Quelle prestation souhaitez-vous ?');
  }
 
+ // Refuser la seule période disponible ne doit jamais réinitialiser la préférence.
+ const normalized=String(text).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+ const accepted=/^(?:oui|oui\b.*|d['’]accord|ok|volontiers|cherchez(?:.*)|cherche(?:.*)|allez[- ]y)[.! ]*$/i.test(normalized);
+ const rejected=/^(?:non|pas|je ne veux pas|je prefere pas)\b/i.test(normalized);
+ const periodName=()=>state.preference==='morning'?'le matin':state.preference==='afternoon'?'l’après-midi':'sur une période disponible';
+ function offerAnother(reason){
+  state.step='alternative';delete state.start;delete state.requestedTime;delete state.offeredPeriod;delete state.alternativeDates;
+  return reply(reason+' Souhaitez-vous que je cherche un autre jour avec des créneaux '+periodName()+' ?', {choices:['Oui, chercher un autre jour','Choisir une autre date']});
+ }
+ if(state.step==='alternative'&&!changed&&!siteChanged){
+  const pref=p.preference([{role:'user',content:text}]);if(pref)state.preference=pref;
+  if(p.hasDateExpression(text)){state.step='date';delete state.alternativeDates;}
+  else if(accepted){
+   // Recherche bornée et ordonnée ; chaque date proposée provient du moteur métier.
+   // Ne jamais présenter comme disponible une date non consultée ni un résultat partiel en cas d’erreur.
+   const dates=[],start=state.date||p.today();
+   for(let offset=1;offset<=14&&dates.length<3;offset++){
+    const day=new Date(start+'T12:00:00Z');day.setUTCDate(day.getUTCDate()+offset);const date=day.toISOString().slice(0,10);
+    if(date<p.today())continue;
+    const slots=await b.availability(date,state.services);
+    if(slots.some(s=>!state.preference||state.preference==='any'||(Number(p.time(s.starts).slice(0,2))<12)===(state.preference==='morning')))dates.push(date);
+   }
+   delete state.date;delete state.start;delete state.requestedTime;state.step='date';state.alternativeDates=dates;
+   if(!dates.length)return reply('Je n’ai trouvé aucun créneau compatible '+periodName()+' dans les 14 jours suivant le '+p.label(start)+'. Je conserve vos prestations et votre préférence. Quelle autre date souhaitez-vous vérifier ?');
+   return reply('J’ai vérifié des disponibilités compatibles avec vos '+quote.minutes+' min '+periodName()+' : '+dates.map(d=>p.label(d)).join(', ')+'. Quelle date préférez-vous ?', {choices:dates.map(d=>p.label(d))});
+  }else if((rejected&&!pref)||/choisir une autre date/.test(normalized)){
+   state.step='date';delete state.date;delete state.alternativeDates;return reply('D’accord, je conserve vos prestations et votre préférence. Quelle autre date souhaitez-vous vérifier ?');
+  }else return reply('Je garde votre préférence pour '+periodName()+'. Souhaitez-vous que je cherche un autre jour ?', {choices:['Oui, chercher un autre jour','Choisir une autre date']});
+ }
+
  // Une date/heure explicite peut être donnée en avance, jamais réclamée à nouveau.
  if(['date','period','time'].includes(state.step)){
   if(p.hasDateExpression(text)){
    const date=p.requestedDate([{role:'user',content:text}]);
    if(!date||date<p.today()){state.step='date';delete state.date;delete state.start;return reply('Cette date est passée ou invalide. Quelle date à venir vous conviendrait ?');}
-   if(date!==state.date){state.date=date;delete state.start;}
+   if(date!==state.date){state.date=date;delete state.start;delete state.alternativeDates;delete state.offeredPeriod;}
   }
   const preference=p.preference([{role:'user',content:text}]);if(preference)state.preference=preference;
   const time=p.selectedTime(text)||p.timeAfterA(text);if(time)state.requestedTime=time;
   if(!state.date){state.step='date';return reply((changed||siteChanged?'Très bien, '+names()+' ('+(quote.cents/100).toLocaleString('fr-FR')+' € · '+quote.minutes+' min). ':'')+QUESTIONS.date);}
   const slots=await b.availability(state.date,state.services);
-  if(!slots.length){const unavailableDate=state.date;state.step='date';delete state.date;delete state.start;delete state.requestedTime;return reply('Je n’ai trouvé aucun créneau compatible le '+p.label(unavailableDate)+'. Quelle autre date vous conviendrait ?');}
+  if(!slots.length)return offerAnother('Je n’ai trouvé aucun créneau compatible le '+p.label(state.date)+'.');
   const periods=[...new Set(slots.map(s=>Number(p.time(s.starts).slice(0,2))<12?'morning':'afternoon'))];
+  if(state.step==='period'&&rejected&&!state.preference&&state.offeredPeriod){state.preference=state.offeredPeriod==='morning'?'afternoon':'morning';return offerAnother('D’accord, vous ne souhaitez pas cette période.');}
   if(state.requestedTime){
    const slot=slots.find(s=>p.time(s.starts)===state.requestedTime);
    if(slot){state.start=state.requestedTime;state.preference=Number(state.start.slice(0,2))<12?'morning':'afternoon';delete state.requestedTime;state.step='surname';privateTurn=true;}
@@ -105,14 +136,14 @@ async function handle({event,payload,messages,previous,resume=false}){
   }else if(!state.preference){
    if(state.step==='period'&&periods.length===1&&/^(?:oui|d['’]accord|ok)[.! ]*$/i.test(text))state.preference=periods[0];
    if(!state.preference){
-   state.step='period';
+   state.step='period';state.offeredPeriod=periods.length===1?periods[0]:undefined;
    return reply('Pour '+p.label(state.date)+', '+(periods.length===2?QUESTIONS.period.charAt(0).toLowerCase()+QUESTIONS.period.slice(1):periods[0]==='morning'?'seul le matin dispose de créneaux compatibles. Souhaitez-vous le matin ?':'seul l’après-midi dispose de créneaux compatibles. Souhaitez-vous l’après-midi ?'),{choices:periods.map(x=>x==='morning'?'Matin':'Après-midi')});
    }
   }
   if(state.step!=='surname'){
    if(state.step==='period'&&periods.length===1&&/^(?:oui|d['’]accord|ok)[.! ]*$/i.test(text))state.preference=periods[0];
    const filtered=slots.filter(s=>state.preference==='any'||(Number(p.time(s.starts).slice(0,2))<12)===(state.preference==='morning'));
-   if(!filtered.length){delete state.preference;state.step='period';return reply('Cette période n’a pas de créneau compatible. '+(periods.includes('morning')?'Souhaitez-vous le matin ?':'Souhaitez-vous l’après-midi ?'),{choices:periods.map(x=>x==='morning'?'Matin':'Après-midi')});}
+   if(!filtered.length)return offerAnother('Je comprends votre préférence. Malheureusement, je n’ai pas de disponibilité '+p.label(state.date)+' '+periodName()+'.');
    state.step='time';const choices=p.choose(filtered,'any').map(s=>p.time(s.starts));
    return reply('Les créneaux vérifiés pour '+quote.minutes+' min le '+p.label(state.date)+' sont : '+choices.join(', ')+'. '+QUESTIONS.time,{choices});
   }

@@ -67,3 +67,7 @@ PR14 fusionnée et production publiée : 6790096e693c23d2e81a31048838cb303d8f167
 
 ## 24octobre2026,00:14Paris — finalisation directe Work TERMINÉE
 Production **6ad1ec023cd1fd6c047f31d039d60930fbd13cc2**, Netlify6adbdb70a378c9c715fa1954 ready (PR16/17). Parcours séquentiel, coordonnées chiffrées séparées, restauration/purge et récapitulatif corrigés. 224Node, SQL/rappels et navigateur isolé trois formats réussis ; contrôle domaine officiel jusqu'au récapitulatif et après reload, aucun clic final réel. Informations complètes : docs/validation/20261024-melba-parcours-sequentiel.md. Aucun changement données réelles, secrets, prix, Manager ou MFA. Mission sans nouveauCW ni relais, aucune opération supplémentaire attendue de Claude.
+
+
+## MELBA-PERIOD-001 — 24octobre2026 — Work
+État avant publication : production ffa36c7/Netlify6adc02b451f95fe7304fd2ea. Bug de refus de période reproduit publiquement. Correctif ciblé validé localement :332Node, navigateur3formats, parcours HTTP/SQL complet isolé. Fusion et un déploiement expressément autorisés ; EN_COURS. Rapport docs/validation/20261024-melba-autre-date.md ; preuves de publication à compléter dans la clôture GitHub. Aucun rendez-vous/message réel, tarif ou sécurité modifié.
