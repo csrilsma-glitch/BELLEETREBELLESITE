@@ -37,3 +37,7 @@ Fusion/déploiement du correctif date abrégée : EN_ATTENTE_VALIDATION. Interdi
 
 ## PR21 consolidée après019d701
 Relecture finale Claude demandée par le propriétaire, transmission publiée. Fusion/déploiement toujours EN_ATTENTE_VALIDATION du propriétaire ; aucune autorisation de fusionmain/déploiement reçue pour cette intégration.
+
+
+## Après MELBA-REFUS-MOIS-001
+Relecture finale ciblée Claude demandée par le propriétaire. NouvelleHEAD dePR21 documentée dans commentaireWork. Fusion/déploiement toujours EN_ATTENTE_VALIDATION ; ne rien publier à ce stade.

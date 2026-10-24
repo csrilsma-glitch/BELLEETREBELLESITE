@@ -73,3 +73,7 @@ Autorisation directe : correction et tests, interdiction de déployer. Préparat
 
 ## MELBA-DATE-HORAIRE-INT-001 — Work —24octobre2026
 Mission directe d’intégration019d701dansPR21, sans déploiement/main. TERMINÉE pour intégration/test/transmission :348testsClaude puis349avec régression14h ;3récapitulatifs navigateur/SQL isolés et suites de non-régression. Prochain destinataireCLAUDE, revue finale EN_ATTENTE. Propriétaire décide ensuite ; arrêtWork.
+
+
+## MELBA-REFUS-MOIS-001 —Work —24octobre2026
+Mission directe de correction des2défauts connus, sans fusionmain/déploiement. Préparation/test/transmission TERMINÉES :357Node + parcours navigateur et SQL isolé. DestinataireClaude pour relecture ciblée ; propriétaire décide ensuite. ArrêtWork après publication vérifiée. Aucun envoi ou rendez-vous réel.

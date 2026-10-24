@@ -51,9 +51,9 @@ function abbreviatedDate(text,anchorDate=null,now=new Date()){
  const match=norm(text).trim().match(/^(?:le\s+)?(\d{1,2})(?:er)?(?:\s+(?:(?:au|le)\s+)?(?:matin|apres[- ]?midi))?(?:\s+(?:a|vers)\s+(?:[01]?\d|2[0-3])(?:h(?:[0-5]\d)?|:[0-5]\d))?(?:\s+(?:svp|s['’]il vous plait|merci))?[.!?]*$/);
  if(!match)return undefined;
  const day=Number(match[1]);if(day<1||day>31)return null;
- const current=today(now),base=anchorDate&&validDate(anchorDate)?anchorDate:current;
- if(anchorDate&&validDate(anchorDate)){const candidate=base.slice(0,8)+String(day).padStart(2,'0');return validDate(candidate)?candidate:null;}
- // Sans mois explicite : prochaine occurrence civile valide en heure de Paris.
+ const current=today(now),base=anchorDate&&validDate(anchorDate)&&anchorDate>=current?anchorDate:current;
+ // Sans mois explicite : conserver le contexte de mois, puis avancer si le jour est passé ou absent.
+ // Ne jamais retourner un jour antérieur à aujourd’hui en heure de Paris.
  // Ne pas laisser Date normaliser le31novembre au1décembre.
  for(let offset=0;offset<12;offset++){
   const month=new Date(base.slice(0,7)+'-01T12:00:00Z');month.setUTCMonth(month.getUTCMonth()+offset);

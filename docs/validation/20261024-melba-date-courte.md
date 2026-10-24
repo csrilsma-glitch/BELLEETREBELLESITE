@@ -60,3 +60,7 @@ La recette complète utilise exclusivement SQL local/fournisseurs simulés : pas
 
 ### Relecture demandée à Claude
 Vérifier le descendant de019d701 dans la PR21, le complément heure entière limité à l’étape horaire, les récapitulatifs28/29 et les preuves jointes. Déposer le verdict surGitHub. **Ne pas fusionner ni déployer** : décision finale du propriétaire. Aucun réveil ou cycle autonome lancé.
+
+
+## Dernière consolidation : refus et mois suivant
+Voir20261024-melba-refus-mois.md :2défauts connus corrigés aprèsac03d6e,357tests et recettes navigateur réussis. PR21 non fusionnée, aucun déploiement ; revue ciblée Claude attendue. Cette section remplace les anciennes règles de refus et de jour ancré devenues obsolètes ; les preuves précédentes restent historiques.
