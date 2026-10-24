@@ -12,7 +12,7 @@ for(const width of [390,820,1440]){
  if(name==='chat'&&delayChat){delayChat=false;await new Promise(resolve=>{releaseChat=resolve;chatStarted();});}
  if(name==='catalog')data={enabled:true,services,privacy_text:'Fictif'};
  else if(name==='availability')data={slots,quote:{services,minutes:105,cents:5400}};
- else if(name==='chat'&&/change d|stop/.test(d.messages.at(-1).content))data={reply:'Pas de souci ! 💕',signature:'fake'};
+ else if(name==='chat'&&/change d|stop/.test(d.messages.at(-1).content))data={reply:'Pas de souci ! 💕',signature:'fake',resetFlow:true};
  else if(name==='chat')data={reply:'**Avec plaisir** <img src=x onerror=alert(1)>',signature:'fake',pendingBooking:{service_ids:['gel','deco'],starts:slots[0].starts,client_name:'Test',client_email:'test@example.test',client_phone:'+33600000000',quote:{services,minutes:105,cents:5400}}};
  else if(name==='manager'&&d.action==='availability')data={slots};
  else if(name==='manager')data={settings:{compatibility:[]},services,hours:[],blocks:[],jobs:[],outlook:null,clients:[],bookings:[{id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',starts:slots[0].starts,ends:'2030-10-28T11:00:00Z',status:'confirme',services,cents:5400,minutes:105}]};
@@ -26,7 +26,7 @@ for(const width of [390,820,1440]){
   await page.locator('#booking-date').fill('2030-10-31');releaseAvailability();await page.waitForLoadState('networkidle');assert.equal(await page.locator('#native-slots-select').count(),0);
   const count=await page.locator('.assistant-confirm').count(),chatReady=new Promise(resolve=>{chatStarted=resolve;});delayChat=true;
   await page.locator('#assistant-input').fill('Réponse lente');await page.locator('#assistant-form button').click();await chatReady;
-  await page.locator('#assistant-input').fill('stop');await page.locator('#assistant-form button').click();await page.getByText('Pas de souci ! 💕',{exact:true}).last().waitFor();releaseChat();await page.waitForLoadState('networkidle');assert.equal(await page.locator('.assistant-confirm').count(),count);
+  assert(await page.locator('#assistant-form button').isDisabled());await page.getByRole('button',{name:'Arrêter la demande',exact:true}).click();await page.getByText('Pas de souci ! 💕',{exact:true}).last().waitFor();releaseChat();await page.waitForLoadState('networkidle');assert.equal(await page.locator('.assistant-confirm').count(),count);
   console.log('Courses réseau : réponse disponibilité après changement de date et ancienne réponse Melba après stop ignorées : OK');
  }
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));

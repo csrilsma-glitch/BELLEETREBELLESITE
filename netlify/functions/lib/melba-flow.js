@@ -14,21 +14,22 @@ function personName(raw,kind){
  return /^[\p{L}][\p{L}\p{M}'’ -]{0,59}$/u.test(value)&&!/[?]/.test(raw)&&!p.isConfirmWord(value)&&!['oui','non','merci','bonjour','ok'].includes(p.norm?.(value)||value.toLowerCase())?value:null;
 }
 function serviceMatch(text,catalogue,familyHint){
- // Le nom complet d'abord : « popits et demi popits » ou « kit complet + prise de mesure » contiennent des séparateurs.
- const whole=p.matchServices(text,catalogue,familyHint);
- if(whole.ids.length===1||!/\s*\+\s*|\s+et\s+/i.test(text))return whole;
- // Réponses explicites par identifiant ou libellé exact ; plusieurs prestations via le crâne ou +.
- const chunks=text.split(/\s*\+\s*|\s+et\s+/i);let ids=[];
- for(const chunk of chunks){
-  const exact=catalogue.filter(s=>s.id===chunk.trim()||s.name.toLocaleLowerCase('fr')===chunk.trim().toLocaleLowerCase('fr'));
-  const m=exact.length===1?{ids:[exact[0].id]}:p.matchServices(chunk,catalogue,familyHint);
-  if(m.ambiguous)return m;
-  ids.push(...m.ids);
- }
- if(ids.length)return {ids:[...new Set(ids)]};
- return p.matchServices(text,catalogue,familyHint);
+ // Protéger les séparateurs faisant partie d'un vrai nom avant de découper une sélection.
+ const normalize=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s*\+\s*/g,' + ').replace(/\s+/g,' ').trim();
+ let guarded=normalize(text);
+ const labels=[...new Set(catalogue.flatMap(s=>[s.name,...String(s.path||'').split('›').map(x=>x.trim())]))].sort((a,b)=>b.length-a.length);
+ for(const label of labels){if(!/\+|\bet\b/.test(normalize(label)))continue;const n=normalize(label),protectedName=n.replace(/\+/g,'\uE000').replace(/\bet\b/g,'\uE001');guarded=guarded.split(n).join(protectedName);}
+ const chunks=guarded.split(/\s*\+\s*|\s+et\s+/i).map(x=>x.replace(/\uE000/g,'+').replace(/\uE001/g,'et'));
+ if(chunks.length===1)return p.matchServices(text,catalogue,familyHint);
+ const parts=chunks.map(chunk=>p.matchServices(chunk,catalogue,familyHint));
+ const definite=[...new Set(parts.flatMap(m=>m.ids))];
+ if(parts.some(m=>!m.ids.length&&!m.ambiguous)||parts.filter(m=>m.ambiguous).length>1)return {ids:[],unresolved:true};
+ const ambiguous=parts.find(m=>m.ambiguous);
+ if(ambiguous)return {...ambiguous,pendingServices:definite};
+ if(parts.some(m=>!m.ids.length))return {ids:[],unresolved:true};
+ return {ids:definite};
 }
-async function handle({event,payload,messages,previous}){
+async function handle({event,payload,messages,previous,resume=false}){
  const text=messages.at(-1).content,now=Date.now();
  const old=previous?.flow===2&&previous.expires>now?previous:
   Array.isArray(previous?.services)&&previous.services.length?{flow:2,id:crypto.randomUUID(),expires:now+TTL,services:previous.services,date:previous.date||undefined,preference:previous.preference||undefined,start:previous.start||undefined,step:previous.start?'surname':previous.date?'period':'date'}:null;
@@ -56,19 +57,24 @@ async function handle({event,payload,messages,previous}){
  const names=()=>state.services.map(id=>catalogue.find(s=>s.id===id)).filter(Boolean).map(s=>p.serviceLabel(s,catalogue)).join(' + ');
 
 
- const changed=match.ids?.length&&JSON.stringify(match.ids)!==JSON.stringify(state.services);
+ let changed=match.ids?.length&&JSON.stringify(match.ids)!==JSON.stringify(state.services);
  const siteChanged=selected.length&&JSON.stringify(selected)!==JSON.stringify(state.siteSelection||[])&&JSON.stringify(selected)!==JSON.stringify(state.services);
+ if(match.unresolved)return reply('Je n’ai pas identifié toute votre sélection. Pouvez-vous préciser les prestations à enchaîner ?');
  if(match.ambiguous){
+  if(match.pendingServices?.length)state.pendingServices=match.pendingServices;
   // La famille nommée reste en mémoire signée : la réponse « Quatre doigts » est résolue dans cette famille.
   if(match.ambiguousFamily)state.family=match.ambiguousFamily;else delete state.family;
   return reply(match.ambiguousFamily?'Dans « '+match.ambiguousFamily+' », quelle option souhaitez-vous : '+match.ambiguous.join(', ')+' ?':'Plusieurs prestations correspondent : '+match.ambiguous.join(' ou ')+'. Laquelle souhaitez-vous ?');
  }
- if(match.ids?.length)delete state.family;
+ if(match.ids?.length){delete state.family;if(state.pendingServices?.length){match.ids=[...new Set([...state.pendingServices,...match.ids])];delete state.pendingServices;}}
+ changed=match.ids?.length&&JSON.stringify(match.ids)!==JSON.stringify(state.services);
  if(changed||siteChanged){
   state.services=siteChanged?selected:match.ids;state.siteSelection=selected;state.step='date';delete state.start;delete state.date;delete state.preference;
  }
+ if(!state.services.length&&state.family){const options=p.matchServices(state.family,catalogue).ambiguous;if(options)return reply('Dans « '+state.family+' », quelle option souhaitez-vous : '+options.join(', ')+' ?');}
  if(!state.services.length){state.step='service';return reply('Quelle prestation souhaitez-vous ? Vous pouvez aussi composer plusieurs prestations dans le crâne.');}
  const quote=await c.rpc('quote',{p_ids:c.ids(state.services)});
+ if(resume&&['surname','firstname','email','phone','recap'].includes(state.step)){state.step=!contact.surname?'surname':!contact.firstname?'firstname':!contact.email?'email':!contact.phone?'phone':'recap';return state.step==='recap'?recap():reply(QUESTIONS[state.step]);}
  if(old&&/^(?:sans acompte\s*\??|(?:faut.il|dois.je) payer.*|comment payer.*)$/i.test(text.trim()))return state.step==='recap'?recap():reply('Le paiement se fait uniquement sur place, sans acompte. '+QUESTIONS[state.step]);
  const edit=text.match(/(?:modifier|corriger|changer)\s+(?:(?:mon|ma|le|la|l['’])\s*)?(nom(?: de famille)?|pr[ée]nom|e-?mail|adresse e-?mail|t[ée]l[ée]phone|num[ée]ro|date|horaire|heure|prestation)/i);
  if(old&&edit){

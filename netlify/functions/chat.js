@@ -103,7 +103,7 @@ const TOOLS = [
 ];
 
 function json(statusCode, body) {
-  return { statusCode, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+  return require('./lib/core').json(statusCode,body);
 }
 
 function toMinutes(hhmm) {
@@ -255,10 +255,13 @@ const ADVISOR_HINT='\nMode conseillère : répondez aux questions de conseil (pr
 async function callAdvisor(apiKey, messages){
   const core=require('./lib/core');
   if(!await core.rpc('limit',{p_key:'melba-global:'+new Date().toISOString().slice(0,10),p_max:100,p_seconds:86400}))core.fail(429,'Melba a atteint sa limite quotidienne. Contactez Mélanie.');
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:700,system:SYSTEM_PROMPT+ADVISOR_HINT,messages:messages.map(m=>({role:m.role,content:m.content}))})});
+  const current=await core.db('br15_services?active=eq.true&order=position.asc');
+  const live='\nCatalogue serveur à jour, prioritaire pour les tarifs/durées :\n'+current.map(s=>s.path+' — '+s.minutes+' min — '+(s.cents/100)+' €').join('\n');
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:700,system:SYSTEM_PROMPT+ADVISOR_HINT+live,messages:messages.map(m=>({role:m.role,content:m.content}))})});
   if(!res.ok)throw new Error('API Claude '+res.status);
   const data=await res.json();
   const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+  if(policy.needsCalendarEvidence(text))return 'Pour proposer un créneau ou valider une demande, je dois reprendre le parcours de réservation et vérifier le calendrier. Aucun rendez-vous n’a été enregistré. ♡';
   return text||'Je peux vous renseigner sur les prestations, les tarifs et l’entretien. Souhaitez-vous réserver ? ♡';
 }
 // Annonce de changement de mode ajoutée à une réponse déjà signée, puis resignée.
@@ -297,6 +300,7 @@ exports.handler = async (event) => {
   // Nouveau client : progression métier explicite, sans décision libre du modèle.
   if(payload.flow_version===2){
     const lastText=messages.at(-1).content;
+    if(policy.directReply(lastText))return require('./lib/melba-flow').handle({event,payload,messages,previous});
     const modeAsked=policy.wantedMode(lastText);
     const prevMode=previous?.mode||null;
     const hello=/^(bonjour|bonsoir|salut|hello|coucou)[\s!.,?]*$/.test(String(lastText).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim());
@@ -309,16 +313,21 @@ exports.handler = async (event) => {
     }
     // Mode conseil : aucune réservation, le contexte en cours (et donc une réservation commencée) est conservé.
     if((modeAsked||prevMode)==='conseil'&&modeAsked!=='reservation'){
-      if(!await budgetOk())return json(429,{error:'Melba a atteint sa limite quotidienne. Contactez Mélanie.'});
-      // Les messages contenant des coordonnées ne partent jamais vers le modèle de conseil.
-      const publicMessages=cleanMessages((payload.messages||[]).filter(m=>m&&!m.private))||[];
-      if(!publicMessages.length||publicMessages.at(-1).role!=='user')return json(400,{error:'Aucun message'});
-      // Une réponse de réservation (date, matin, heure) pendant le mode conseil : rien n'est perdu, la cliente reprend explicitement.
+      // La question courante reste utilisable même après une collecte privée. Le modèle
+      // ne reçoit ni l'historique de réservation ni les coordonnées du cookie chiffré.
       const bookingAnswer=previous?.flow===2&&!modeAsked&&(policy.hasDateExpression(lastText)||policy.preference([{role:'user',content:lastText}])||policy.selectedTime(lastText));
       if(bookingAnswer){
+        if(!await budgetOk())return json(429,{error:'Melba a atteint sa limite quotidienne. Contactez Mélanie.'});
         const kept='Votre réservation en cours est conservée. Dites « je veux réserver » pour reprendre où nous en étions. ♡';
         return json(200,{pendingBooking:null,reply:kept,signature:core.sign('melba-reply:'+kept),bookingContext:{...previous,mode:'conseil'},contextSignature:core.sign('melba-context:'+JSON.stringify({...previous,mode:'conseil'}))});
       }
+      let contact={};
+      try{const encrypted=core.cookies(event).br15_melba_flow;if(encrypted&&encrypted.length<3000){const v=core.unseal(encrypted);if(v.id===previous?.id&&v.expires>Date.now())contact=v;}}catch{}
+      const scrub=value=>{let t=String(value).replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g,'[e-mail masqué]').replace(/(?:\+33\s?|\b0)[1-9](?:[\s.-]?\d{2}){4}\b/g,'[téléphone masqué]');for(const key of ['surname','firstname']){const name=contact[key];if(name)t=t.split(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'giu')).join('[nom masqué]');}return t;};
+      const publicMessages=[];
+      const prior=prevMode==='conseil'?messages.slice(0,-1).filter(m=>m.role==='assistant').at(-1):null;
+      if(prior)publicMessages.push({role:'user',content:'Je souhaite poursuivre le conseil précédent.'},{role:'assistant',content:scrub(prior.content)});
+      publicMessages.push({role:'user',content:scrub(lastText)});
       let text;
       try{text=await callAdvisor(apiKey,publicMessages);}catch(err){return json(err.status===429?429:502,{error:err.status===429?err.message:'Réponse indisponible, réessayez ou appelez Mélanie.'});}
       const note=modeAsked==='conseil'&&prevMode!=='conseil'?'Je passe en mode conseillère. ':'';
@@ -328,7 +337,7 @@ exports.handler = async (event) => {
     }
     const modeNote=modeAsked==='reservation'&&prevMode==='conseil'?'Je passe en mode agent de réservation. ':'';
     try{
-      const result=await require('./lib/melba-flow').handle({event,payload,messages,previous});
+      const result=await require('./lib/melba-flow').handle({event,payload,messages,previous,resume:modeAsked==='reservation'&&prevMode==='conseil'});
       if(result)return modeNote?withNote(result,modeNote):result;
     }catch(err){
       console.error('Melba parcours',err.status||503,err.name);
