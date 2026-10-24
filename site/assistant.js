@@ -40,7 +40,9 @@
   let bookingContext=restored?restored.bookingContext:null,contextSignature=restored?restored.contextSignature:null,requestSequence=0;
   // CW-003-R1 : collecte explicite de coordonnées (voir melba-session.js). Pendant la collecte, rien n'est persisté.
   let collecting=restored?restored.collecting===true:false;
-  let busy=false;
+  let busy=false,activeRequest=null;
+  const cancelRequest=document.createElement('button');cancelRequest.type='button';cancelRequest.textContent='Arrêter la demande';cancelRequest.hidden=true;
+  cancelRequest.onclick=()=>{++requestSequence;activeRequest?.abort();busy=false;form.querySelector('button').disabled=false;message('user','stop');ask('stop');};quick.append(cancelRequest);
   if(restored)restored.history.forEach(m=>message(m.role==='user'?'user':'bot',m.content));
   // Les coordonnées restent privées, mais la question courante doit être lisible après reload.
   if(restored&&bookingContext?.flow===2&&bookingContext.expires>Date.now()){
@@ -69,14 +71,14 @@
     card.append(text,privacy,label,button);log.append(card);log.scrollTop=log.scrollHeight;
   }
   async function ask(text){
-    if(busy)return;busy=true;form.querySelector('button').disabled=true;
-    const sequence=++requestSequence;
+    if(busy)return;busy=true;form.querySelector('button').disabled=true;cancelRequest.hidden=false;
+    const sequence=++requestSequence,controller=new AbortController();activeRequest=controller;
     // Une proposition ancienne ne reste pas actionnable après un nouveau message.
     log.querySelectorAll('.assistant-confirm').forEach(b=>{b.disabled=true;b.textContent='Proposition remplacée — demandez un nouveau créneau';});
     const wasCollecting=collecting;
     const userMessage={role:'user',content:text,private:wasCollecting};history.push(userMessage);
     try{
-      const res=await fetch('/.netlify/functions/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({flow_version:2,messages:history.slice(-20),bookingContext,contextSignature,selected_service_ids:window.BR_SELECTION?.get()||[]})});
+      const res=await fetch('/.netlify/functions/chat',{signal:controller.signal,method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({flow_version:2,messages:history.slice(-20),bookingContext,contextSignature,selected_service_ids:window.BR_SELECTION?.get()||[]})});
       if(!res.ok)throw new Error('indisponible');
       const data=await res.json();
       if(sequence!==requestSequence)return;
@@ -93,7 +95,7 @@
       }
       if(data.pendingBooking) proposal(data.pendingBooking,sequence);
 
-    }catch(err){if(sequence!==requestSequence)return;const index=history.indexOf(userMessage);if(index>=0)history.splice(index,1);message('bot','Je ne peux pas joindre mon service pour le moment. Aucun rendez-vous ni message n’a été envoyé par cette tentative. Réessayez ou appelez Mélanie au 06 62 28 75 45.');}finally{busy=false;form.querySelector('button').disabled=false;}
+    }catch(err){if(sequence!==requestSequence)return;const index=history.indexOf(userMessage);if(index>=0)history.splice(index,1);message('bot','Je ne peux pas joindre mon service pour le moment. Aucun rendez-vous ni message n’a été envoyé par cette tentative. Réessayez ou appelez Mélanie au 06 62 28 75 45.');}finally{if(sequence===requestSequence){busy=false;activeRequest=null;cancelRequest.hidden=true;form.querySelector('button').disabled=false;}}
   }
   ['Sans acompte ?','Plusieurs prestations','Un problème'].forEach(label=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>{if(busy)return;message('user',label);ask(label);});quick.append(b);});
   panel.insertBefore(quick,form);

@@ -10,7 +10,7 @@ const c=require('../netlify/functions/lib/core'),chat=require('../netlify/functi
  for(const f of fs.readdirSync(path.join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).sort())await db.exec(fs.readFileSync(path.join(root,'supabase/migrations',f),'utf8'));
  await db.exec("insert into br15_hours(dow,opens,closes) select n,'10:00','19:00' from generate_series(1,4)n;insert into br15_hours(dow,opens,closes) values(5,'10:00','15:00');update br15_settings set enabled=true,privacy_text='Recette fictive isolée',lead_minutes=0,email_enabled=true,sms_confirmation=true,sms_reminder=true,outlook_required=false;");
  const scalar=async(sql,args=[])=>(await db.query(sql,args)).rows[0].v;
- c.request=async()=>{throw Error('Réseau fournisseur interdit par la recette');};global.fetch=async()=>{throw Error('Aucun modèle/fournisseur réel autorisé');};
+ c.request=async()=>{throw Error('Réseau fournisseur interdit par la recette');};global.fetch=async(url,options)=>{assert.equal(String(url),'https://api.anthropic.com/v1/messages');const body=JSON.parse(options.body);assert.equal(body.tools,undefined);assert(!JSON.stringify(body.messages).includes('cliente fictive'));assert(!JSON.stringify(body.messages).includes('cw-test@example.invalid'));return {ok:true,json:async()=>({content:[{type:'text',text:'Hydratez les cuticules et évitez les chocs.'}]})};};
  c.db=async uri=>{
   if(uri.startsWith('br15_settings?'))return (await db.query('select * from br15_settings')).rows;
   if(uri.startsWith('br15_services?'))return (await db.query('select * from br15_services where active order by position')).rows;
@@ -18,7 +18,7 @@ const c=require('../netlify/functions/lib/core'),chat=require('../netlify/functi
   throw Error('Accès DB inattendu : '+uri.split('?')[0]);
  };
  c.rpc=async(name,args)=>{assert(['slots','quote','book','change','limit'].includes(name));const keys=Object.keys(args),params=keys.map((k,i)=>k+'=> $'+(i+1)).join(',');const sql='select '+(name==='slots'?'* from ':'')+'br15_'+name+'('+params+')'+(name==='slots'?'':' v');const result=await db.query(sql,Object.values(args));return name==='slots'?result.rows:result.rows[0].v;};
- c.rate=async(e,scope,max)=>{if(!await c.rpc('limit',{p_key:'isolated:'+scope,p_max:max,p_seconds:600}))c.fail(429,'Trop de demandes');};
+ c.rate=async(e,scope,max)=>{if(!await c.rpc('limit',{p_key:'isolated:'+scope+':'+(e.headers['x-test-client']||'anonymous'),p_max:max,p_seconds:600}))c.fail(429,'Trop de demandes');};
  const day=await scalar("select d::date::text v from generate_series((now() at time zone 'Europe/Paris')::date+2,(now() at time zone 'Europe/Paris')::date+9,interval '1 day') d where extract(dow from d) between 1 and 4 order by d limit 1");
  const sunday=await scalar("select d::date::text v from generate_series((now() at time zone 'Europe/Paris')::date+2,(now() at time zone 'Europe/Paris')::date+9,interval '1 day') d where extract(dow from d)=0 limit 1");
  assert.equal((await c.rpc('slots',{p_date:sunday,p_ids:['press-kit-seul']})).length,0);console.log('Dimanche fermé : aucun créneau SQL');
@@ -28,13 +28,14 @@ const c=require('../netlify/functions/lib/core'),chat=require('../netlify/functi
  await new Promise(r=>server.listen(8795,'127.0.0.1',r));browser=await chromium.launch({executablePath:process.env.BROWSER_EXECUTABLE,args:['--no-sandbox']});
  let count=0;
  for(const [url,w,h] of [['/',1440,1000],['/reservation.html',820,1180],['/app/',390,844]]){
-  const context=await browser.newContext({viewport:{width:w,height:h},serviceWorkers:'block'}),page=await context.newPage();await page.goto(base+url);const f=url==='/app/'?page.frameLocator('#site'):page;
+  const context=await browser.newContext({viewport:{width:w,height:h},serviceWorkers:'block',extraHTTPHeaders:{'x-test-client':url}}),page=await context.newPage();await page.goto(base+url);const f=url==='/app/'?page.frameLocator('#site'):page;
   if(await f.locator('#welcome-enter').isVisible())await f.locator('#welcome-enter').click();await f.locator('#assistant-toggle').click();
   async function ask(value,step){const before=await f.locator('.assistant-bot').count();await f.locator('#assistant-input').fill(value);await f.locator('#assistant-form button').click();await page.waitForFunction(()=>true);await f.locator('.assistant-bot').nth(before).waitFor();await f.locator('#assistant-form button').waitFor({state:'visible'});const msg=await f.locator('.assistant-bot').last().innerText();if(step)assert.match(msg,step);return msg;}
   await ask('Je veux réserver un kit press nails complet uniquement',/Quelle date/);let raw=await f.locator('body').evaluate(()=>sessionStorage.getItem('br-melba-session-v1'));assert(!/famille|email/.test(raw));
   await ask(day,/matin ou l’après-midi/);await ask('Matin',/créneaux vérifiés/);
   await ask('10h40',/nom de famille/);await ask('cliente fictive',/prénom/);
   const cookies=await context.cookies(base+'/.netlify/functions/chat');assert(cookies.some(x=>x.name==='br15_melba_flow'&&x.httpOnly&&x.secure&&x.sameSite==='Strict'));assert(!JSON.stringify(cookies).includes('cliente fictive'));
+  await ask('Un conseil pour l’entretien ?',/Je passe en mode conseillère/);await ask('Je veux réserver',/Quel est votre prénom/);
   await page.reload();await f.locator('#assistant-toggle').click();assert(!(await f.locator('#assistant-log').innerText()).includes('cliente fictive'));assert.match(await f.locator('.assistant-bot').last().innerText(),/Quel est votre prénom/);
   await ask('élise',/adresse e-mail/);await ask('cw-test@example.invalid',/téléphone/);await ask('0600000000',/Confirmer mon rendez-vous/);
   assert.equal(await scalar('select count(*)::int v from br15_bookings'),count,'aucun rendez-vous avant clic');raw=await f.locator('body').evaluate(()=>sessionStorage.getItem('br-melba-session-v1'));assert(!/cliente fictive|élise|cw-test|0600000000/.test(raw));
