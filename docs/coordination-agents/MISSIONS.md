@@ -77,3 +77,7 @@ Mission directe d’intégration019d701dansPR21, sans déploiement/main. TERMIN�
 
 ## MELBA-REFUS-MOIS-001 —Work —24octobre2026
 Mission directe de correction des2défauts connus, sans fusionmain/déploiement. Préparation/test/transmission TERMINÉES :357Node + parcours navigateur et SQL isolé. DestinataireClaude pour relecture ciblée ; propriétaire décide ensuite. ArrêtWork après publication vérifiée. Aucun envoi ou rendez-vous réel.
+
+
+## Consolidation24octobre2026 — MELBA-SAFE-CLARIFY-20261024
+Mission directe AUTORISÉE : sauvegarde stable, développement ciblé des clarifications et nombres de doigts, tests locaux, PR et transmission. Travail code/test/documentation TERMINÉ ; tag distant/protection PARTIEL/BLOQUÉ par authentification GitHub. Agent Work pour clôture, destinataireClaude pour audit seulement ; aucun orchestrateur. Branche fix/20261024-melba-clarifications.381Node, suites navigateur locales, SQL et rappels passés ; zéro déploiement, pas de données/messages/événements réels. Fusion/production interdites. Condition d’arrêt : PR/transmission publiée et vérifiée ; propriétaire décide après verdictClaude.

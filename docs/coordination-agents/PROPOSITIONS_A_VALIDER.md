@@ -41,3 +41,7 @@ Relecture finale Claude demandée par le propriétaire, transmission publiée. F
 
 ## Après MELBA-REFUS-MOIS-001
 Relecture finale ciblée Claude demandée par le propriétaire. NouvelleHEAD dePR21 documentée dans commentaireWork. Fusion/déploiement toujours EN_ATTENTE_VALIDATION ; ne rien publier à ce stade.
+
+
+## Consolidation24octobre2026 — MELBA-SAFE-CLARIFY-20261024
+Revue indépendante Claude du correctif MELBA-SAFE-CLARIFY-20261024 : EN_ATTENTE_VALIDATION / réception de transmission. Contrôler dates explicitement établies, réponses partielles,14h, variantes doigts/catalogue réel, confidentialité/reload/purge. Aucune fusion ni publication automatique. Finalisation du tag distant/protection : nécessite connexion/droits GitHub ; ne pas demander de secret dans le chat. Les anciennes propositions sont historiques et ne constituent pas des missions nouvelles.

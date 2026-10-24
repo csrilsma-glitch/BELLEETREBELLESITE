@@ -164,7 +164,7 @@ function guardedReply(reply,context){
 // contient au moins deux mots distinctifs, les prestations qui les contiennent tous sont proposées.
 // Plusieurs correspondances : demander la précision, jamais choisir au hasard.
 const SERVICE_STOP=new Set(['de','la','le','les','un','une','du','des','et','pour','avec','sur','en','au','aux','ou','plus']);
-function serviceWords(s){return norm(s).replace(/[’‘']/g,' ').split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!SERVICE_STOP.has(w));}
+function serviceWords(s){return norm(s).replace(/\b([246])\s+doigts?\b/g,(_,n)=>({'2':'deux','4':'quatre','6':'six'}[n])+' doigts').replace(/\bdoigt\b/g,'doigts').replace(/[’‘']/g,' ').split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!SERVICE_STOP.has(w));}
 // Famille = segments parents du chemin ; chaque segment peut porter plusieurs alternatives (« Babyboomer / babycolor »).
 function serviceFamilies(path){return String(path||'').split('›').slice(0,-1).map(x=>x.trim()).filter(Boolean).map(label=>({label,alts:label.split('/').map(serviceWords).filter(a=>a.length)})).filter(f=>f.alts.length);}
 // Libellé affiché : le nom seul, sauf s'il est partagé par plusieurs familles (« Quatre doigts »).
@@ -193,6 +193,18 @@ function matchServices(text,catalogue,familyHint){
  if(!hits.length&&T.size>=2)hits=leaves.filter(x=>[...T].every(w=>x.w.includes(w)));
  if(!hits.length)hits=leaves.filter(x=>famMatched(x).length>0);
  // Réponse à une question de précision déjà posée dans une famille (« Quatre doigts » après « Dans « Babyboomer / babycolor » … »).
+ const finger=norm(text).match(/\b(\d+|un|une|deux|trois|quatre|cinq|six|sept|huit|neuf|dix)\s+doigts?\b/);
+ if(finger){
+  const word=({'2':'deux','4':'quatre','6':'six',deux:'deux',quatre:'quatre',six:'six'})[finger[1]];
+  const compatible=word?hits.filter(x=>new RegExp('\\b'+word+'\\s+doigts?\\b').test(norm(x.name))):[];
+  if(compatible.length)hits=compatible;
+  else{
+   let options=hits.length?hits:leaves.filter(x=>/\b(?:deux|quatre|six)\s+doigts?\b/.test(norm(x.name)));
+   if(familyHint){const family=options.filter(x=>x.fam.at(-1)?.label===familyHint);if(family.length)options=family;}
+   const fams=[...new Set(options.map(x=>x.fam.at(-1)?.label))],family=fams.length===1?fams[0]:null;
+   return{...none,unavailableCount:finger[1],ambiguous:options.slice(0,6).map(x=>family?x.name:serviceLabel(x,catalogue)),ambiguousFamily:family};
+  }
+ }
  if(familyHint&&hits.length>1){const inFamily=hits.filter(x=>x.fam.at(-1)?.label===familyHint);if(inFamily.length)hits=inFamily;}
  if(hits.length>1){const best=Math.min(...hits.map(extraOf));hits=hits.filter(x=>extraOf(x)===best);}
  // Ex æquo : le nom complet qui apparaît en suite dans le message l'emporte (« popits court » ≠ « demi popits court »).

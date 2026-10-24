@@ -87,3 +87,7 @@ PR20 fusionnée, production b4ee16cb21dc7499497de59f21b423806446b812, Netlify6ad
 
 ## MELBA-REFUS-MOIS-001 —24octobre2026
 PR21 consolidée aprèsac03d6e : refus répétés→pause/reprise explicite ; jour court passé dans le mois→prochaine occurrence valide ;14reste heure à l’étape horaire.357Node et recettes3interfaces/SQL local réussis. EN_ATTENTE_REVUE_CLAUDE. NON FUSIONNÉ/NON DÉPLOYÉ. Rapport docs/validation/20261024-melba-refus-mois.md.
+
+
+## Consolidation24octobre2026 — MELBA-SAFE-CLARIFY-20261024
+Cette observation remplace les anciennes mentions PR21non déployée : PR21fusionnée, main/production4960ca8dceb762dd55f2c166cf8333d53be0ad90, Netlify6adc2d56e3c423f4f52a53b4 ready. Le propriétaire rapporte un test réel Android/PWA réussi avec rendez-vous/Manager/SMS/e-mail/Outlook. Work ne réattribue pas cette preuve à ses propres essais. Sauvegarde Git complète distante backup/melba-stable-20261024 créée ; tag local seulement, publication/protection distante à terminer. Branche correctif séparée,381Node et navigateur/SQL/rappels isolés passés. Aucun nouveau déploiement, aucune écriture réelle. Rapport20261024-melba-sauvegarde-clarifications.
