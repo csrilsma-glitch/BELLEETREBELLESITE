@@ -1,0 +1,4 @@
+/ 1440x1000 Non/Non/Non sans boucle ni recherche, reload, préférences,28oct→3nov,14h, récapitulatif7€/10min, coordonnées privées conservées : OK
+/reservation.html 820x1180 Non/Non/Non sans boucle ni recherche, reload, préférences,28oct→3nov,14h, récapitulatif7€/10min, coordonnées privées conservées : OK
+/app/ 390x844 Non/Non/Non sans boucle ni recherche, reload, préférences,28oct→3nov,14h, récapitulatif7€/10min, coordonnées privées conservées : OK
+Zéro réservation et zéro accès fournisseur ;64prestations intactes.

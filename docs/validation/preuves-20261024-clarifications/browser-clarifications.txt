@@ -1,0 +1,4 @@
+/ 1440x1000 jour/mois/année, zéro calendrier avant précision, reload,4doigt14€/20min,14h, récapitulatif privé, multi6doigts73€/120min et combinaison3refusée : OK
+/reservation.html 820x1180 jour/mois/année, zéro calendrier avant précision, reload,4doigt14€/20min,14h, récapitulatif privé, multi6doigts73€/120min et combinaison3refusée : OK
+/app/ 390x844 jour/mois/année, zéro calendrier avant précision, reload,4doigt14€/20min,14h, récapitulatif privé, multi6doigts73€/120min et combinaison3refusée : OK
+Zéro réservation et zéro accès fournisseur ;64prestations intactes.

@@ -1,6 +1,6 @@
 'use strict';
 // Parcours métier déterministe. Aucune écriture : seul le bouton cliente appelle reservations.
-const crypto=require('node:crypto'),c=require('./core'),b=require('./booking'),p=require('./melba-policy');
+const crypto=require('node:crypto'),c=require('./core'),b=require('./booking'),p=require('./melba-policy'),dates=require('./melba-date');
 const COOKIE='br15_melba_flow',TTL=30*60*1000;
 const QUESTIONS={paused:'Vous pourrez reprendre plus tard ou modifier vos préférences.',preferences:'Pour votre prochaine recherche, préférez-vous le matin, l’après-midi ou peu importe ?',alternative:'Souhaitez-vous que je cherche un autre jour ?',date:'Quelle date vous conviendrait ?',period:'Préférez-vous le matin ou l’après-midi ?',time:'Quel horaire choisissez-vous ?',surname:'Quel est votre nom de famille ?',firstname:'Quel est votre prénom ?',email:'Quelle est votre adresse e-mail ?',phone:'Quel est votre numéro de téléphone ?'};
 const cookie=(value,seconds=1800)=>`${COOKIE}=${encodeURIComponent(value)}; Path=/.netlify/functions/; HttpOnly; Secure; SameSite=Strict; Max-Age=${seconds}`;
@@ -42,7 +42,7 @@ async function handle({event,payload,messages,previous,resume=false}){
  const intent=/r[ée]serv|rendez[- ]?vous|\brdv\b|cr[ée]neau|disponib|\bkit\b|\bpose\b|\bgel\b|\bsemi[- ]?permanent\b|\bpress\b|baby\s?boomer/i.test(text);
  if(!old&&!selected.length&&(!intent||(/\?/.test(text)&&!/r[ée]serv|rendez[- ]?vous|\brdv\b|cr[ée]neau|disponib/i.test(text))))return null;
  const catalogue=await c.db('br15_services?active=eq.true&order=position.asc');
- const match=(!old||['service','date','period','time','alternative','paused','preferences'].includes(old.step))?serviceMatch(text,catalogue,old?.family):{ids:[]};
+ const match=(!old||['service','date','date_clarify','period','time','alternative','paused','preferences'].includes(old.step))?serviceMatch(text,catalogue,old?.family):{ids:[]};
  let state=old?{...old}:{flow:2,id:crypto.randomUUID(),expires:now+TTL,step:'service',services:[]};
  let contact=readContact(event,state),privateTurn=['surname','firstname','email','phone','recap'].includes(state.step);
  function reply(message,{pendingBooking=null,choices,reset=false}={}){
@@ -64,18 +64,18 @@ async function handle({event,payload,messages,previous,resume=false}){
   if(match.pendingServices?.length)state.pendingServices=match.pendingServices;
   // La famille nommée reste en mémoire signée : la réponse « Quatre doigts » est résolue dans cette famille.
   if(match.ambiguousFamily)state.family=match.ambiguousFamily;else delete state.family;
-  return reply(match.ambiguousFamily?'Dans « '+match.ambiguousFamily+' », quelle option souhaitez-vous : '+match.ambiguous.join(', ')+' ?':'Plusieurs prestations correspondent : '+match.ambiguous.join(' ou ')+'. Laquelle souhaitez-vous ?');
+  return reply((match.unavailableCount?'Cette combinaison de '+match.unavailableCount+' doigts n’existe pas au catalogue. Voici uniquement les options existantes. ':'')+(match.ambiguousFamily?'Dans « '+match.ambiguousFamily+' », quelle option souhaitez-vous : '+match.ambiguous.join(', ')+' ?':'Plusieurs prestations correspondent : '+match.ambiguous.join(' ou ')+'. Laquelle souhaitez-vous ?'));
  }
  if(match.ids?.length){delete state.family;if(state.pendingServices?.length){match.ids=[...new Set([...state.pendingServices,...match.ids])];delete state.pendingServices;}}
  changed=match.ids?.length&&JSON.stringify(match.ids)!==JSON.stringify(state.services);
  if(changed||siteChanged){
-  delete state.alternativeDates;delete state.offeredPeriod;state.services=siteChanged?selected:match.ids;state.siteSelection=selected;state.step='date';delete state.start;delete state.date;delete state.preference;
+  delete state.dateParts;delete state.alternativeDates;delete state.offeredPeriod;state.services=siteChanged?selected:match.ids;state.siteSelection=selected;state.step='date';delete state.start;delete state.date;delete state.preference;
  }
  if(!state.services.length&&state.family){const options=p.matchServices(state.family,catalogue).ambiguous;if(options)return reply('Dans « '+state.family+' », quelle option souhaitez-vous : '+options.join(', ')+' ?');}
  if(!state.services.length){state.step='service';return reply('Quelle prestation souhaitez-vous ? Vous pouvez aussi composer plusieurs prestations dans le crâne.');}
  const quote=await c.rpc('quote',{p_ids:c.ids(state.services)});
  if(resume&&['surname','firstname','email','phone','recap'].includes(state.step)){state.step=!contact.surname?'surname':!contact.firstname?'firstname':!contact.email?'email':!contact.phone?'phone':'recap';return state.step==='recap'?recap():reply(QUESTIONS[state.step]);}
- if(old&&/^(?:sans acompte\s*\??|(?:faut.il|dois.je) payer.*|comment payer.*)$/i.test(text.trim()))return state.step==='recap'?recap():reply('Le paiement se fait uniquement sur place, sans acompte. '+QUESTIONS[state.step]);
+ if(old&&/^(?:sans acompte\s*\??|(?:faut.il|dois.je) payer.*|comment payer.*)$/i.test(text.trim()))return state.step==='recap'?recap():reply('Le paiement se fait uniquement sur place, sans acompte. '+(state.step==='date_clarify'?dates.question(state.dateParts):QUESTIONS[state.step]));
  const edit=text.match(/(?:modifier|corriger|changer)\s+(?:(?:mon|ma|le|la|l['’])\s*)?(nom(?: de famille)?|pr[ée]nom|e-?mail|adresse e-?mail|t[ée]l[ée]phone|num[ée]ro|date|horaire|heure|prestation)/i);
  if(old&&edit){
   const key=edit[1].normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -105,14 +105,21 @@ async function handle({event,payload,messages,previous,resume=false}){
   if(explicitDate){state.step='date';}
   else if(turnPreference||accepted||/^(?:reprendre|reprenons|je veux reserver|je souhaite reserver)/.test(normalized)){
    if(turnPreference)state.preference=turnPreference;
-   state.step='date';delete state.date;return reply('Je reprends votre sélection. '+QUESTIONS.date);
+   state.step=state.dateParts?'date_clarify':'date';delete state.date;return reply('Je reprends votre sélection. '+(state.dateParts?dates.question(state.dateParts):QUESTIONS.date));
   }else return reply('Pas de souci, je vous laisse reprendre quand vous le souhaiterez. Vos prestations restent conservées.',{choices:pauseChoices});
  }
  // Aux étapes horaire et période, seul « le <jour> » est un changement de date : un nombre seul peut être une heure.
- const explicitDay=/^le\s+\d/.test(normalized);
- const dateExpected=['date','alternative'].includes(state.step)||(['time','period'].includes(state.step)&&explicitDay);
- const shortAnchor=state.date||(dateExpected&&state.alternativeDates?.find(d=>p.abbreviatedDate(text,d)===d))||null;
- const shortDate=dateExpected?p.abbreviatedDate(text,shortAnchor):undefined;
+ const explicitDay=/^(?:(?:oui|non|ok)[,\s]+)?le\s+\d/.test(normalized);
+ const dateExpected=['date','date_clarify','alternative'].includes(state.step)||(['time','period'].includes(state.step)&&(explicitDay||p.hasDateExpression(text)));
+ let shortDate;
+ if(dateExpected){
+  const preference=p.preference([{role:'user',content:text}]);if(preference)state.preference=preference;
+  // Un refus reste un refus, même pendant une clarification.
+  const resolved=rejected&&!preference&&!dates.parts(text,Boolean(state.dateParts))?{kind:'none'}:dates.resolve(text,state,p);
+  if(resolved.kind==='clarify'){state.step='date_clarify';return reply(resolved.prompt);}
+  if(resolved.kind==='invalid'){state.step='date';delete state.dateParts;return reply('Cette date est passée ou invalide. Quelle date complète à venir vous conviendrait ?');}
+  if(resolved.kind==='date'){shortDate=resolved.date;if(state.step==='date_clarify')state.step='date';}
+ }
  const periodName=()=>state.preference==='morning'?'le matin':state.preference==='afternoon'?'l’après-midi':'sur une période disponible';
  function offerAnother(reason){
   state.step='alternative';delete state.start;delete state.requestedTime;delete state.offeredPeriod;delete state.alternativeDates;
@@ -120,7 +127,7 @@ async function handle({event,payload,messages,previous,resume=false}){
  }
  // Un refus sans nouvelle date/période arrête la recherche ; ne pas relancer la question DATE.
  if(rejected&&!turnPreference&&shortDate===undefined&&!p.hasDateExpression(text)){
-  if(['date','alternative'].includes(state.step))return pause();
+  if(['date','date_clarify','alternative'].includes(state.step))return pause();
   if(['period','time'].includes(state.step)){
    if(state.offeredPeriod&&!state.preference)state.preference=state.offeredPeriod==='morning'?'afternoon':'morning';
    return offerAnother('D’accord, vous ne souhaitez pas cette proposition.');

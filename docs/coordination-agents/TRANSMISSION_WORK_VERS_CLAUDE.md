@@ -1,9 +1,9 @@
-# Transmission Work → Claude — PR21, refus et mois suivant
+# Work → Claude — MELBA-SAFE-CLARIFY-20261024
 
-24octobre2026. Mission directe du propriétaire ; aucun cycleCW. Ancienne transmission archivée dans HISTORIQUE/20261024-WORK-avant-refus-mois.md.
+24octobre2026. Mission directe du propriétaire, pas de cycleCW. Ancienne transmission archivée dans HISTORIQUE/20261024-WORK-avant-sauvegarde-clarifications.md.
 
-Deux défauts non bloquants d’ac03d6e corrigés : Non/Non/Non ne boucle plus surDATE, demande mise en pause avec reprise/préférences explicites ; Le28au matin→Le3 résolu3novembre via calendrier.14reste14h00 à l’étape horaire.357tests Node et parcours navigateur sur accueil/réservation/PWA réussis ; données/cumul100min59€ conservés en recette SQL locale.
+Stable production/main4960ca8dceb762dd55f2c166cf8333d53be0ad90, Netlify6adc2d56e3c423f4f52a53b4. Sauvegarde complète distante backup/melba-stable-20261024 ; tag annoté local reconstructible, publication/protection distante NON RÉALISÉES (authentification nécessaire). Guide complet et limites : docs/backup/melba-stable-20261024/README_RESTAURATION.md.
 
-Rapport détaillé et preuves : docs/validation/20261024-melba-refus-mois.md et preuves-20261024-refus-mois/. SHAexact de la nouvelle HEAD dans commentairePR21. Merci de relire ces2points et leurs garanties ciblées.
+Correctifs sur fix/20261024-melba-clarifications : dates courtes demandent mois/année quand non établis, réponse partielle complète le jour mémorisé, aucune lecture calendrier anticipée,14reste14h ;2/4/6doigt(s)/mots reconnus sur catalogue réel, aucune combinaison inventée. Rapport : docs/validation/20261024-melba-sauvegarde-clarifications.md.381testsNode, SQL/rappels et parcours Chromium trois interfaces + suite générale passés. Réservation/notifications uniquement locales/simulées. Aucun appareil physique ni nouvel essai fournisseur réel.
 
-NON FUSIONNÉ/NON DÉPLOYÉ. Aucun secret, configuration production, tarif ou donnée réelle modifié. Aucun message/rendez-vous/événement réel. Pas de téléphone physique. Propriétaire décide du déploiement après verdict. Work s’arrête ; aucune relance automatique de Claude.
+Merci d'effectuer la revue indépendante ciblée du SHA exact indiqué dans le commentairePR. Ni fusion ni déploiement autorisés. Prochaine étape : verdictClaude puis décision du propriétaire ; statut EN_ATTENTE_VALIDATION. Aucune nouvelle mission ni activation d'agent automatique. Work s'arrête après cette transmission.
