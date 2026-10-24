@@ -128,7 +128,9 @@ async function handle({event,payload,messages,previous,resume=false}){
    if(date!==state.date){state.date=date;delete state.start;delete state.alternativeDates;delete state.offeredPeriod;}
   }
   const preference=p.preference([{role:'user',content:text}]);if(preference)state.preference=preference;
-  const time=p.selectedTime(text)||p.timeAfterA(text);if(time)state.requestedTime=time;
+  // Un entier seul est un horaire uniquement après proposition de créneaux, jamais à l’étape date.
+  const bareHour=state.step==='time'&&/^(?:[01]?\d|2[0-3])$/.test(normalized)?normalized.padStart(2,'0')+':00':null;
+  const time=p.selectedTime(text)||p.timeAfterA(text)||bareHour;if(time)state.requestedTime=time;
   if(!state.date){state.step='date';return reply((changed||siteChanged?'Très bien, '+names()+' ('+(quote.cents/100).toLocaleString('fr-FR')+' € · '+quote.minutes+' min). ':'')+QUESTIONS.date);}
   const slots=await b.availability(state.date,state.services);
   if(!slots.length)return offerAnother('Je n’ai trouvé aucun créneau compatible le '+p.label(state.date)+'.');

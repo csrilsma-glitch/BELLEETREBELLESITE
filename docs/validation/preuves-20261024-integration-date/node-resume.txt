@@ -1,0 +1,9 @@
+✔ A5: plafond IA global épuisé bloque avant tout appel fournisseur (20.804353ms)
+ℹ tests 349
+ℹ suites 0
+ℹ pass 349
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 728.764915

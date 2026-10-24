@@ -69,3 +69,7 @@ PR20/code dfacd3c ; fusion et déploiement b4ee16cb21dc7499497de59f21b423806446b
 
 ## MELBA-DATE-SHORT-001 — Work —24octobre2026
 Autorisation directe : correction et tests, interdiction de déployer. Préparation TERMINÉE :341Node + navigateur3interfaces, branche séparée. Fusion/déploiement EN_ATTENTE_VALIDATION ; aucun déploiement ni écriture réelle. Rapport20261024-melba-date-courte.md.
+
+
+## MELBA-DATE-HORAIRE-INT-001 — Work —24octobre2026
+Mission directe d’intégration019d701dansPR21, sans déploiement/main. TERMINÉE pour intégration/test/transmission :348testsClaude puis349avec régression14h ;3récapitulatifs navigateur/SQL isolés et suites de non-régression. Prochain destinataireCLAUDE, revue finale EN_ATTENTE. Propriétaire décide ensuite ; arrêtWork.

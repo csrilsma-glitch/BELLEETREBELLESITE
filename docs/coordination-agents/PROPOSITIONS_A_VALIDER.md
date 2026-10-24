@@ -33,3 +33,7 @@ Aucun développement suivant lancé. Contrôle physique Android du refus de pér
 
 ## MELBA-DATE-SHORT-001
 Fusion/déploiement du correctif date abrégée : EN_ATTENTE_VALIDATION. Interdiction actuelle du propriétaire de déployer. Préparation/testés seulement, aucune fusion automatique.
+
+
+## PR21 consolidée après019d701
+Relecture finale Claude demandée par le propriétaire, transmission publiée. Fusion/déploiement toujours EN_ATTENTE_VALIDATION du propriétaire ; aucune autorisation de fusionmain/déploiement reçue pour cette intégration.
