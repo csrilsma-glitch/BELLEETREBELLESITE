@@ -29,3 +29,7 @@ ARBITRAGE-CW003 : prolongation propriétaire a autorisé le correctif ciblé ; l
 
 ## Après MELBA-PERIOD-001 — 24octobre2026
 Aucun développement suivant lancé. Contrôle physique Android du refus de période : EN_ATTENTE_VALIDATION uniquement si souhaité ; trois interfaces déjà contrôlées en ligne et Chromium3formats automatisé. Ne pas demander de répéter les tests déjà couverts.
+
+
+## MELBA-DATE-SHORT-001
+Fusion/déploiement du correctif date abrégée : EN_ATTENTE_VALIDATION. Interdiction actuelle du propriétaire de déployer. Préparation/testés seulement, aucune fusion automatique.

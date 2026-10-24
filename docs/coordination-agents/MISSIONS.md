@@ -65,3 +65,7 @@ Mission directe autorisée : corriger refus période/chercher autre date, tester
 
 ### MELBA-PERIOD-001 — TERMINÉE
 PR20/code dfacd3c ; fusion et déploiement b4ee16cb21dc7499497de59f21b423806446b812 ; Netlify6adc0df1ec183b0f27999cf5 ready. Contrôles publics accueil/réservation/PWA réussis sans confirmation réelle. Une publication applicative.332Node, recettes navigateur/SQL isolées. Aucun nouveau chantier.
+
+
+## MELBA-DATE-SHORT-001 — Work —24octobre2026
+Autorisation directe : correction et tests, interdiction de déployer. Préparation TERMINÉE :341Node + navigateur3interfaces, branche séparée. Fusion/déploiement EN_ATTENTE_VALIDATION ; aucun déploiement ni écriture réelle. Rapport20261024-melba-date-courte.md.

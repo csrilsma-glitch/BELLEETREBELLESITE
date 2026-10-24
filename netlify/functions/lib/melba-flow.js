@@ -86,6 +86,9 @@ async function handle({event,payload,messages,previous,resume=false}){
  }
 
  // Refuser la seule période disponible ne doit jamais réinitialiser la préférence.
+ const dateExpected=['date','alternative'].includes(state.step);
+ const shortAnchor=state.date||(dateExpected&&state.alternativeDates?.find(d=>p.abbreviatedDate(text,d)===d))||null;
+ const shortDate=dateExpected?p.abbreviatedDate(text,shortAnchor):undefined;
  const normalized=String(text).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
  const accepted=/^(?:oui|oui\b.*|d['’]accord|ok|volontiers|cherchez(?:.*)|cherche(?:.*)|allez[- ]y)[.! ]*$/i.test(normalized);
  const rejected=/^(?:non|pas|je ne veux pas|je prefere pas)\b/i.test(normalized);
@@ -96,7 +99,7 @@ async function handle({event,payload,messages,previous,resume=false}){
  }
  if(state.step==='alternative'&&!changed&&!siteChanged){
   const pref=p.preference([{role:'user',content:text}]);if(pref)state.preference=pref;
-  if(p.hasDateExpression(text)){state.step='date';delete state.alternativeDates;}
+  if(shortDate!==undefined||p.hasDateExpression(text)){state.step='date';delete state.alternativeDates;}
   else if(accepted){
    // Recherche bornée et ordonnée ; chaque date proposée provient du moteur métier.
    // Ne jamais présenter comme disponible une date non consultée ni un résultat partiel en cas d’erreur.
@@ -117,8 +120,8 @@ async function handle({event,payload,messages,previous,resume=false}){
 
  // Une date/heure explicite peut être donnée en avance, jamais réclamée à nouveau.
  if(['date','period','time'].includes(state.step)){
-  if(p.hasDateExpression(text)){
-   const date=p.requestedDate([{role:'user',content:text}]);
+  if(shortDate!==undefined||p.hasDateExpression(text)){
+   const date=shortDate!==undefined?shortDate:p.requestedDate([{role:'user',content:text}]);
    if(!date||date<p.today()){state.step='date';delete state.date;delete state.start;return reply('Cette date est passée ou invalide. Quelle date à venir vous conviendrait ?');}
    if(date!==state.date){state.date=date;delete state.start;delete state.alternativeDates;delete state.offeredPeriod;}
   }

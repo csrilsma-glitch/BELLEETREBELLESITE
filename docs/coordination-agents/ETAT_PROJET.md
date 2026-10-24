@@ -75,3 +75,7 @@ Production **6ad1ec023cd1fd6c047f31d039d60930fbd13cc2**, Netlify6adbdb70a378c9c7
 
 ### Clôture MELBA-PERIOD-001
 PR20 fusionnée, production b4ee16cb21dc7499497de59f21b423806446b812, Netlify6adc0df1ec183b0f27999cf5 ready,03:46:41Paris. Refus du matin et recherche27/28/29octobre vérifiés sur3pages publiques ; date27revérifiée sur accueil.332Node et recettes isolées réussis. TERMINÉE, aucune réservation/notification réelle. Rapport20261024-melba-autre-date.md.
+
+
+## MELBA-DATE-SHORT-001 —24octobre2026
+«Le26» ignoré : corrigé/testé uniquement sur branche fix/20261024-melba-date-courte ;341Node + navigateur3interfaces. NON FUSIONNÉ/NON DÉPLOYÉ à la demande du propriétaire. Production resteb4ee16c. Voir docs/validation/20261024-melba-date-courte.md.

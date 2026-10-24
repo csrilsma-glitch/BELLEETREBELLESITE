@@ -45,6 +45,23 @@ function requestedDate(messages,now=new Date()){
  }
  return null;
 }
+// Jour seul : uniquement appelé par le parcours lorsqu’une DATE est attendue.
+// undefined = pas cette syntaxe ; null = jour invalide ; ISO = interprétation à afficher.
+function abbreviatedDate(text,anchorDate=null,now=new Date()){
+ const match=norm(text).trim().match(/^(?:le\s+)?(\d{1,2})(?:er)?(?:\s+(?:(?:au|le)\s+)?(?:matin|apres[- ]?midi))?(?:\s+(?:a|vers)\s+(?:[01]?\d|2[0-3])(?:h(?:[0-5]\d)?|:[0-5]\d))?(?:\s+(?:svp|s['’]il vous plait|merci))?[.!?]*$/);
+ if(!match)return undefined;
+ const day=Number(match[1]);if(day<1||day>31)return null;
+ const current=today(now),base=anchorDate&&validDate(anchorDate)?anchorDate:current;
+ if(anchorDate&&validDate(anchorDate)){const candidate=base.slice(0,8)+String(day).padStart(2,'0');return validDate(candidate)?candidate:null;}
+ // Sans mois explicite : prochaine occurrence civile valide en heure de Paris.
+ // Ne pas laisser Date normaliser le31novembre au1décembre.
+ for(let offset=0;offset<12;offset++){
+  const month=new Date(base.slice(0,7)+'-01T12:00:00Z');month.setUTCMonth(month.getUTCMonth()+offset);
+  const candidate=month.toISOString().slice(0,8)+String(day).padStart(2,'0');
+  if(validDate(candidate)&&candidate>=current)return candidate;
+ }
+ return null;
+}
 function hasDateExpression(text){return /\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}\/\d{1,2}(?:\/\d{4})?\b|\b\d{1,2}(?:er)?\s+(?:janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre)\b|\b(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|demain)\b|aujourd['’]hui/.test(norm(text));}
 // Réponse courte qui désigne un créneau proposé : « 10h40 », « 10:40 », « celui de 10h40 ».
 // Une simple durée (« 1h30 ») n'est pas un choix : elle doit contenir la forme HHhMM ou HH:MM complète,
@@ -245,4 +262,4 @@ function contactFromHistory(messages){
 }
 function isRecapRequest(text){return /\b(recapitulatif|resume de (ma|la) (demande|reservation)|recap)\b/.test(norm(text));}
 function isConfirmWord(text){const t=norm(text).replace(/[’‘]/g,"'");return /\b(je confirme|confirme|je valide|c'est bon pour moi)\b/.test(t)&&!/\b(pas|ne|non|annul\w*)\b/.test(t);}
-module.exports={serviceLabel,wantedMode,today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression,startHour,planningContext,selectedTime,matchServices,timeAfterA,contactFrom,contactFromHistory,isRecapRequest,isConfirmWord,isNameAnswer,bareName};
+module.exports={abbreviatedDate,serviceLabel,wantedMode,today,validDate,requestedDate,preference,time,label,choose,directReply,guardedReply,needsCalendarEvidence,hasDateExpression,startHour,planningContext,selectedTime,matchServices,timeAfterA,contactFrom,contactFromHistory,isRecapRequest,isConfirmWord,isNameAnswer,bareName};
