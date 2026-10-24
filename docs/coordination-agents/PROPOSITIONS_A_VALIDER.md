@@ -29,3 +29,15 @@ ARBITRAGE-CW003 : prolongation propriétaire a autorisé le correctif ciblé ; l
 
 ## Après MELBA-PERIOD-001 — 24octobre2026
 Aucun développement suivant lancé. Contrôle physique Android du refus de période : EN_ATTENTE_VALIDATION uniquement si souhaité ; trois interfaces déjà contrôlées en ligne et Chromium3formats automatisé. Ne pas demander de répéter les tests déjà couverts.
+
+
+## MELBA-DATE-SHORT-001
+Fusion/déploiement du correctif date abrégée : EN_ATTENTE_VALIDATION. Interdiction actuelle du propriétaire de déployer. Préparation/testés seulement, aucune fusion automatique.
+
+
+## PR21 consolidée après019d701
+Relecture finale Claude demandée par le propriétaire, transmission publiée. Fusion/déploiement toujours EN_ATTENTE_VALIDATION du propriétaire ; aucune autorisation de fusionmain/déploiement reçue pour cette intégration.
+
+
+## Après MELBA-REFUS-MOIS-001
+Relecture finale ciblée Claude demandée par le propriétaire. NouvelleHEAD dePR21 documentée dans commentaireWork. Fusion/déploiement toujours EN_ATTENTE_VALIDATION ; ne rien publier à ce stade.

@@ -75,3 +75,15 @@ Production **6ad1ec023cd1fd6c047f31d039d60930fbd13cc2**, Netlify6adbdb70a378c9c7
 
 ### Clôture MELBA-PERIOD-001
 PR20 fusionnée, production b4ee16cb21dc7499497de59f21b423806446b812, Netlify6adc0df1ec183b0f27999cf5 ready,03:46:41Paris. Refus du matin et recherche27/28/29octobre vérifiés sur3pages publiques ; date27revérifiée sur accueil.332Node et recettes isolées réussis. TERMINÉE, aucune réservation/notification réelle. Rapport20261024-melba-autre-date.md.
+
+
+## MELBA-DATE-SHORT-001 —24octobre2026
+«Le26» ignoré : corrigé/testé uniquement sur branche fix/20261024-melba-date-courte ;341Node + navigateur3interfaces. NON FUSIONNÉ/NON DÉPLOYÉ à la demande du propriétaire. Production resteb4ee16c. Voir docs/validation/20261024-melba-date-courte.md.
+
+
+## Consolidation PR21 —24octobre2026
+019d701Claude, enfant direct dea609b19, intégré avec complément14→14h uniquement à l’étape horaire.349Node + parcours navigateur jusqu’au récapitulatif/SQL local,64prestations inchangées. EN_ATTENTE_REVUE_FINALE_CLAUDE. Main03e9dc8 et productionb4ee16c inchangés. Aucune fusion main ni déploiement autorisé. Voir rapport20261024-melba-date-courte.md, sectionConsolidation.
+
+
+## MELBA-REFUS-MOIS-001 —24octobre2026
+PR21 consolidée aprèsac03d6e : refus répétés→pause/reprise explicite ; jour court passé dans le mois→prochaine occurrence valide ;14reste heure à l’étape horaire.357Node et recettes3interfaces/SQL local réussis. EN_ATTENTE_REVUE_CLAUDE. NON FUSIONNÉ/NON DÉPLOYÉ. Rapport docs/validation/20261024-melba-refus-mois.md.

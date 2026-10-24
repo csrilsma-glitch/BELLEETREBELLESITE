@@ -1,0 +1,9 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> belle-rebelle-v15@15.0.0 test:targeted-ui
+> node tests/targeted-ui.cjs
+
+Courses réseau : réponse disponibilité après changement de date et ancienne réponse Melba après stop ignorées : OK
+390px : 96 créneaux en select, clavier, invalidation, texte sûr, ancienne proposition désactivée, déplacement Manager compact : OK
+820px : 96 créneaux en select, clavier, invalidation, texte sûr, ancienne proposition désactivée, déplacement Manager compact : OK
+1440px : 96 créneaux en select, clavier, invalidation, texte sûr, ancienne proposition désactivée, déplacement Manager compact : OK

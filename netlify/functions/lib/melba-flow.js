@@ -2,7 +2,7 @@
 // Parcours métier déterministe. Aucune écriture : seul le bouton cliente appelle reservations.
 const crypto=require('node:crypto'),c=require('./core'),b=require('./booking'),p=require('./melba-policy');
 const COOKIE='br15_melba_flow',TTL=30*60*1000;
-const QUESTIONS={alternative:'Souhaitez-vous que je cherche un autre jour ?',date:'Quelle date vous conviendrait ?',period:'Préférez-vous le matin ou l’après-midi ?',time:'Quel horaire choisissez-vous ?',surname:'Quel est votre nom de famille ?',firstname:'Quel est votre prénom ?',email:'Quelle est votre adresse e-mail ?',phone:'Quel est votre numéro de téléphone ?'};
+const QUESTIONS={paused:'Vous pourrez reprendre plus tard ou modifier vos préférences.',preferences:'Pour votre prochaine recherche, préférez-vous le matin, l’après-midi ou peu importe ?',alternative:'Souhaitez-vous que je cherche un autre jour ?',date:'Quelle date vous conviendrait ?',period:'Préférez-vous le matin ou l’après-midi ?',time:'Quel horaire choisissez-vous ?',surname:'Quel est votre nom de famille ?',firstname:'Quel est votre prénom ?',email:'Quelle est votre adresse e-mail ?',phone:'Quel est votre numéro de téléphone ?'};
 const cookie=(value,seconds=1800)=>`${COOKIE}=${encodeURIComponent(value)}; Path=/.netlify/functions/; HttpOnly; Secure; SameSite=Strict; Max-Age=${seconds}`;
 const clearCookie=()=>cookie('',0);
 function readContact(event,state){
@@ -42,7 +42,7 @@ async function handle({event,payload,messages,previous,resume=false}){
  const intent=/r[ée]serv|rendez[- ]?vous|\brdv\b|cr[ée]neau|disponib|\bkit\b|\bpose\b|\bgel\b|\bsemi[- ]?permanent\b|\bpress\b|baby\s?boomer/i.test(text);
  if(!old&&!selected.length&&(!intent||(/\?/.test(text)&&!/r[ée]serv|rendez[- ]?vous|\brdv\b|cr[ée]neau|disponib/i.test(text))))return null;
  const catalogue=await c.db('br15_services?active=eq.true&order=position.asc');
- const match=(!old||['service','date','period','time','alternative'].includes(old.step))?serviceMatch(text,catalogue,old?.family):{ids:[]};
+ const match=(!old||['service','date','period','time','alternative','paused','preferences'].includes(old.step))?serviceMatch(text,catalogue,old?.family):{ids:[]};
  let state=old?{...old}:{flow:2,id:crypto.randomUUID(),expires:now+TTL,step:'service',services:[]};
  let contact=readContact(event,state),privateTurn=['surname','firstname','email','phone','recap'].includes(state.step);
  function reply(message,{pendingBooking=null,choices,reset=false}={}){
@@ -89,14 +89,46 @@ async function handle({event,payload,messages,previous,resume=false}){
  const normalized=String(text).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
  const accepted=/^(?:oui|oui\b.*|d['’]accord|ok|volontiers|cherchez(?:.*)|cherche(?:.*)|allez[- ]y)[.! ]*$/i.test(normalized);
  const rejected=/^(?:non|pas|je ne veux pas|je prefere pas)\b/i.test(normalized);
+ const turnPreference=p.preference([{role:'user',content:text}]);
+ const pauseChoices=['Reprendre ma réservation','Modifier mes préférences'];
+ function pause(){state.step='paused';delete state.start;delete state.requestedTime;delete state.offeredPeriod;delete state.alternativeDates;return reply('D’accord, je n’effectue pas de nouvelle recherche. Vos prestations restent conservées. Vous pourrez reprendre plus tard ou modifier vos préférences.', {choices:pauseChoices});}
+ if(/^(?:modifier|changer) (?:mes |les )?preferences[.! ]*$/.test(normalized)){
+  state.step='preferences';delete state.start;delete state.requestedTime;return reply(QUESTIONS.preferences,{choices:['Matin','Après-midi','Peu importe']});
+ }
+ if(state.step==='preferences'){
+  if(rejected&&!turnPreference)return pause();
+  if(!turnPreference)return reply(QUESTIONS.preferences,{choices:['Matin','Après-midi','Peu importe']});
+  state.preference=turnPreference;state.step='date';delete state.date;delete state.alternativeDates;return reply('Votre préférence est conservée. '+QUESTIONS.date);
+ }
+ if(state.step==='paused'){
+  const explicitDate=p.hasDateExpression(text)||p.abbreviatedDate(text)!==undefined;
+  if(explicitDate){state.step='date';}
+  else if(turnPreference||accepted||/^(?:reprendre|reprenons|je veux reserver|je souhaite reserver)/.test(normalized)){
+   if(turnPreference)state.preference=turnPreference;
+   state.step='date';delete state.date;return reply('Je reprends votre sélection. '+QUESTIONS.date);
+  }else return reply('Pas de souci, je vous laisse reprendre quand vous le souhaiterez. Vos prestations restent conservées.',{choices:pauseChoices});
+ }
+ // Aux étapes horaire et période, seul « le <jour> » est un changement de date : un nombre seul peut être une heure.
+ const explicitDay=/^le\s+\d/.test(normalized);
+ const dateExpected=['date','alternative'].includes(state.step)||(['time','period'].includes(state.step)&&explicitDay);
+ const shortAnchor=state.date||(dateExpected&&state.alternativeDates?.find(d=>p.abbreviatedDate(text,d)===d))||null;
+ const shortDate=dateExpected?p.abbreviatedDate(text,shortAnchor):undefined;
  const periodName=()=>state.preference==='morning'?'le matin':state.preference==='afternoon'?'l’après-midi':'sur une période disponible';
  function offerAnother(reason){
   state.step='alternative';delete state.start;delete state.requestedTime;delete state.offeredPeriod;delete state.alternativeDates;
   return reply(reason+' Souhaitez-vous que je cherche un autre jour avec des créneaux '+periodName()+' ?', {choices:['Oui, chercher un autre jour','Choisir une autre date']});
  }
+ // Un refus sans nouvelle date/période arrête la recherche ; ne pas relancer la question DATE.
+ if(rejected&&!turnPreference&&shortDate===undefined&&!p.hasDateExpression(text)){
+  if(['date','alternative'].includes(state.step))return pause();
+  if(['period','time'].includes(state.step)){
+   if(state.offeredPeriod&&!state.preference)state.preference=state.offeredPeriod==='morning'?'afternoon':'morning';
+   return offerAnother('D’accord, vous ne souhaitez pas cette proposition.');
+  }
+ }
  if(state.step==='alternative'&&!changed&&!siteChanged){
   const pref=p.preference([{role:'user',content:text}]);if(pref)state.preference=pref;
-  if(p.hasDateExpression(text)){state.step='date';delete state.alternativeDates;}
+  if(shortDate!==undefined||p.hasDateExpression(text)){state.step='date';delete state.alternativeDates;}
   else if(accepted){
    // Recherche bornée et ordonnée ; chaque date proposée provient du moteur métier.
    // Ne jamais présenter comme disponible une date non consultée ni un résultat partiel en cas d’erreur.
@@ -110,20 +142,22 @@ async function handle({event,payload,messages,previous,resume=false}){
    delete state.date;delete state.start;delete state.requestedTime;state.step='date';state.alternativeDates=dates;
    if(!dates.length)return reply('Je n’ai trouvé aucun créneau compatible '+periodName()+' dans les 14 jours suivant le '+p.label(start)+'. Je conserve vos prestations et votre préférence. Quelle autre date souhaitez-vous vérifier ?');
    return reply('J’ai vérifié des disponibilités compatibles avec vos '+quote.minutes+' min '+periodName()+' : '+dates.map(d=>p.label(d)).join(', ')+'. Quelle date préférez-vous ?', {choices:dates.map(d=>p.label(d))});
-  }else if((rejected&&!pref)||/choisir une autre date/.test(normalized)){
+  }else if(/choisir une autre date/.test(normalized)){
    state.step='date';delete state.date;delete state.alternativeDates;return reply('D’accord, je conserve vos prestations et votre préférence. Quelle autre date souhaitez-vous vérifier ?');
   }else return reply('Je garde votre préférence pour '+periodName()+'. Souhaitez-vous que je cherche un autre jour ?', {choices:['Oui, chercher un autre jour','Choisir une autre date']});
  }
 
  // Une date/heure explicite peut être donnée en avance, jamais réclamée à nouveau.
  if(['date','period','time'].includes(state.step)){
-  if(p.hasDateExpression(text)){
-   const date=p.requestedDate([{role:'user',content:text}]);
+  if(shortDate!==undefined||p.hasDateExpression(text)){
+   const date=shortDate!==undefined?shortDate:p.requestedDate([{role:'user',content:text}]);
    if(!date||date<p.today()){state.step='date';delete state.date;delete state.start;return reply('Cette date est passée ou invalide. Quelle date à venir vous conviendrait ?');}
    if(date!==state.date){state.date=date;delete state.start;delete state.alternativeDates;delete state.offeredPeriod;}
   }
   const preference=p.preference([{role:'user',content:text}]);if(preference)state.preference=preference;
-  const time=p.selectedTime(text)||p.timeAfterA(text);if(time)state.requestedTime=time;
+  // Un entier seul est un horaire uniquement après proposition de créneaux, jamais à l’étape date.
+  const bareHour=state.step==='time'&&/^(?:[01]?\d|2[0-3])$/.test(normalized)?normalized.padStart(2,'0')+':00':null;
+  const time=p.selectedTime(text)||p.timeAfterA(text)||bareHour;if(time)state.requestedTime=time;
   if(!state.date){state.step='date';return reply((changed||siteChanged?'Très bien, '+names()+' ('+(quote.cents/100).toLocaleString('fr-FR')+' € · '+quote.minutes+' min). ':'')+QUESTIONS.date);}
   const slots=await b.availability(state.date,state.services);
   if(!slots.length)return offerAnother('Je n’ai trouvé aucun créneau compatible le '+p.label(state.date)+'.');

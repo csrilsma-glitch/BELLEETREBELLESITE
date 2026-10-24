@@ -1,0 +1,3 @@
+/ 1440x1000 jour abrégé26, refus, reload, alternative, jour27, préférence matin, nom, stop : OK
+/reservation.html 820x1180 jour abrégé26, refus, reload, alternative, jour27, préférence matin, nom, stop : OK
+/app/ 390x844 jour abrégé26, refus, reload, alternative, jour27, préférence matin, nom, stop : OK

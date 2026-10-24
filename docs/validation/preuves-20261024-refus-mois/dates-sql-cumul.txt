@@ -1,0 +1,6 @@
+Dimanche fermé : aucun créneau SQL
+Pause13h–14h : aucun chevauchement SQL
+/ 1440x1000 changement période/horaire, entier14h, récapitulatif à la nouvelle date, coordonnées conservées,100min/59€, SQL isolé, purge et annulation : OK
+/reservation.html 820x1180 changement période/horaire, entier14h, récapitulatif à la nouvelle date, coordonnées conservées,100min/59€, SQL isolé, purge et annulation : OK
+/app/ 390x844 changement période/horaire, entier14h, récapitulatif à la nouvelle date, coordonnées conservées,100min/59€, SQL isolé, purge et annulation : OK
+3 réservations locales uniquement ; zéro envoi fournisseur réel ; données sources 64prestations intactes.
